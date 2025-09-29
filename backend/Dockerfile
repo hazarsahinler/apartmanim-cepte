@@ -4,7 +4,9 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
 COPY src ./src
-RUN mvn package -DskipTests
+
+# Maven'ı çalıştırırken JVM'e dosya encoding'ini UTF-8 olarak zorla
+RUN mvn -Dfile.encoding=UTF-8 package -DskipTests
 
 # Run aşaması: Sadece JRE içeren hafif bir imajda uygulamayı çalıştır
 FROM eclipse-temurin:17-jre-alpine
