@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -9,7 +9,6 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
