@@ -4,6 +4,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
