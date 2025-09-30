@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "kullanici", schema = "identity")
+@Table(name = "kullanici")
 public class Kullanici {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,9 +31,10 @@ public class Kullanici {
     private String kullaniciSifre;
 
     @Enumerated(EnumType.ORDINAL)
+    @Column(columnDefinition = "smallint")
     private ApartmanRol apartmanRol;
 
     @Enumerated(EnumType.ORDINAL)
+    @Column(columnDefinition = "smallint")
     private KonutKullanimRol konutKullanimRol;
-
 }

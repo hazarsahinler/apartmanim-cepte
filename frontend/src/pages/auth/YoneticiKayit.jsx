@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, User, Mail, Phone, Lock, Home, CheckCircle, AlertCircle } from 'lucide-react';
 import { authService } from '../../services/authService';
+import { useNavigate } from 'react-router-dom';
 
 const YoneticiKayit = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     kullaniciAdi: '',
     kullaniciSoyadi: '',
     kullaniciEposta: '',
     kullaniciTelefon: '',
-    konutKullanim: 0, // Default olarak ev sahibi
+    konutKullanim: 1, // 1: Ev sahibi, 2: Kiracı
     kullaniciSifre: ''
   });
 
@@ -96,21 +98,11 @@ const YoneticiKayit = () => {
 
     try {
       const response = await authService.registerManager(formData);
-      setSuccess('Yönetici kaydı başarıyla oluşturuldu!');
+      setSuccess('Yönetici kaydı başarıyla oluşturuldu! Giriş sayfasına yönlendiriliyorsunuz...');
       
-      // Formu temizle
-      setFormData({
-        kullaniciAdi: '',
-        kullaniciSoyadi: '',
-        kullaniciEposta: '',
-        kullaniciTelefon: '',
-        konutKullanim: 0,
-        kullaniciSifre: ''
-      });
-
-      // 2 saniye sonra ana sayfaya yönlendir
+      // 2 saniye sonra giriş sayfasına yönlendir
       setTimeout(() => {
-        window.location.href = '/';
+        navigate('/giris');
       }, 2000);
       
     } catch (err) {
@@ -280,9 +272,9 @@ const YoneticiKayit = () => {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => handleKonutKullanimChange(0)}
+                  onClick={() => handleKonutKullanimChange(1)}
                   className={`p-4 border-2 rounded-lg text-center transition-all ${
-                    formData.konutKullanim === 0
+                    formData.konutKullanim === 1
                       ? 'border-green-500 bg-green-50 text-green-700'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
@@ -292,9 +284,9 @@ const YoneticiKayit = () => {
                 
                 <button
                   type="button"
-                  onClick={() => handleKonutKullanimChange(1)}
+                  onClick={() => handleKonutKullanimChange(2)}
                   className={`p-4 border-2 rounded-lg text-center transition-all ${
-                    formData.konutKullanim === 1
+                    formData.konutKullanim === 2
                       ? 'border-green-500 bg-green-50 text-green-700'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
@@ -368,12 +360,13 @@ const YoneticiKayit = () => {
             <div className="text-center mt-6">
               <p className="text-gray-600 text-sm">
                 Zaten hesabınız var mı?{' '}
-                <a
-                  href="/"
+                <button
+                  type="button"
+                  onClick={() => navigate('/giris')}
                   className="text-green-600 hover:text-green-500 font-medium underline"
                 >
-                  Ana Sayfa
-                </a>
+                  Giriş Yap
+                </button>
               </p>
             </div>
           </form>

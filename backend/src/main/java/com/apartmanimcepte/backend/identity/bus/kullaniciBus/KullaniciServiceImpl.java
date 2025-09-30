@@ -48,8 +48,7 @@ public class KullaniciServiceImpl implements KullaniciService {
             kullanici.setKullaniciAdi(kullaniciKayitDTO.getKullaniciAdi());
             kullanici.setKullaniciSoyadi(kullaniciKayitDTO.getKullaniciSoyadi());
             kullanici.setKullaniciEposta(kullaniciKayitDTO.getKullaniciEposta());
-            kullanici.setKullaniciSifre(kullaniciKayitDTO.getKullaniciSifre());
-            kullanici.setKullaniciTelefon(kullaniciKayitDTO.getKullaniciTelefon());
+            kullanici.setKullaniciSifre(passwordEncoder.encode(kullaniciKayitDTO.getKullaniciSifre()));            kullanici.setKullaniciTelefon(kullaniciKayitDTO.getKullaniciTelefon());
             kullanici.setApartmanRol(ApartmanRol.Yonetici);
             kullanici.setKonutKullanimRol(KonutKullanimRol.fromRole(kullaniciKayitDTO.getKonutKullanim()));
             kullaniciDAO.saveOrUpdate(kullanici);
