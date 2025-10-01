@@ -46,13 +46,13 @@ public class KullaniciController {
     }
 
     @PostMapping("/giris")
-    public ResponseEntity<String> kullaniciGiris(@Valid @RequestBody KullaniciGirisBilgiDTO kullaniciGirisBilgiDTO) throws IOException {
+    public ResponseEntity<ResponseDTO> kullaniciGiris(@Valid @RequestBody KullaniciGirisBilgiDTO kullaniciGirisBilgiDTO) throws IOException {
         ResponseDTO responseDTO = new ResponseDTO();
         responseDTO= kullaniciService.KullaniciGiris(kullaniciGirisBilgiDTO);
-        return new ResponseEntity<>(responseDTO.getMessage(),HttpStatus.OK);
+        return new ResponseEntity<>(responseDTO,HttpStatus.OK);
     }
-    @GetMapping("/kullanici/bilgi")
-    public KullaniciResponseDTO kullaniciBilgileri(@Valid @RequestBody long kullaniciId) throws IOException {
+    @GetMapping("/kullanici/bilgi/{kullaniciId}")
+    public KullaniciResponseDTO kullaniciBilgileri(@PathVariable Long kullaniciId) throws IOException {
         KullaniciResponseDTO responseDTO = new KullaniciResponseDTO();
         responseDTO=kullaniciService.KullaniciBilgi(kullaniciId);
         return responseDTO;

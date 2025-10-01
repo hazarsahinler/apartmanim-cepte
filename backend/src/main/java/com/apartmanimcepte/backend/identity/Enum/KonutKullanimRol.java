@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.List;
 
 public enum KonutKullanimRol {
-    EvSahibi(1, "ROLE_EVSAHIBI"),
-    Kiracı(2, "ROLE_KIRACI");
+    EvSahibi(0, "ROLE_EVSAHIBI"),
+    Kiracı(1, "ROLE_KIRACI");
     private int role;
     private String authority;
 
@@ -22,6 +22,9 @@ public enum KonutKullanimRol {
 
     public List<SimpleGrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(authority));
+    }
+    public String getAuthority() {
+        return authority;
     }
 
     public static KonutKullanimRol fromRole(int role) {

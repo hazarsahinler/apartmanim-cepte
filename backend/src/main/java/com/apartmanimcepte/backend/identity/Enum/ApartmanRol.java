@@ -23,6 +23,9 @@ public enum ApartmanRol {
     public List<SimpleGrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(authority));
     }
+    public String getAuthority() {
+        return authority;
+    }
 
     public static ApartmanRol fromRole(int role) {
         for (ApartmanRol role1 : values()) {

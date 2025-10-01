@@ -8,24 +8,24 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor; // Lombok'un bu anotasyonu constructor'ı otomatik oluşturur
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority; // DEĞİŞİKLİK: Bu importu ekleyin
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
-@RequiredArgsConstructor // final olan alanlar için otomatik constructor oluşturur
+@RequiredArgsConstructor
 public class MyFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final userDetailsService userService;
-
-    // Constructor'dan URL eşleştirme mantığı tamamen kaldırıldı!
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -35,9 +35,6 @@ public class MyFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // Eğer Authorization başlığı yoksa veya "Bearer " ile başlamıyorsa,
-        // hiçbir şey yapma ve zincirin bir sonraki filtresine devam et.
-        // Kararı (izin ver/reddet) SecurityConfig'deki zincir verecek.
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -49,30 +46,41 @@ public class MyFilter extends OncePerRequestFilter {
         try {
             userPhone = jwtService.extractUsername(jwt);
         } catch (Exception e) {
-            // Token geçersizse, yine de zincire devam et.
-            // Spring Security'nin kendisi 401 Unauthorized hatası verecektir.
-            // Hata mesajını burada kendimiz de basabiliriz.
             sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Geçersiz veya süresi dolmuş token.");
             return;
         }
 
-        // Token'dan kullanıcı adı alındıysa ve henüz context'te bir kimlik yoksa
         if (userPhone != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             Kullanici kullanici = this.userService.loadUserByUsername(userPhone);
 
             if (kullanici != null && jwtService.validateToken(jwt, kullanici.getKullaniciTelefon())) {
+
+
+                List<GrantedAuthority> authorities = new ArrayList<>();
+
+
+                if (kullanici.getApartmanRol() != null) {
+                    authorities.addAll(kullanici.getApartmanRol().getAuthorities());
+                }
+
+
+                if (kullanici.getKonutKullanimRol() != null) {
+                    authorities.addAll(kullanici.getKonutKullanimRol().getAuthorities());
+                }
+
+
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         kullanici,
                         null,
-                        Collections.singletonList(() -> "ROLE_" + kullanici.getApartmanRol().name())
+                        authorities
                 );
+
+
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                // Kimlik doğrulama bilgisini SecurityContext'e yerleştir
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
-        // Her durumda zincirin bir sonraki filtresine devam et
         filterChain.doFilter(request, response);
     }
 

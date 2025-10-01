@@ -48,7 +48,8 @@ public class KullaniciServiceImpl implements KullaniciService {
             kullanici.setKullaniciAdi(kullaniciKayitDTO.getKullaniciAdi());
             kullanici.setKullaniciSoyadi(kullaniciKayitDTO.getKullaniciSoyadi());
             kullanici.setKullaniciEposta(kullaniciKayitDTO.getKullaniciEposta());
-            kullanici.setKullaniciSifre(passwordEncoder.encode(kullaniciKayitDTO.getKullaniciSifre()));            kullanici.setKullaniciTelefon(kullaniciKayitDTO.getKullaniciTelefon());
+            kullanici.setKullaniciSifre(passwordEncoder.encode(kullaniciKayitDTO.getKullaniciSifre()));
+            kullanici.setKullaniciTelefon(kullaniciKayitDTO.getKullaniciTelefon());
             kullanici.setApartmanRol(ApartmanRol.Yonetici);
             kullanici.setKonutKullanimRol(KonutKullanimRol.fromRole(kullaniciKayitDTO.getKonutKullanim()));
             kullaniciDAO.saveOrUpdate(kullanici);
@@ -71,17 +72,20 @@ public class KullaniciServiceImpl implements KullaniciService {
     public ResponseDTO KullaniciGiris(KullaniciGirisBilgiDTO kullaniciGirisBilgiDTO) {
         Kullanici kullanici = new Kullanici();
         ResponseDTO responseDTO = new ResponseDTO();
-        kullanici = userDetailsService.loadUserByUsername(kullaniciGirisBilgiDTO.getKullaniciTelefon());
-        if (kullanici == null) {
+        List<Kullanici> kullaniciList = kullaniciDAO.getObjectsByParam(Kullanici.class, "kullaniciTelefon", kullaniciGirisBilgiDTO.getKullaniciTelefon());
+
+        if (kullaniciList == null || kullaniciList.isEmpty()) {
             responseDTO.setMessage("Kullanici Telefon Numarası Hatalı!!");
             return responseDTO;
         } else {
+            kullanici=kullaniciList.get(0);
             if (!passwordEncoder.matches(kullaniciGirisBilgiDTO.getKullaniciSifre(), kullanici.getKullaniciSifre())) {
                 responseDTO.setMessage("Şifre Hatalı!");
                 return responseDTO;
             }
             String token = jwtService.generateToken(kullanici.getKullaniciTelefon());
             responseDTO.setMessage("Giriş başarılı.");
+            responseDTO.setToken(token);
         }
         return responseDTO;
     }
