@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, User, Mail, Phone, Lock, Home, CheckCircle, AlertCircle } from 'lucide-react';
-import { authService } from '../../services/authService';
+import { authService } from '../../services/authService'; // Bu importun projenizde doğru path'te olduğundan emin olun
 import { useNavigate } from 'react-router-dom';
 
 const YoneticiKayit = () => {
@@ -10,7 +10,7 @@ const YoneticiKayit = () => {
     kullaniciSoyadi: '',
     kullaniciEposta: '',
     kullaniciTelefon: '',
-    konutKullanim: 1, // 1: Ev sahibi, 2: Kiracı
+    konutKullanim: 0, // DÜZELTME: 0: Ev sahibi, 1: Kiracı olarak güncellendi. Varsayılan 0.
     kullaniciSifre: ''
   });
 
@@ -41,7 +41,7 @@ const YoneticiKayit = () => {
   const handleKonutKullanimChange = (value) => {
     setFormData(prev => ({
       ...prev,
-      konutKullanim: parseInt(value)
+      konutKullanim: parseInt(value, 10) // Gelen değerin integer olduğundan emin olalım
     }));
   };
 
@@ -74,10 +74,15 @@ const YoneticiKayit = () => {
       errors.kullaniciTelefon = 'Geçerli bir telefon numarası giriniz (5XXXXXXXXX)';
     }
 
+    if (formData.konutKullanim !== 0 && formData.konutKullanim !== 1) {
+        // Bu hata normalde kullanıcı arayüzü hatası olmadıkça görünmemeli
+        errors.konutKullanim = 'Lütfen konut kullanım tipini seçin.';
+    }
+
     if (!formData.kullaniciSifre.trim()) {
       errors.kullaniciSifre = 'Şifre alanı zorunludur';
-    } else if (formData.kullaniciSifre.length < 6) {
-      errors.kullaniciSifre = 'Şifre en az 6 karakter olmalıdır';
+    } else if (formData.kullaniciSifre.length < 8) {
+      errors.kullaniciSifre = 'Şifre en az 8 karakter olmalıdır';
     }
 
     setValidationErrors(errors);
@@ -97,7 +102,13 @@ const YoneticiKayit = () => {
     setSuccess('');
 
     try {
-      const response = await authService.registerManager(formData);
+      // Backend'e gönderilecek veriyi kontrol edelim
+      const dataToSend = {
+        ...formData,
+        konutKullanim: Number(formData.konutKullanim)
+      };
+
+      const response = await authService.registerManager(dataToSend);
       setSuccess('Yönetici kaydı başarıyla oluşturuldu! Giriş sayfasına yönlendiriliyorsunuz...');
       
       // 2 saniye sonra giriş sayfasına yönlendir
@@ -272,9 +283,9 @@ const YoneticiKayit = () => {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => handleKonutKullanimChange(1)}
+                  onClick={() => handleKonutKullanimChange(0)}
                   className={`p-4 border-2 rounded-lg text-center transition-all ${
-                    formData.konutKullanim === 1
+                    formData.konutKullanim === 0
                       ? 'border-green-500 bg-green-50 text-green-700'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
@@ -284,9 +295,9 @@ const YoneticiKayit = () => {
                 
                 <button
                   type="button"
-                  onClick={() => handleKonutKullanimChange(2)}
+                  onClick={() => handleKonutKullanimChange(1)}
                   className={`p-4 border-2 rounded-lg text-center transition-all ${
-                    formData.konutKullanim === 2
+                    formData.konutKullanim === 1
                       ? 'border-green-500 bg-green-50 text-green-700'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
@@ -315,7 +326,7 @@ const YoneticiKayit = () => {
                       ? 'border-red-300 bg-red-50' 
                       : 'border-gray-300'
                   }`}
-                  placeholder="En az 6 karakter"
+                  placeholder="En az 8 karakter"
                 />
                 <button
                   type="button"

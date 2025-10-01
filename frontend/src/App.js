@@ -5,7 +5,7 @@ import Login from './pages/auth/Login';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import './index.css';
-
+import YoneticiDashboard from './pages/YoneticiDashboard';
 function App() {
   return (
     <Router>
@@ -15,6 +15,9 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/giris" element={<Login />} />
           <Route path="/yonetici-kayit" element={<YoneticiKayit />} />
+          <Route path="/giris" element={<Login />} />
+          <Route path="/yonetici-kayit" element={<YoneticiKayit />} />
+          <Route path="/yonetici-dashboard" element={<YoneticiDashboard />} />
         </Routes>
       </div>
     </Router>
