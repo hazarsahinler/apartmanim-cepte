@@ -33,13 +33,10 @@ public class KullaniciController {
 
     @PostMapping("/yonetici/kayit")
     public ResponseEntity<String> yoneticiKayit(@Valid @RequestBody KullaniciKayitDTO kullaniciKayitDTO) throws IOException {
-        logger.info("Yönetici kayıt isteği alındı: {}", kullaniciKayitDTO.toString());
         try {
             ResponseDTO responseDTO = kullaniciService.YöneticiKayit(kullaniciKayitDTO);
-            logger.info("Yönetici kaydı başarılı: {}", responseDTO.getMessage());
             return new ResponseEntity<>(responseDTO.getMessage(), HttpStatus.CREATED);
         } catch (Exception e) {
-            logger.error("Yönetici kaydı sırasında hata: ", e);
             return new ResponseEntity<>("Kayıt işlemi sırasında bir hata oluştu: " + e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -57,4 +54,10 @@ public class KullaniciController {
         responseDTO=kullaniciService.KullaniciBilgi(kullaniciId);
         return responseDTO;
     }
+//    @PostMapping("/apartman/sakin/kayit")
+//    public ResponseEntity<String> apartmanSakinKayit(@Valid @RequestBody KullaniciKayitDTO kullaniciKayitDTO) throws IOException {
+//        try {
+//            ResponseDTO responseDTO = kullaniciService.
+//        }
+//    }
 }

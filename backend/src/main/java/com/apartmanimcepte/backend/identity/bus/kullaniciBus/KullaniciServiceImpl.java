@@ -61,6 +61,27 @@ public class KullaniciServiceImpl implements KullaniciService {
 
     }
 
+//    @Override
+//    public ResponseDTO ApartmanSakinKayit(KullaniciKayitDTO kullaniciKayitDTO) {
+//        List<Kullanici> kullaniciList = kullaniciDAO.getObjectsByParam(Kullanici.class, "kullaniciTelefon", kullaniciKayitDTO.getKullaniciTelefon());
+//        Kullanici kullanici = new Kullanici();
+//        ResponseDTO responseDTO = new ResponseDTO();
+//        if (kullaniciList.isEmpty()) {
+//            kullanici.setKullaniciAdi(kullaniciKayitDTO.getKullaniciAdi());
+//            kullanici.setKullaniciSoyadi(kullaniciKayitDTO.getKullaniciSoyadi());
+//            kullanici.setKullaniciEposta(kullaniciKayitDTO.getKullaniciEposta());
+//            kullanici.setKullaniciSifre(passwordEncoder.encode(kullaniciKayitDTO.getKullaniciSifre()));
+//            kullanici.setKullaniciTelefon(kullaniciKayitDTO.getKullaniciTelefon());
+//            kullanici.setApartmanRol(ApartmanRol.ApartmanSakin);
+//            kullanici.setKonutKullanimRol(KonutKullanimRol.fromRole(kullaniciKayitDTO.getKonutKullanim()));
+//            kullaniciDAO.saveOrUpdate(kullanici);
+//            responseDTO.setMessage("Kullanıcı başarıyla kaydedildi");
+//        } else {
+//            responseDTO.setMessage("Kullanıcı sisteme kayıtlı!");
+//        }
+//        return responseDTO;
+//    }
+
     /**
      * Kullanıcıların giris kontrolleri.
      *
@@ -83,7 +104,7 @@ public class KullaniciServiceImpl implements KullaniciService {
                 responseDTO.setMessage("Şifre Hatalı!");
                 return responseDTO;
             }
-            String token = jwtService.generateToken(kullanici.getKullaniciTelefon());
+            String token = jwtService.generateToken(kullanici.getKullaniciTelefon(),kullanici.getKullaniciId());
             responseDTO.setMessage("Giriş başarılı.");
             responseDTO.setToken(token);
         }

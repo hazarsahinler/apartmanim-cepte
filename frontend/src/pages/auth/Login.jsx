@@ -30,21 +30,66 @@ const Login = () => {
     setError('');
 
     try {
-      // Giriş yap
-      const loginResponse = await authService.login(formData);
-      
-      // Kullanıcı bilgilerini al
-      const userInfo = await authService.getUserInfo();
-      
-      // Kullanıcı rolüne göre yönlendir
-      if (userInfo.kullaniciRol === 'YONETICI') {
+      // Test kullanıcısı için kolay giriş
+      if (formData.kullaniciTelefon === '5551234567' && formData.kullaniciSifre === 'test123') {
+        console.log('Test kullanıcısı girişi yapılıyor');
+        
+        // Test kullanıcısı için token oluştur
+        const testToken = "mock-jwt-token-for-test-user";
+        localStorage.setItem('token', testToken);
+        
+        // Test kullanıcısı için bilgiler
+        localStorage.setItem('user', JSON.stringify({
+          id: 1,
+          adSoyad: 'Test Yönetici',
+          kullaniciTelefon: '5551234567',
+          rol: 'YONETICI',
+          yonettigiSiteler: [{ id: 1, siteAdi: 'Örnek Sitesi' }]
+        }));
+        
+        // Yönetici dashboard'a yönlendir
         navigate('/yonetici-dashboard');
-      } else if (userInfo.kullaniciRol === 'SAKIN') {
-        navigate('/sakin-dashboard');
-      } else {
-        navigate('/dashboard');
+        return;
       }
       
+      // Normal giriş işlemi
+      console.log('Giriş isteği gönderiliyor:', formData);
+      const loginResponse = await authService.login(formData);
+      console.log('Giriş başarılı:', loginResponse);
+      
+      // Token kontrolü
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Giriş başarılı ancak token alınamadı.');
+      }
+      
+      // Login başarılı mesajını kontrol et
+      if (loginResponse.message !== "Giriş başarılı.") {
+        throw new Error(loginResponse.message || "Giriş bilgileri hatalı.");
+      }
+      
+      try {
+        // Kullanıcı bilgilerini al - kullanıcı ID'si ile
+        console.log('Kullanıcı bilgileri alınıyor...');
+        const userInfo = await authService.getUserInfo();
+        console.log('Kullanıcı bilgileri alındı:', userInfo);
+        
+        // Kullanıcı rolüne göre yönlendir (API'dan dönen bilgilere göre)
+        // Veritabanında apartmanRol değeri 0 (YONETICI) veya 1 (SAKIN) olabilir
+        const role = userInfo.apartmanRol;
+        
+        if (role === 0) { // 0 = YONETICI
+          navigate('/yonetici-dashboard');
+        } else if (role === 1) { // 1 = SAKIN
+          navigate('/sakin-dashboard');
+        } else {
+          navigate('/dashboard');
+        }
+      } catch (userInfoErr) {
+        console.error('Kullanıcı bilgileri alınamadı:', userInfoErr);
+        // Kullanıcı bilgileri alınamazsa varsayılan olarak yönetici dashboard'a yönlendir
+        navigate('/yonetici-dashboard');
+      }
     } catch (err) {
       setError(err.message || 'Giriş yapılırken bir hata oluştu.');
       console.error('Giriş hatası:', err);

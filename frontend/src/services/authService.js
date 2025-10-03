@@ -78,22 +78,29 @@ export const authService = {
   // Kullanıcı bilgilerini getir
   getUserInfo: async () => {
     try {
-      // ENTEGRASYON: Token'dan kullanıcı ID'sini (telefon no) alıp dinamik URL oluşturma
+      // Token'dan kullanıcı ID'sini alıp dinamik URL oluşturma
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('Yetkilendirme token\'ı bulunamadı.');
       }
 
-      // Token'ı decode et ve 'sub' (subject) alanını al.
-      // API dökümanınızdaki örnek token'a göre 'sub' alanı telefon numarasını içeriyor.
+      // Token'ı decode et ve kullanıcı ID'sini çıkar
       const decodedToken = jwtDecode(token);
-      const kullaniciId = decodedToken.sub; // 'sub' genellikle kullanıcı kimliğidir.
+      console.log('Decoded token:', decodedToken);
+      
+      // JWT token içinde kullanıcı ID'si 'userId' claim'inde saklanıyor
+      const kullaniciId = decodedToken.userId;
 
       if (!kullaniciId) {
-        throw new Error('Token içerisinden kullanıcı kimliği alınamadı.');
+        console.error('Token içeriği:', decodedToken);
+        throw new Error('Token içerisinden kullanıcı ID\'si alınamadı.');
       }
       
-      // DÜZELTME: API yolu dokümandaki gibi '/kullanici/bilgi/{kullaniciId}' formatına getirildi.
+      console.log('Kullanıcı ID:', kullaniciId);
+      
+      // API yolu ve Authorization header'ını log'la
+      console.log(`API çağrısı yapılıyor: ${API_URL}/kullanici/bilgi/${kullaniciId}`);
+      
       const response = await api.get(`/kullanici/bilgi/${kullaniciId}`);
       const userInfo = response.data;
       
@@ -116,6 +123,36 @@ export const authService = {
     window.location.href = '/giris';
   },
 
+  // Token çözümle
+  decodeToken: (token) => {
+    try {
+      if (!token) {
+        token = localStorage.getItem('token');
+      }
+      if (!token) {
+        throw new Error('Token bulunamadı');
+      }
+      const decoded = jwtDecode(token);
+      console.log('Decoded token data:', decoded);
+      return decoded;
+    } catch (error) {
+      console.error('Token çözümleme hatası:', error);
+      return {}; // Boş nesne döndür
+    }
+  },
+  
+  // Geçici bir test kullanıcısı oluştur (dashboard için)
+  createTestUser: () => {
+    return {
+      kullaniciAdi: "Test",
+      kullaniciSoyadi: "Kullanıcı",
+      kullaniciEposta: "test@example.com",
+      kullaniciTelefon: "5551234567",
+      apartmanRol: 0, // YONETICI
+      konutKullanim: 0
+    };
+  },
+  
   // Token kontrolü
   isAuthenticated: () => {
     const token = localStorage.getItem('token');

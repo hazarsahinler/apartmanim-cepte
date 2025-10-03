@@ -12,6 +12,9 @@ import net.sf.json.JSONObject;
 public interface KullaniciService {
     ResponseDTO YöneticiKayit(KullaniciKayitDTO kullaniciKayitDTO);
 
+//    ResponseDTO ApartmanSakinKayit(KullaniciKayitDTO kullaniciKayitDTO);
+
+
     ResponseDTO KullaniciGiris(KullaniciGirisBilgiDTO  kullaniciGirisBilgiDTO);
 
     KullaniciResponseDTO KullaniciBilgi(Long kullaniciId);
