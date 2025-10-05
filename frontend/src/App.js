@@ -5,8 +5,6 @@ import Login from './pages/auth/Login';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import './index.css';
-import YoneticiDashboard from './pages/YoneticiDashboard';
-import Dashboard from './pages/Dashboard';
 import TestPage from './pages/TestPage';
 import Duyurular from './pages/Duyurular';
 import DuyuruOlustur from './pages/DuyuruOlustur';
@@ -14,6 +12,7 @@ import DuyuruDetay from './pages/DuyuruDetay';
 import DuyuruDuzenle from './pages/DuyuruDuzenle';
 import SiteYonetimSayfasiNew from './pages/SiteYonetimSayfasiNew';
 import SitePanelSayfasi from './pages/SitePanelSayfasi';
+import ProfilSayfasi from './pages/ProfilSayfasi';
 import NetworkStatusMonitor from './components/NetworkStatusMonitor';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -44,10 +43,6 @@ function App() {
           <Route path="/giris" element={<><Navbar /><Login /></>} />
           <Route path="/yonetici-kayit" element={<><Navbar /><YoneticiKayit /></>} />
           
-          {/* Dashboard Sayfaları */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/yonetici-dashboard" element={<YoneticiDashboard />} />
-          
           {/* Duyuru Sayfaları */}
           <Route path="/duyurular" element={<><Navbar /><Duyurular /></>} />
           <Route path="/duyuru/:id" element={<><Navbar /><DuyuruDetay /></>} />
@@ -57,6 +52,9 @@ function App() {
           {/* Site Yönetim Sayfaları */}
           <Route path="/site-yonetimi" element={<SiteYonetimSayfasiNew />} />
           <Route path="/site-panel/:siteId" element={<SitePanelSayfasi />} />
+          
+          {/* Profil Sayfası */}
+          <Route path="/profil" element={<ProfilSayfasi />} />
           
           {/* Test Sayfası */}
           <Route path="/test" element={<><Navbar /><TestPage /></>} />

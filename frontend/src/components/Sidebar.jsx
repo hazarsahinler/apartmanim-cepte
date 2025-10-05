@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Users, FileText, Building, Calendar, CreditCard, Settings,
-  BarChart2, MessageSquare, ChevronDown, ChevronRight, Inbox
+  BarChart2, MessageSquare, ChevronDown, ChevronRight, Inbox, User
 } from 'lucide-react';
 import { authService } from '../services/authService';
 
@@ -18,7 +18,7 @@ const Sidebar = ({ isOpen }) => {
       id: 'dashboard',
       label: 'Ana Sayfa',
       icon: <Home size={20} />,
-      path: '/yonetici-dashboard',
+      path: '/site-yonetimi',
     },
     {
       id: 'sites',
@@ -74,6 +74,12 @@ const Sidebar = ({ isOpen }) => {
       icon: <MessageSquare size={20} />,
       path: '/mesajlar',
       badge: 2 // Yeni mesaj sayısı
+    },
+    {
+      id: 'profile',
+      label: 'Profilim',
+      icon: <User size={20} />,
+      path: '/profil',
     },
     {
       id: 'settings',
