@@ -6,18 +6,37 @@ import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import './index.css';
 import YoneticiDashboard from './pages/YoneticiDashboard';
+import Dashboard from './pages/Dashboard';
 import TestPage from './pages/TestPage';
 import Duyurular from './pages/Duyurular';
 import DuyuruOlustur from './pages/DuyuruOlustur';
 import DuyuruDetay from './pages/DuyuruDetay';
 import DuyuruDuzenle from './pages/DuyuruDuzenle';
-import SiteYonetimSayfasi from './pages/SiteYonetimSayfasi';
+import SiteYonetimSayfasiNew from './pages/SiteYonetimSayfasiNew';
 import SitePanelSayfasi from './pages/SitePanelSayfasi';
+import NetworkStatusMonitor from './components/NetworkStatusMonitor';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
     <Router>
       <div className="min-h-screen">
+        {/* Toast notifikasyonları için global konteyner */}
+        <ToastContainer 
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
+        {/* Global ağ durumu izleyicisi */}
+        <NetworkStatusMonitor />
+        
         {/* Navbar'ı ana sayfada göster, dashboard'da gösterme */}
         <Routes>
           {/* Ana Sayfalar */}
@@ -26,7 +45,7 @@ function App() {
           <Route path="/yonetici-kayit" element={<><Navbar /><YoneticiKayit /></>} />
           
           {/* Dashboard Sayfaları */}
-          <Route path="/dashboard" element={<YoneticiDashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/yonetici-dashboard" element={<YoneticiDashboard />} />
           
           {/* Duyuru Sayfaları */}
@@ -36,7 +55,7 @@ function App() {
           <Route path="/duyuru-duzenle/:id" element={<><Navbar /><DuyuruDuzenle /></>} />
           
           {/* Site Yönetim Sayfaları */}
-          <Route path="/site-yonetimi" element={<SiteYonetimSayfasi />} />
+          <Route path="/site-yonetimi" element={<SiteYonetimSayfasiNew />} />
           <Route path="/site-panel/:siteId" element={<SitePanelSayfasi />} />
           
           {/* Test Sayfası */}

@@ -65,12 +65,13 @@ public class SiteServiceImpl implements SiteService {
 
     @Override
     public List<SiteResponseDTO> sitelerim(Long kullaniciId) {
-        List<Site> siteList = siteDAO.getObjectsByParam(Site.class,"kullaniciId",kullaniciId);
-        List<SiteResponseDTO> siteResponseDTOList = new ArrayList<>();
+        List<Kullanici> kullaniciList = kullaniciDAO.getObjectsByParam(Kullanici.class, "kullaniciId", kullaniciId);
+        List<Site> siteList = siteDAO.getObjectsByParam(Site.class, "kullanici", kullaniciList.get(0));        List<SiteResponseDTO> siteResponseDTOList = new ArrayList<>();
         if(siteList!=null && siteList.size()>0){
             for (Site site : siteList) {
                 SiteResponseDTO siteResponseDTO = new SiteResponseDTO();
                 siteResponseDTO.setSiteIsmi(site.getSiteIsmi());
+                siteResponseDTO.setSiteId(site.getSiteId());
                 siteResponseDTO.setSiteIl(site.getSiteIl());
                 siteResponseDTO.setSiteIlce(site.getSiteIlce());
                 siteResponseDTO.setSiteMahalle(site.getSiteMahalle());
@@ -79,6 +80,6 @@ public class SiteServiceImpl implements SiteService {
             }
             return siteResponseDTOList;
         }
-        return null;
+         return null;
     }
 }

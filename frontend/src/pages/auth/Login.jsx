@@ -30,28 +30,6 @@ const Login = () => {
     setError('');
 
     try {
-      // Test kullanıcısı için kolay giriş
-      if (formData.kullaniciTelefon === '5551234567' && formData.kullaniciSifre === 'test123') {
-        console.log('Test kullanıcısı girişi yapılıyor');
-        
-        // Test kullanıcısı için token oluştur
-        const testToken = "mock-jwt-token-for-test-user";
-        localStorage.setItem('token', testToken);
-        
-        // Test kullanıcısı için bilgiler
-        localStorage.setItem('user', JSON.stringify({
-          id: 1,
-          adSoyad: 'Test Yönetici',
-          kullaniciTelefon: '5551234567',
-          rol: 'YONETICI',
-          yonettigiSiteler: [{ id: 1, siteAdi: 'Örnek Sitesi' }]
-        }));
-        
-        // Yönetici dashboard'a yönlendir
-        navigate('/yonetici-dashboard');
-        return;
-      }
-      
       // Normal giriş işlemi
       console.log('Giriş isteği gönderiliyor:', formData);
       const loginResponse = await authService.login(formData);
@@ -78,17 +56,17 @@ const Login = () => {
         // Veritabanında apartmanRol değeri 0 (YONETICI) veya 1 (SAKIN) olabilir
         const role = userInfo.apartmanRol;
         
-        if (role === 0) { // 0 = YONETICI
-          navigate('/yonetici-dashboard');
-        } else if (role === 1) { // 1 = SAKIN
-          navigate('/sakin-dashboard');
+        if (role === 0 || role === 'YONETICI') { // 0 = YONETICI
+          navigate('/site-yonetimi');
+        } else if (role === 1 || role === 'SAKIN') { // 1 = SAKIN
+          navigate('/site-yonetimi'); // Şimdilik herkesi site yönetimine yönlendir
         } else {
-          navigate('/dashboard');
+          navigate('/site-yonetimi');
         }
       } catch (userInfoErr) {
         console.error('Kullanıcı bilgileri alınamadı:', userInfoErr);
-        // Kullanıcı bilgileri alınamazsa varsayılan olarak yönetici dashboard'a yönlendir
-        navigate('/yonetici-dashboard');
+        // Kullanıcı bilgileri alınamazsa varsayılan olarak site yönetimine yönlendir
+        navigate('/site-yonetimi');
       }
     } catch (err) {
       setError(err.message || 'Giriş yapılırken bir hata oluştu.');
@@ -199,9 +177,13 @@ const Login = () => {
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-green-600 hover:text-green-500">
+                <button
+                  type="button"
+                  className="font-medium text-green-600 hover:text-green-500"
+                  onClick={() => alert('Şifre sıfırlama özelliği henüz aktif değil.')}
+                >
                   Şifremi unuttum
-                </a>
+                </button>
               </div>
             </div>
 

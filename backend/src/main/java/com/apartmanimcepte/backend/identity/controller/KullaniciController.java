@@ -20,7 +20,7 @@ import java.util.Date;
 
 
 @RestController
-@RequestMapping("/api/identity")
+@RequestMapping("/api")
 public class KullaniciController {
     private final KullaniciService kullaniciService;
     private static final Logger logger = LoggerFactory.getLogger(KullaniciController.class);
@@ -31,7 +31,7 @@ public class KullaniciController {
     }
 
 
-    @PostMapping("/yonetici/kayit")
+    @PostMapping("/identity/yonetici/kayit")
     public ResponseEntity<String> yoneticiKayit(@Valid @RequestBody KullaniciKayitDTO kullaniciKayitDTO) throws IOException {
         try {
             ResponseDTO responseDTO = kullaniciService.YöneticiKayit(kullaniciKayitDTO);
@@ -42,14 +42,14 @@ public class KullaniciController {
         }
     }
 
-    @PostMapping("/giris")
+    @PostMapping("/identity/giris")
     public ResponseEntity<ResponseDTO> kullaniciGiris(@Valid @RequestBody KullaniciGirisBilgiDTO kullaniciGirisBilgiDTO) throws IOException {
         ResponseDTO responseDTO = new ResponseDTO();
         responseDTO= kullaniciService.KullaniciGiris(kullaniciGirisBilgiDTO);
         return new ResponseEntity<>(responseDTO,HttpStatus.OK);
     }
-    @GetMapping("/kullanici/bilgi/{kullaniciId}")
-    public KullaniciResponseDTO kullaniciBilgileri(@PathVariable Long kullaniciId) throws IOException {
+    @GetMapping("/identity/kullanici/bilgi/{kullaniciId}")
+    public KullaniciResponseDTO kullaniciBilgileri(@PathVariable("kullaniciId") Long kullaniciId) throws IOException {
         KullaniciResponseDTO responseDTO = new KullaniciResponseDTO();
         responseDTO=kullaniciService.KullaniciBilgi(kullaniciId);
         return responseDTO;

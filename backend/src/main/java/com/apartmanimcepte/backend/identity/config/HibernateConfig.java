@@ -60,8 +60,10 @@ public class HibernateConfig {
         sessionFactory.setDataSource(dataSource());
 
         // Entity sınıflarınızın bulunduğu doğru paketi buraya yazın!
-        sessionFactory.setPackagesToScan("com.apartmanimcepte.backend.identity.entity");
-
+        sessionFactory.setPackagesToScan(
+                "com.apartmanimcepte.backend.identity.entity",
+                "com.apartmanimcepte.backend.structure.entity"
+        );
         sessionFactory.setHibernateProperties(hibernateProperties());
 
         return sessionFactory;

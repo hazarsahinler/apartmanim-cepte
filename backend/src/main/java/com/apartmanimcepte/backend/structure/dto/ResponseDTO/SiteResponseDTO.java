@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SiteResponseDTO {
+    private long siteId;
     private String siteIsmi;
     private String siteIl;
     private String siteIlce;
