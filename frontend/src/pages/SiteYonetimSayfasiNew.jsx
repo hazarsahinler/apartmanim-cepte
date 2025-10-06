@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { authService } from '../services/authService';
 import { siteStorageService } from '../services/siteStorageService';
 import { iller, getIlceler } from '../constants/turkiyeVeri';
+import { ENDPOINTS } from '../constants/endpoints';
 import NetworkStatusMonitor from '../components/NetworkStatusMonitor';
 import MainNavbar from '../components/MainNavbar';
 import Sidebar from '../components/Sidebar';
@@ -103,6 +104,15 @@ const SiteYonetimSayfasi = () => {
         setLoading(true);
         setIsDataFetched(true); // Veri çekme işleminin başladığını işaretle
         
+        // Test verilerini temizle (sadece ilk çalıştırmada)
+        const hasCleanedTestData = localStorage.getItem('hasCleanedTestData');
+        if (!hasCleanedTestData) {
+          localStorage.removeItem('userSites');
+          localStorage.removeItem('test_sites');
+          localStorage.setItem('hasCleanedTestData', 'true');
+          console.log('Test verileri localStorage\'dan temizlendi');
+        }
+        
         // Önce token kontrolü yap
         if (!authService.isAuthenticated()) {
           console.log('Kullanıcı giriş yapmamış, giriş sayfasına yönlendiriliyor...');
@@ -158,8 +168,9 @@ const SiteYonetimSayfasi = () => {
           }
           
           try {
-            // Backend: @GetMapping("/structure/site/{kullaniciId}")
-            const response = await api.get(`/structure/site/${userData.id}`);
+            // Gerçek API çağrısını geri getiriyoruz
+            console.log('Site verileri API\'den çekiliyor...');
+            const response = await api.get(`${ENDPOINTS.SITE.BY_KULLANICI}/${userData.id}`);
             
             if (response.data && response.data.length > 0) {
               // API'den gelen verileri set et ve önbelleğe al
@@ -265,34 +276,9 @@ const SiteYonetimSayfasi = () => {
           }
         }
         
-        // Hiçbir veri yoksa test verilerini göster
-        const testSiteler = [
-          {
-            id: 1,
-            siteIsmi: "Manolya Sitesi (Offline)",
-            siteIl: "İstanbul",
-            siteIlce: "Kadıköy",
-            siteMahalle: "Göztepe",
-            siteSokak: "Dere Sokak",
-            daireCount: 42,
-            bloklarCount: 3,
-            createdAt: "2023-09-15T14:22:30",
-            _isDemoData: true
-          },
-          {
-            id: 2,
-            siteIsmi: "Papatya Konutları (Offline)",
-            siteIl: "İstanbul",
-            siteIlce: "Beşiktaş",
-            siteMahalle: "Levent",
-            siteSokak: "Çiçek Sokak",
-            daireCount: 120,
-            bloklarCount: 5,
-            createdAt: "2024-01-05T09:45:12",
-            _isDemoData: true
-          }
-        ];
-        setSiteler(testSiteler);
+        // API hatası durumunda boş liste göster
+        console.log('API hatası ve önbellek verisi yok, boş liste gösteriliyor');
+        setSiteler([]);
       } finally {
         setLoading(false);
       }
@@ -790,6 +776,16 @@ const SiteEkleModal = ({ onClose, userId, onSuccess }) => {
     setError(null);
     
     try {
+      // userId kontrolü
+      if (!userId) {
+        toast.error('Kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.', {
+          position: "top-center",
+          autoClose: 3000
+        });
+        setLoading(false);
+        return;
+      }
+
       // Backend API'sine uygun request
       const requestData = {
         siteIsmi: formData.siteIsmi.trim(),
@@ -797,27 +793,48 @@ const SiteEkleModal = ({ onClose, userId, onSuccess }) => {
         siteIlce: formData.siteIlce,
         siteMahalle: formData.siteMahalle.trim(),
         siteSokak: formData.siteSokak.trim(),
-        yoneticiId: userId
+        yoneticiId: parseInt(userId, 10) || 0 // userId'yi sayı olarak gönderelim
       };
       
       console.log('Site ekleme isteği gönderiliyor:', requestData);
       
-      // Backend: @PostMapping("/structure/site/ekle")
-      const response = await api.post('/structure/site/ekle', requestData);
+      // endpoints.js'den alarak endpoint'i kullanıyoruz
+      const response = await api.post(ENDPOINTS.SITE.EKLE, requestData);
       
       console.log('Site ekleme yanıtı:', response.data);
       
       if (response.data && response.data.message) {
-        // Backend'den başarılı response
+        // Backend'den başarılı response - ResponseDTO: { message, token }
+        let realSiteId = Date.now(); // Fallback ID
+        
+        try {
+          // Backend'den site listesini yeniden çek - SiteResponseDTO listesi
+          const sitesResponse = await api.get(`/structure/site/${userId}`);
+          console.log('Yeni eklenen site için backend response:', sitesResponse.data);
+          
+          if (sitesResponse.data && sitesResponse.data.length > 0) {
+            // En son eklenen site (siteIsmi ile eşleştir) - SiteResponseDTO
+            const addedSite = sitesResponse.data.find(site => site.siteIsmi === requestData.siteIsmi);
+            if (addedSite && addedSite.siteId) {
+              realSiteId = addedSite.siteId; // SiteResponseDTO.siteId
+              console.log('Backend SiteResponseDTO\'dan gerçek site ID alındı:', realSiteId);
+            }
+          }
+        } catch (siteIdError) {
+          console.warn('Site ID alınırken hata, fallback kullanılıyor:', siteIdError);
+        }
+        
+        // SiteResponseDTO field'larına uygun site objesi
         const yeniSite = {
-          id: Date.now(), // Geçici ID, gerçek ID backend'den gelecek
-          siteIsmi: requestData.siteIsmi,
-          siteIl: requestData.siteIl,
-          siteIlce: requestData.siteIlce,
-          siteMahalle: requestData.siteMahalle,
-          siteSokak: requestData.siteSokak,
+          id: realSiteId, // Frontend için
+          siteId: realSiteId, // SiteResponseDTO.siteId
+          siteIsmi: requestData.siteIsmi, // SiteResponseDTO.siteIsmi
+          siteIl: requestData.siteIl, // SiteResponseDTO.siteIl
+          siteIlce: requestData.siteIlce, // SiteResponseDTO.siteIlce
+          siteMahalle: requestData.siteMahalle, // SiteResponseDTO.siteMahalle
+          siteSokak: requestData.siteSokak, // SiteResponseDTO.siteSokak
           createdAt: new Date().toISOString(),
-          _isNew: true // Yeni eklenen site işareti
+          _isNew: true // Frontend işareti
         };
         
         // Önbelleğe kaydet
@@ -838,6 +855,16 @@ const SiteEkleModal = ({ onClose, userId, onSuccess }) => {
       console.error("Site eklenirken hata:", err);
       
       let errorMessage = 'Site eklenirken bir hata oluştu.';
+      
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      console.log('Hata detayları:', err.response?.data);
       
       if (err.response?.status === 401 || err.response?.status === 403) {
         errorMessage = 'Yetkilendirme hatası. Lütfen tekrar giriş yapın.';

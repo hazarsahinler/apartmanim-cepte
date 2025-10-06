@@ -1,10 +1,7 @@
 package com.apartmanimcepte.backend.identity.controller;
 
 import com.apartmanimcepte.backend.identity.bus.kullaniciBus.KullaniciService;
-import com.apartmanimcepte.backend.identity.dto.KullaniciGirisBilgiDTO;
-import com.apartmanimcepte.backend.identity.dto.KullaniciKayitDTO;
-import com.apartmanimcepte.backend.identity.dto.KullaniciResponseDTO;
-import com.apartmanimcepte.backend.identity.dto.ResponseDTO;
+import com.apartmanimcepte.backend.identity.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -54,10 +51,14 @@ public class KullaniciController {
         responseDTO=kullaniciService.KullaniciBilgi(kullaniciId);
         return responseDTO;
     }
-//    @PostMapping("/apartman/sakin/kayit")
-//    public ResponseEntity<String> apartmanSakinKayit(@Valid @RequestBody KullaniciKayitDTO kullaniciKayitDTO) throws IOException {
-//        try {
-//            ResponseDTO responseDTO = kullaniciService.
-//        }
-//    }
+    @PostMapping("/identity/apartman/sakin/kayit")
+    public ResponseEntity<String> apartmanSakinKayit(@Valid @RequestBody ApartmanSakinKayitDTO apartmanSakinKayitDTO) throws IOException {
+        try {
+            ResponseDTO responseDTO = kullaniciService.ApartmanSakinKayit(apartmanSakinKayitDTO);
+            return new ResponseEntity<>(responseDTO.getMessage(), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Kayıt işlemi sırasında bir hata oluştu: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

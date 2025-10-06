@@ -5,11 +5,10 @@ import com.apartmanimcepte.backend.identity.Enum.KonutKullanimRol;
 import com.apartmanimcepte.backend.identity.bus.jwt.JwtService;
 import com.apartmanimcepte.backend.identity.bus.kullaniciBul.MyUserDetailsService;
 import com.apartmanimcepte.backend.identity.dao.KullaniciDAO;
-import com.apartmanimcepte.backend.identity.dto.KullaniciGirisBilgiDTO;
-import com.apartmanimcepte.backend.identity.dto.KullaniciKayitDTO;
-import com.apartmanimcepte.backend.identity.dto.KullaniciResponseDTO;
-import com.apartmanimcepte.backend.identity.dto.ResponseDTO;
+import com.apartmanimcepte.backend.identity.dto.*;
 import com.apartmanimcepte.backend.identity.entity.Kullanici;
+import com.apartmanimcepte.backend.structure.dao.DaireDAO;
+import com.apartmanimcepte.backend.structure.entity.Daire;
 import net.sf.json.JSONObject;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,12 +22,14 @@ public class KullaniciServiceImpl implements KullaniciService {
     private final PasswordEncoder passwordEncoder;
     private final MyUserDetailsService userDetailsService;
     private final JwtService jwtService;
+    private final DaireDAO daireDAO;
 
-    public KullaniciServiceImpl(KullaniciDAO kullaniciDAO, PasswordEncoder passwordEncoder, MyUserDetailsService userDetailsService, JwtService jwtService) {
+    public KullaniciServiceImpl(KullaniciDAO kullaniciDAO, PasswordEncoder passwordEncoder, MyUserDetailsService userDetailsService, JwtService jwtService, DaireDAO daireDAO) {
         this.kullaniciDAO = kullaniciDAO;
         this.passwordEncoder = passwordEncoder;
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
+        this.daireDAO = daireDAO;
     }
 
     /**
@@ -61,26 +62,34 @@ public class KullaniciServiceImpl implements KullaniciService {
 
     }
 
-//    @Override
-//    public ResponseDTO ApartmanSakinKayit(KullaniciKayitDTO kullaniciKayitDTO) {
-//        List<Kullanici> kullaniciList = kullaniciDAO.getObjectsByParam(Kullanici.class, "kullaniciTelefon", kullaniciKayitDTO.getKullaniciTelefon());
-//        Kullanici kullanici = new Kullanici();
-//        ResponseDTO responseDTO = new ResponseDTO();
-//        if (kullaniciList.isEmpty()) {
-//            kullanici.setKullaniciAdi(kullaniciKayitDTO.getKullaniciAdi());
-//            kullanici.setKullaniciSoyadi(kullaniciKayitDTO.getKullaniciSoyadi());
-//            kullanici.setKullaniciEposta(kullaniciKayitDTO.getKullaniciEposta());
-//            kullanici.setKullaniciSifre(passwordEncoder.encode(kullaniciKayitDTO.getKullaniciSifre()));
-//            kullanici.setKullaniciTelefon(kullaniciKayitDTO.getKullaniciTelefon());
-//            kullanici.setApartmanRol(ApartmanRol.ApartmanSakin);
-//            kullanici.setKonutKullanimRol(KonutKullanimRol.fromRole(kullaniciKayitDTO.getKonutKullanim()));
-//            kullaniciDAO.saveOrUpdate(kullanici);
-//            responseDTO.setMessage("Kullanıcı başarıyla kaydedildi");
-//        } else {
-//            responseDTO.setMessage("Kullanıcı sisteme kayıtlı!");
-//        }
-//        return responseDTO;
-//    }
+    @Override
+    public ResponseDTO ApartmanSakinKayit(ApartmanSakinKayitDTO apartmanSakinKayitDTO) {
+        List<Kullanici> kullaniciList = kullaniciDAO.getObjectsByParam(Kullanici.class, "kullaniciTelefon", apartmanSakinKayitDTO.getKullaniciTelefon());
+        Kullanici kullanici = new Kullanici();
+        ResponseDTO responseDTO = new ResponseDTO();
+        if (kullaniciList.isEmpty()) {
+            kullanici.setKullaniciAdi(apartmanSakinKayitDTO.getKullaniciAdi());
+            kullanici.setKullaniciSoyadi(apartmanSakinKayitDTO.getKullaniciSoyadi());
+            kullanici.setKullaniciEposta(apartmanSakinKayitDTO.getKullaniciEposta());
+            kullanici.setKullaniciSifre(passwordEncoder.encode(apartmanSakinKayitDTO.getKullaniciSifre()));
+            kullanici.setKullaniciTelefon(apartmanSakinKayitDTO.getKullaniciTelefon());
+            kullanici.setApartmanRol(ApartmanRol.ApartmanSakin);
+            kullanici.setKonutKullanimRol(KonutKullanimRol.fromRole(apartmanSakinKayitDTO.getKonutKullanim()));
+            List<Daire> daireList = daireDAO.getObjectsByParam(Daire.class, "daireId", apartmanSakinKayitDTO.getDaireId());
+            Daire daire=daireList.get(0);
+            if(daire.getKullanici()==null)
+            {
+                kullaniciDAO.saveOrUpdate(kullanici);
+                daire.setKullanici(kullanici);
+                daireDAO.saveOrUpdate(daire);
+                responseDTO.setMessage("Kullanıcı başarıyla kaydedildi");
+            }
+        } else {
+            responseDTO.setMessage("Daireye kayıtlı bir sakin mevcut!");
+        }
+        return responseDTO;
+    }
+
 
     /**
      * Kullanıcıların giris kontrolleri.
@@ -99,12 +108,12 @@ public class KullaniciServiceImpl implements KullaniciService {
             responseDTO.setMessage("Kullanici Telefon Numarası Hatalı!!");
             return responseDTO;
         } else {
-            kullanici=kullaniciList.get(0);
+            kullanici = kullaniciList.get(0);
             if (!passwordEncoder.matches(kullaniciGirisBilgiDTO.getKullaniciSifre(), kullanici.getKullaniciSifre())) {
                 responseDTO.setMessage("Şifre Hatalı!");
                 return responseDTO;
             }
-            String token = jwtService.generateToken(kullanici.getKullaniciTelefon(),kullanici.getKullaniciId());
+            String token = jwtService.generateToken(kullanici.getKullaniciTelefon(), kullanici.getKullaniciId());
             responseDTO.setMessage("Giriş başarılı.");
             responseDTO.setToken(token);
         }

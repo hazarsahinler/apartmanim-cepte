@@ -15,6 +15,9 @@ public class Daire {
     @Column(name = "daire_no")
     private int daireNo;
 
+    @Column(name = "kat_no")
+    private int katNo;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blok_id", nullable = false)
     private Blok blok;

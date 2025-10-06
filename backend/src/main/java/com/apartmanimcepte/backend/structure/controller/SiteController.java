@@ -2,7 +2,10 @@ package com.apartmanimcepte.backend.structure.controller;
 
 import com.apartmanimcepte.backend.identity.dto.ResponseDTO;
 import com.apartmanimcepte.backend.structure.bus.SiteService;
+import com.apartmanimcepte.backend.structure.dto.RequestDTO.BlokKayitDTO;
 import com.apartmanimcepte.backend.structure.dto.RequestDTO.SiteKayitDTO;
+import com.apartmanimcepte.backend.structure.dto.ResponseDTO.BlokResponseDTO;
+import com.apartmanimcepte.backend.structure.dto.ResponseDTO.DaireResponseDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.SiteResponseDTO;
 import com.apartmanimcepte.backend.structure.entity.Site;
 import org.springframework.web.bind.annotation.*;
@@ -29,5 +32,18 @@ public class SiteController {
         ResponseDTO responseDTO = new ResponseDTO();
         responseDTO = siteService.SiteKayit(siteKayitDTO);
         return responseDTO;
+    }
+    @PostMapping("/structure/blok/ekle")
+    public ResponseDTO blokEkle(@RequestBody BlokKayitDTO blokKayitDTO) throws Exception{
+        ResponseDTO responseDTO = siteService.BlokKayit(blokKayitDTO);
+        return responseDTO;
+    }
+    @GetMapping("/structure/bloklar/{siteId}")
+    public List<BlokResponseDTO> getBloklar(@PathVariable("siteId") Long siteId) throws IOException{
+        return siteService.getBloklar(siteId);
+    }
+    @GetMapping("/structure/daireler/{blokId}")
+    public List<DaireResponseDTO> getDaireler(@PathVariable("blokId") Long blokId) throws IOException{
+        return siteService.getDaireler(blokId);
     }
 }

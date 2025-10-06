@@ -46,8 +46,8 @@ const Login = () => {
         throw new Error(loginResponse.message || "Giriş bilgileri hatalı.");
       }
       
+      // Kullanıcı bilgilerini al - kullanıcı ID'si ile
       try {
-        // Kullanıcı bilgilerini al - kullanıcı ID'si ile
         console.log('Kullanıcı bilgileri alınıyor...');
         const userInfo = await authService.getUserInfo();
         console.log('Kullanıcı bilgileri alındı:', userInfo);

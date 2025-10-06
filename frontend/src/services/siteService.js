@@ -1,72 +1,74 @@
-import api from './api';
 import { jwtDecode } from 'jwt-decode';
+import api from './api';
+import { ENDPOINTS } from '../constants/endpoints';
 
-const siteService = {
-  // Kullanıcının sitelerini getir
+export const siteService = {
+  // Kullanıcının sitelerini getir - Backend: GET /structure/site/{kullaniciId} -> List<SiteResponseDTO>
   getUserSites: async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error('Yetkilendirme token\'ı bulunamadı.');
-      }
-
-      // Token'ı decode et ve kullanıcı ID'sini çıkar
-      const decodedToken = jwtDecode(token);
-      console.log('Site service - Decoded token:', decodedToken);
-      
-      // JWT token içinde kullanıcı ID'si 'userId' veya 'sub' veya 'id' claim'inde saklanıyor olabilir
-      const kullaniciId = decodedToken.userId || decodedToken.sub || decodedToken.id;
-
-      if (!kullaniciId) {
-        console.error('Site service - Token içeriği:', decodedToken);
-        throw new Error('Token içerisinden kullanıcı ID\'si alınamadı.');
-      }
-      
-      console.log('Site service - Kullanıcı ID:', kullaniciId);
-      
-      // API çağrısı yap
-      console.log(`Siteler için API çağrısı: /structure/site/${kullaniciId}`);
-      console.log('API URL:', api.defaults.baseURL + `/structure/site/${kullaniciId}`);
-      
-      try {
-        // Path param olarak kullaniciId'yi gönder
-        const response = await api.get(`/structure/site/${kullaniciId}`);
-        
-        // Başarılı olursa localStorage'a da kaydet (yedek için)
-        if (response.data && Array.isArray(response.data)) {
-          localStorage.setItem('test_sites', JSON.stringify(response.data));
-        }
-        
-        return response.data;
-      } catch (apiError) {
-        console.error('Site API hatası:', apiError.response || apiError);
-        
-        // Hata durumunda localStorage'dan kayıtlı siteleri kontrol et
+        console.log('SiteService - Token bulunamadı');
+        // localStorage fallback
         const sitesJson = localStorage.getItem('test_sites');
         if (sitesJson) {
-          console.log('API çağrısı başarısız, localStorage\'dan siteler alınıyor');
-          return JSON.parse(sitesJson);
+          const sites = JSON.parse(sitesJson);
+          return Array.isArray(sites) ? sites : [];
         }
-        
-        // Hiç site yoksa boş array dön
-        console.log('Kayıtlı site bulunamadı, boş array dönülüyor');
         return [];
       }
-    } catch (error) {
-      console.error('getUserSites genel hata:', error);
+
+      // Token'dan kullanıcı ID'sini al
+      const decodedToken = jwtDecode(token);
+      const kullaniciId = decodedToken.userId || decodedToken.sub || decodedToken.id;
       
-      // Genel hata durumunda da localStorage'a bakalım
-      const sitesJson = localStorage.getItem('test_sites');
-      if (sitesJson) {
-        return JSON.parse(sitesJson);
+      if (!kullaniciId) {
+        throw new Error('Token\'dan kullanıcı ID\'si alınamadı');
+      }
+
+      console.log('SiteService - Kullanıcı siteleri getiriliyor, kullaniciId:', kullaniciId);
+      
+      // Backend API: GET /structure/site/{kullaniciId} -> List<SiteResponseDTO>
+      const response = await api.get(`${ENDPOINTS.SITE.BY_KULLANICI}/${kullaniciId}`);
+      
+      console.log('SiteService - Backend response:', response.data);
+      
+      // SiteResponseDTO mapping: { siteId, siteIsmi, siteIl, siteIlce, siteMahalle, siteSokak }
+      const sites = response.data || [];
+      
+      // Frontend için field mapping - id field'ı ekleme
+      const mappedSites = sites.map(site => ({
+        ...site,
+        id: site.siteId, // Frontend'de id field'ı bekleniyor
+        // Backend SiteResponseDTO field'ları zaten doğru
+      }));
+      
+      console.log('SiteService - Mapped sites:', mappedSites);
+      
+      // Başarılı olursa localStorage'a kaydet
+      try {
+        localStorage.setItem('test_sites', JSON.stringify(mappedSites));
+      } catch (e) {
+        console.warn('localStorage yazma hatası:', e);
       }
       
-      // En son çare boş array
+      return mappedSites;
+    } catch (error) {
+      console.error('SiteService - Site listesi hatası:', error);
+      
+      // Hata durumunda localStorage fallback
+      const sitesJson = localStorage.getItem('test_sites');
+      if (sitesJson) {
+        console.log('SiteService - localStorage fallback kullanılıyor');
+        const sites = JSON.parse(sitesJson);
+        return Array.isArray(sites) ? sites : [];
+      }
+      
       return [];
     }
   },
 
-  // Yeni site ekle
+  // Yeni site ekle - Backend: POST /structure/site/ekle -> ResponseDTO
   addSite: async (siteData) => {
     try {
       const token = localStorage.getItem('token');
@@ -74,107 +76,81 @@ const siteService = {
         throw new Error('Yetkilendirme token\'ı bulunamadı.');
       }
 
-      // Token'ı decode et ve kullanıcı ID'sini çıkar
+      // Token'dan kullanıcı ID'sini al
       const decodedToken = jwtDecode(token);
-      const kullaniciId = decodedToken.userId || decodedToken.sub;
+      const kullaniciId = decodedToken.userId || decodedToken.sub || decodedToken.id;
 
       if (!kullaniciId) {
         throw new Error('Token içerisinden kullanıcı ID\'si alınamadı.');
       }
 
-      // Kullanıcı ID'sini siteData içine ekle
+      // Backend SiteKayitDTO'ya göre field mapping
       const sitePayload = {
-        ...siteData,
-        yoneticiId: parseInt(kullaniciId, 10) // Ensure kullaniciId is a number
+        siteIsmi: siteData.siteIsmi,
+        siteIl: siteData.siteIl,
+        siteIlce: siteData.siteIlce,
+        siteMahalle: siteData.siteMahalle,
+        siteSokak: siteData.siteSokak,
+        yoneticiId: parseInt(kullaniciId, 10)
       };
 
-      console.log('Site ekleniyor:', sitePayload);
+      console.log('SiteService - Site ekleniyor (SiteKayitDTO):', sitePayload);
       
-      // Log the full URL being used
-      console.log('API URL:', api.defaults.baseURL + `/structure/site/ekle`);
+      // Backend API: POST /structure/site/ekle -> ResponseDTO { message, token }
+      const response = await api.post(ENDPOINTS.SITE.EKLE, sitePayload);
       
-      try {
-        const response = await api.post(`/structure/site/ekle`, sitePayload);
-        
-        // Başarılı eklemeden sonra localStorage'da da sakla (yedek olarak)
-        if (response.data.success) {
+      console.log('SiteService - Site ekleme yanıtı:', response.data);
+      
+      // Backend'den ResponseDTO gelir: { message, token }
+      if (response.data && response.data.message) {
+        // Başarılı ekleme sonrası site listesini yenile
+        setTimeout(async () => {
           try {
-            const sitesJson = localStorage.getItem('test_sites');
-            const sites = sitesJson ? JSON.parse(sitesJson) : [];
-            sites.push({
-              siteIsmi: siteData.siteIsmi,
-              siteIl: siteData.siteIl,
-              siteIlce: siteData.siteIlce,
-              siteMahalle: siteData.siteMahalle,
-              siteSokak: siteData.siteSokak
-            });
-            localStorage.setItem('test_sites', JSON.stringify(sites));
+            await this.getUserSites(); // Site listesini yenile
           } catch (e) {
-            console.warn('localStorage güncellenirken hata:', e);
+            console.warn('Site listesi yenileme hatası:', e);
           }
-        }
+        }, 1000);
         
-        return response.data;
-      } catch (apiError) {
-        console.error('Site API hatası:', apiError.response || apiError);
-        
-        // Fallback için localStorage'a ekleme
-        const newSite = {
-          siteId: Date.now(), // Geçici benzersiz ID
-          siteIsmi: siteData.siteIsmi,
-          siteIl: siteData.siteIl,
-          siteIlce: siteData.siteIlce,
-          siteMahalle: siteData.siteMahalle,
-          siteSokak: siteData.siteSokak
-        };
-        
-        const sitesJson = localStorage.getItem('test_sites');
-        const sites = sitesJson ? JSON.parse(sitesJson) : [];
-        sites.push(newSite);
-        localStorage.setItem('test_sites', JSON.stringify(sites));
-        
-        console.log('API hatası sonrası site localStorage\'a eklendi');
         return {
           success: true,
-          message: 'Site geçici olarak kaydedildi. (Sunucu hatası: ' + (apiError.message || 'Bilinmeyen hata') + ')',
-          data: newSite
+          message: response.data.message,
+          data: response.data
         };
+      } else {
+        throw new Error('Backend\'den beklenmeyen yanıt');
       }
-
     } catch (error) {
-      console.error('Site eklenirken hata:', error);
+      console.error('SiteService - Site ekleme hatası:', error);
       
-      // API hatası durumunda, yine de localStorage'a ekle
+      // Fallback: localStorage'a geçici kayıt
+      const newSite = {
+        id: Date.now(), // Geçici ID
+        siteId: Date.now(),
+        siteIsmi: siteData.siteIsmi,
+        siteIl: siteData.siteIl,
+        siteIlce: siteData.siteIlce,
+        siteMahalle: siteData.siteMahalle,
+        siteSokak: siteData.siteSokak,
+        _isTemp: true
+      };
+      
       try {
         const sitesJson = localStorage.getItem('test_sites');
         const sites = sitesJson ? JSON.parse(sitesJson) : [];
-        const newSite = {
-          siteId: Date.now(), // Geçici benzersiz ID
-          siteIsmi: siteData.siteIsmi,
-          siteIl: siteData.siteIl,
-          siteIlce: siteData.siteIlce,
-          siteMahalle: siteData.siteMahalle,
-          siteSokak: siteData.siteSokak
-        };
         sites.push(newSite);
         localStorage.setItem('test_sites', JSON.stringify(sites));
         
-        console.log('API hatası sonrası site localStorage\'a eklendi:', newSite);
         return {
           success: true,
-          message: 'Site geçici olarak kaydedildi (yerel olarak)',
+          message: 'Site geçici olarak kaydedildi (Backend hatası)',
           data: newSite
         };
-      } catch (e) {
-        console.warn('localStorage güncellenirken hata:', e);
-        // localStorage hatası durumunda orijinal hatayı fırlat
-        throw new Error(
-          error.response?.data?.message || 
-          'Site eklenirken bir hata oluştu.'
-        );
+      } catch (localError) {
+        throw new Error('Site kaydedilemedi: ' + error.message);
       }
     }
-  },
+  }
 };
 
 export default siteService;

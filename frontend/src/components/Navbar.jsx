@@ -13,12 +13,24 @@ const Navbar = () => {
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem('token');
+        
         if (token) {
-          const userData = await authService.getUserInfo();
-          setUser(userData);
+          try {
+            const userData = await authService.getUserInfo();
+            setUser(userData);
+          } catch (error) {
+            console.error('Kullanıcı bilgileri alınırken hata:', error);
+            // Token geçersizse localStorage'ı temizle
+            if (error.message?.includes('Oturum süreniz dolmuş') || 
+                error.response?.status === 401 || 
+                error.response?.status === 403) {
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+            }
+          }
         }
       } catch (error) {
-        console.error('Kullanıcı bilgileri alınırken hata:', error);
+        console.error('Auth kontrol hatası:', error);
       } finally {
         setLoading(false);
       }
@@ -53,8 +65,8 @@ const Navbar = () => {
                 Duyurular
               </Link>
               {user && (
-                <Link to={user.rol === 'YONETICI' ? '/yonetici-dashboard' : '/dashboard'} className="text-gray-600 hover:text-green-600 px-3 py-2 text-sm font-medium">
-                  Dashboard
+                <Link to="/site-yonetimi" className="text-gray-600 hover:text-green-600 px-3 py-2 text-sm font-medium">
+                  Site Yönetimi
                 </Link>
               )}
             </div>
@@ -62,9 +74,9 @@ const Navbar = () => {
 
           {/* Sağ Taraf - Kullanıcı Menüsü veya Giriş Butonu */}
           <div className="flex items-center space-x-4">
-            {!loading && (
-              <>
-                {user ? (
+            {/* Geçici: loading kontrolünü kaldırdık */}
+            <>
+              {user ? (
                   <div className="relative">
                     <button
                       onClick={toggleMenu}
@@ -132,7 +144,6 @@ const Navbar = () => {
                   </Link>
                 )}
               </>
-            )}
           </div>
         </div>
       </div>

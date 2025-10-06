@@ -1,11 +1,13 @@
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; // jwt-decode kütüphanesini import edin
+import { ENDPOINTS } from '../constants/endpoints';
 
 const API_URL = 'http://localhost:8080/api';
 
 // Axios instance oluştur
 const api = axios.create({
   baseURL: API_URL,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -25,56 +27,12 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - Token süresi dolmuşsa veya yetkilendirme hatası varsa özel işlem yap
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    // İstek konfigürasyonunu al
-    const originalRequest = error.config;
-    
-    // Token hatası durumları için özel işlemler
-    if (error.response?.status === 401) {
-      console.warn('401 Unauthorized: Token geçersiz veya süresi dolmuş.');
-      // Token hatalarında oturumu sonlandır
-      authService.logout();
-      return Promise.reject(error);
-    }
-    
-    // 403 Forbidden hatası - Yetki sorunu veya token geçersiz olabilir
-    if (error.response?.status === 403 && !originalRequest._retry) {
-      console.warn('403 Forbidden: Yetkilendirme sorunu. Yönlendirme noktası: ' + originalRequest.url);
-      
-      // Kullanıcı bilgisi almaya çalışıyorken 403 aldıysak ve token varsa
-      // Oturum açık görünüyor ama bir sorun var demektir
-      if (originalRequest.url.includes('/kullanici/bilgi/')) {
-        console.log('Kullanıcı bilgileri alınırken 403 hatası. Test kullanıcısı verileri kullanılacak.');
-        
-        // Bu durumda kullanıcı bilgilerini döndürebiliriz ama çıkış yaptırmayız
-        // Çünkü bu genellikle backend yollarının eşleşmemesinden kaynaklanır
-        const token = localStorage.getItem('token');
-        if (token) {
-          try {
-            jwtDecode(token); // Token'ın geçerli olup olmadığını kontrol et
-            // Kullanıcı zaten oturum açmış görünüyor, test verilerini döndür
-            console.log('Test kullanıcı verileri kullanılıyor.');
-          } catch (e) {
-            console.error('Token decode hatası:', e);
-            authService.logout();
-          }
-        }
-      }
-    }
-    
-    return Promise.reject(error);
-  }
-);
-
 export const authService = {
   // Yönetici kaydı
   registerManager: async (userData) => {
     try {
-      // Backend: @RequestMapping("/api") + @PostMapping("/identity/yonetici/kayit")
-      const response = await api.post('/identity/yonetici/kayit', userData);
+      // ENDPOINTS kullanarak
+      const response = await api.post(ENDPOINTS.IDENTITY.YONETICI_KAYIT, userData);
       return response.data;
     } catch (error) {
       throw new Error(
@@ -84,22 +42,33 @@ export const authService = {
     }
   },
 
-  // Giriş
+  // Giriş - KullaniciGirisBilgiDTO'ya göre field mapping
   login: async (credentials) => {
     try {
-      // Backend: @RequestMapping("/api") + @PostMapping("/identity/giris")
-      const response = await api.post('/identity/giris', {
+      console.log('Giriş isteği gönderiliyor:', {
         kullaniciTelefon: credentials.kullaniciTelefon,
         kullaniciSifre: credentials.kullaniciSifre,
       });
 
-      // Token'ı kaydet
+      // Backend KullaniciGirisBilgiDTO'ya göre field mapping
+      const loginData = {
+        kullaniciTelefon: credentials.kullaniciTelefon,
+        kullaniciSifre: credentials.kullaniciSifre,
+      };
+
+      // ENDPOINTS.IDENTITY.LOGIN = /identity/giris
+      const response = await api.post(ENDPOINTS.IDENTITY.LOGIN, loginData);
+
+      console.log('Giriş yanıtı:', response.data);
+
+      // ResponseDTO { message, token } formatında gelir
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
       }
 
       return response.data;
     } catch (error) {
+      console.error('Giriş API hatası:', error);
       throw new Error(
         error.response?.data?.message || 
         'Giriş yapılırken bir hata oluştu.'
@@ -131,12 +100,12 @@ export const authService = {
       console.log('Kullanıcı ID:', kullaniciId);
       
       // API yolu ve Authorization header'ını log'la
-      console.log(`API çağrısı yapılıyor: /identity/kullanici/bilgi/${kullaniciId}`);
+      console.log(`API çağrısı yapılıyor: ${ENDPOINTS.IDENTITY.KULLANICI_BILGI}/${kullaniciId}`);
       console.log('Authorization header:', `Bearer ${token}`);
       
       try {
-        // Backend: @RequestMapping("/api") + @GetMapping("/identity/kullanici/bilgi/{kullaniciId}")
-        const response = await api.get(`/identity/kullanici/bilgi/${kullaniciId}`);
+        // ENDPOINTS kullanarak
+        const response = await api.get(`${ENDPOINTS.IDENTITY.KULLANICI_BILGI}/${kullaniciId}`);
         // API yanıtını kullan
         const userInfo = response.data;
         console.log('Kullanıcı bilgileri alındı:', userInfo);
@@ -227,18 +196,6 @@ export const authService = {
       console.error('Token çözümleme hatası:', error);
       return {}; // Boş nesne döndür
     }
-  },
-  
-  // Geçici bir test kullanıcısı oluştur (dashboard için)
-  createTestUser: () => {
-    return {
-      kullaniciAdi: "Test",
-      kullaniciSoyadi: "Kullanıcı",
-      kullaniciEposta: "test@example.com",
-      kullaniciTelefon: "5551234567",
-      apartmanRol: 0, // YONETICI
-      konutKullanim: 0
-    };
   },
   
   // Token kontrolü
