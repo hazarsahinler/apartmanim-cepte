@@ -46,4 +46,8 @@ public class SiteController {
     public List<DaireResponseDTO> getDaireler(@PathVariable("blokId") Long blokId) throws IOException{
         return siteService.getDaireler(blokId);
     }
+    @GetMapping("/structure/daire/{daireId}")
+    public DaireResponseDTO getDaireById(@PathVariable("daireId") Long daireId) throws IOException{
+        return siteService.getDaireById(daireId);
+    }
 }

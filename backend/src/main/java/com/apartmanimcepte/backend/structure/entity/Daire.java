@@ -23,6 +23,6 @@ public class Daire {
     private Blok blok;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sakin_id", nullable = true)
+    @JoinColumn(name = "kullanici_id", nullable = true)
     private Kullanici kullanici;
 }

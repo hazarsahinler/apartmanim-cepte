@@ -13,6 +13,7 @@ import DuyuruDuzenle from './pages/DuyuruDuzenle';
 import SiteYonetimSayfasiNew from './pages/SiteYonetimSayfasiNew';
 import SitePanelSayfasi from './pages/SitePanelSayfasi';
 import BlokDetay from './pages/BlokDetay';
+import DaireDetay from './pages/DaireDetay';
 import ProfilSayfasi from './pages/ProfilSayfasi';
 import NetworkStatusMonitor from './components/NetworkStatusMonitor';
 import { ToastContainer } from 'react-toastify';
@@ -54,6 +55,7 @@ function App() {
           <Route path="/site-yonetimi" element={<SiteYonetimSayfasiNew />} />
           <Route path="/site-panel/:siteId" element={<SitePanelSayfasi />} />
           <Route path="/blok-detay/:blokId" element={<BlokDetay />} />
+          <Route path="/daire-detay/:daireId" element={<DaireDetay />} />
           
           {/* Profil Sayfası */}
           <Route path="/profil" element={<ProfilSayfasi />} />

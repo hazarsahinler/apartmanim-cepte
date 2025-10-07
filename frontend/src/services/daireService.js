@@ -110,5 +110,88 @@ export const daireService = {
         'Kullanıcı silinirken bir hata oluştu.'
       );
     }
+  },
+
+  // Daire detay bilgilerini getir
+  getDaireById: async (daireId) => {
+    try {
+      console.log('DaireService - Daire detayı getiriliyor, Daire ID:', daireId);
+      
+      const parsedDaireId = parseInt(daireId, 10);
+      if (isNaN(parsedDaireId)) {
+        throw new Error('Geçersiz daire ID: ' + daireId);
+      }
+      
+      console.log('DaireService - API URL:', `${ENDPOINTS.STRUCTURE.DAIRE_BY_ID}/${parsedDaireId}`);
+      
+      const response = await api.get(`${ENDPOINTS.STRUCTURE.DAIRE_BY_ID}/${parsedDaireId}`);
+      
+      console.log('DaireService - Backend response status:', response.status);
+      console.log('DaireService - Backend response data:', response.data);
+      
+      if (!response.data) {
+        console.error('DaireService - Backend null data döndü');
+        throw new Error('Backend boş veri döndürdü');
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('DaireService - getDaireById hatası:', error);
+      console.error('DaireService - Error response:', error.response?.data);
+      console.error('DaireService - Error status:', error.response?.status);
+      
+      if (error.response?.status === 404) {
+        throw new Error('Daire bulunamadı');
+      } else if (error.response?.status === 500) {
+        throw new Error('Sunucu hatası: ' + (error.response?.data?.message || 'Backend hatası'));
+      } else {
+        throw new Error(
+          error.response?.data?.message || 
+          error.message ||
+          'Daire detayları yüklenirken bir hata oluştu.'
+        );
+      }
+    }
+  },
+
+  // Kullanıcı bilgilerini getir
+  getKullaniciBilgi: async (kullaniciId) => {
+    try {
+      console.log('Kullanıcı bilgileri getiriliyor, Kullanıcı ID:', kullaniciId);
+      
+      const response = await api.get(`${ENDPOINTS.IDENTITY.KULLANICI_BILGI}/${kullaniciId}`);
+      
+      console.log('Kullanıcı bilgi yanıtı:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Kullanıcı bilgi hatası:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        'Kullanıcı bilgileri yüklenirken bir hata oluştu.'
+      );
+    }
+  },
+
+  // Blok bilgilerini getir
+  getBlokById: async (blokId) => {
+    try {
+      console.log('Blok bilgileri getiriliyor, Blok ID:', blokId);
+      
+      const parsedBlokId = parseInt(blokId, 10);
+      if (isNaN(parsedBlokId)) {
+        throw new Error('Geçersiz blok ID: ' + blokId);
+      }
+      
+      const response = await api.get(`${ENDPOINTS.BLOK.BY_ID}/${parsedBlokId}`);
+      
+      console.log('Blok bilgi yanıtı:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Blok bilgi hatası:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        'Blok bilgileri yüklenirken bir hata oluştu.'
+      );
+    }
   }
 };

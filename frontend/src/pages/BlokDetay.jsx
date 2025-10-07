@@ -13,6 +13,7 @@ const BlokDetay = () => {
   const [loading, setLoading] = useState(true);
   const [sakinEkleModalAcik, setSakinEkleModalAcik] = useState(false);
   const [secilenDaire, setSecilenDaire] = useState(null);
+  const [kullanicilar, setKullanicilar] = useState({}); // Kullanıcı bilgilerini cache'lemek için
   
   // Sidebar state - ana şablona uyum için
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -32,7 +33,29 @@ const BlokDetay = () => {
       setLoading(true);
       const daireData = await daireService.getDairesByBlokId(blokId);
       console.log('Daire verileri alındı:', daireData);
-      setDaireler(daireData || []);
+      
+      // Daireleri numaraya göre sırala (sabit sıralama)
+      const siraliDaireler = (daireData || []).sort((a, b) => a.daireNo - b.daireNo);
+      setDaireler(siraliDaireler);
+      
+      // Dolu daireler için kullanıcı bilgilerini getir
+      const doluDaireler = siraliDaireler.filter(daire => daire.kullaniciId && daire.kullaniciId !== 0);
+      const kullaniciBilgileri = {};
+      
+      for (const daire of doluDaireler) {
+        try {
+          const kullaniciBilgi = await daireService.getKullaniciBilgi(daire.kullaniciId);
+          kullaniciBilgileri[daire.kullaniciId] = kullaniciBilgi;
+        } catch (error) {
+          console.error(`Kullanıcı ${daire.kullaniciId} bilgileri yüklenemedi:`, error);
+          kullaniciBilgileri[daire.kullaniciId] = {
+            kullaniciAdi: 'Bilinmeyen',
+            kullaniciSoyadi: 'Kullanıcı'
+          };
+        }
+      }
+      
+      setKullanicilar(kullaniciBilgileri);
     } catch (error) {
       console.error('Daire verileri yüklenirken hata:', error);
       toast.error('Daire verileri yüklenirken hata oluştu');
@@ -49,6 +72,11 @@ const BlokDetay = () => {
     } else {
       toast.info('Bu daire zaten dolu');
     }
+  };
+
+  const handleSakinBilgi = (daire) => {
+    // DaireDetay sayfasına git
+    navigate(`/daire-detay/${daire.daireId}`);
   };
 
   const handleSakinSil = async (daire) => {
@@ -71,6 +99,12 @@ const BlokDetay = () => {
       }
       katlar[daire.katNo].push(daire);
     });
+    
+    // Her kattaki daireleri de numaraya göre sırala
+    Object.keys(katlar).forEach(katNo => {
+      katlar[katNo].sort((a, b) => a.daireNo - b.daireNo);
+    });
+    
     return katlar;
   };
 
@@ -103,45 +137,38 @@ const BlokDetay = () => {
       <Sidebar isOpen={sidebarOpen} />
       
       <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
-          <div className="container mx-auto px-4 py-8">
-            <div className="max-w-6xl mx-auto">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <button
-                    onClick={() => navigate(-1)}
-                    className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <ArrowLeft className="h-5 w-5" />
-                  </button>
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                      Blok Detayı
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">
-                      Blok dairelerini görüntüleyin ve sakin yönetimi yapın
-                    </p>
-                  </div>
+        <div className="container mx-auto px-4 py-8">
+          {/* Blok Header */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <button
+                  onClick={() => navigate(-1)}
+                  className="mr-4 p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                    Blok Detayı
+                  </h1>
+                  <p className="text-gray-600 dark:text-gray-400 mt-1">
+                    Blok dairelerini görüntüleyin ve sakin yönetimi yapın
+                  </p>
                 </div>
-                <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
-                  <div className="flex items-center space-x-2">
-                    <Users className="h-4 w-4" />
-                    <span>{doluDaireler.length} Dolu</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Home className="h-4 w-4" />
-                    <span>{bosDaireler.length} Boş</span>
-                  </div>
+              </div>
+              <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center space-x-2">
+                  <Users className="h-4 w-4" />
+                  <span>{doluDaireler.length} Dolu</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Home className="h-4 w-4" />
+                  <span>{bosDaireler.length} Boş</span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Content */}
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-6xl mx-auto">
         {/* İstatistikler */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex items-center transition-transform duration-300 hover:shadow-lg transform hover:-translate-y-1">
@@ -228,16 +255,30 @@ const BlokDetay = () => {
                             </div>
                           ) : (
                             <div className="space-y-2">
-                              <p className="text-xs font-medium text-green-700 dark:text-green-400">
-                                Kullanıcı ID: {daire.kullaniciId}
-                              </p>
-                              <button
-                                onClick={() => handleSakinSil(daire)}
-                                className="w-full px-2 py-1 text-xs bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white rounded transition-colors flex items-center justify-center"
-                              >
-                                <UserMinus className="h-3 w-3 mr-1" />
-                                Kullanıcı Sil
-                              </button>
+                              <div className="text-xs text-green-700 dark:text-green-400">
+                                <p className="font-medium">
+                                  {kullanicilar[daire.kullaniciId] 
+                                    ? `${kullanicilar[daire.kullaniciId].kullaniciAdi} ${kullanicilar[daire.kullaniciId].kullaniciSoyadi}`
+                                    : 'Kullanıcı bilgisi yükleniyor...'
+                                  }
+                                </p>
+                              </div>
+                              <div className="space-y-1">
+                                <button
+                                  onClick={() => handleSakinBilgi(daire)}
+                                  className="w-full px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded transition-colors flex items-center justify-center"
+                                >
+                                  <Users className="h-3 w-3 mr-1" />
+                                  Sakin Bilgi
+                                </button>
+                                <button
+                                  onClick={() => handleSakinSil(daire)}
+                                  className="w-full px-2 py-1 text-xs bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white rounded transition-colors flex items-center justify-center"
+                                >
+                                  <UserMinus className="h-3 w-3 mr-1" />
+                                  Kullanıcı Sil
+                                </button>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -278,7 +319,6 @@ const BlokDetay = () => {
           }}
         />
       )}
-        </div>
       </div>
     </div>
   );
@@ -306,15 +346,26 @@ const SakinEkleModal = ({ daire, onClose, onSuccess }) => {
 
     try {
       setLoading(true);
-      await daireService.registerSakin({
+      
+      const sakinData = {
         ...formData,
         daireId: daire.daireId
-      });
+      };
+      
+      console.log('Frontend\'den gönderilecek sakin verisi:', sakinData);
+      console.log('Daire bilgisi:', daire);
+      
+      await daireService.registerSakin(sakinData);
       toast.success('Sakin başarıyla eklendi');
       onSuccess();
     } catch (error) {
       console.error('Sakin eklenirken hata:', error);
-      toast.error('Sakin eklenirken hata oluştu');
+      console.error('Error response:', error.response);
+      console.error('Error message:', error.message);
+      
+      // Backend'den gelen hata mesajını göster
+      const errorMessage = error.message || 'Sakin eklenirken hata oluştu';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

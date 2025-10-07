@@ -7,8 +7,10 @@ import com.apartmanimcepte.backend.identity.bus.kullaniciBul.MyUserDetailsServic
 import com.apartmanimcepte.backend.identity.dao.KullaniciDAO;
 import com.apartmanimcepte.backend.identity.dto.*;
 import com.apartmanimcepte.backend.identity.entity.Kullanici;
+import com.apartmanimcepte.backend.structure.bus.SiteService;
 import com.apartmanimcepte.backend.structure.dao.DaireDAO;
 import com.apartmanimcepte.backend.structure.entity.Daire;
+import jakarta.transaction.Transactional;
 import net.sf.json.JSONObject;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,13 +25,15 @@ public class KullaniciServiceImpl implements KullaniciService {
     private final MyUserDetailsService userDetailsService;
     private final JwtService jwtService;
     private final DaireDAO daireDAO;
+    private final SiteService siteService;
 
-    public KullaniciServiceImpl(KullaniciDAO kullaniciDAO, PasswordEncoder passwordEncoder, MyUserDetailsService userDetailsService, JwtService jwtService, DaireDAO daireDAO) {
+    public KullaniciServiceImpl(KullaniciDAO kullaniciDAO, PasswordEncoder passwordEncoder, MyUserDetailsService userDetailsService, JwtService jwtService, DaireDAO daireDAO, SiteService siteService) {
         this.kullaniciDAO = kullaniciDAO;
         this.passwordEncoder = passwordEncoder;
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
         this.daireDAO = daireDAO;
+        this.siteService = siteService;
     }
 
     /**
@@ -41,6 +45,7 @@ public class KullaniciServiceImpl implements KullaniciService {
 
 
     @Override
+    @Transactional
     public ResponseDTO YöneticiKayit(KullaniciKayitDTO kullaniciKayitDTO) {
         List<Kullanici> kullaniciList = kullaniciDAO.getObjectsByParam(Kullanici.class, "kullaniciTelefon", kullaniciKayitDTO.getKullaniciTelefon());
         Kullanici kullanici = new Kullanici();
@@ -63,6 +68,7 @@ public class KullaniciServiceImpl implements KullaniciService {
     }
 
     @Override
+    @Transactional
     public ResponseDTO ApartmanSakinKayit(ApartmanSakinKayitDTO apartmanSakinKayitDTO) {
         List<Kullanici> kullaniciList = kullaniciDAO.getObjectsByParam(Kullanici.class, "kullaniciTelefon", apartmanSakinKayitDTO.getKullaniciTelefon());
         Kullanici kullanici = new Kullanici();
@@ -80,9 +86,8 @@ public class KullaniciServiceImpl implements KullaniciService {
             if(daire.getKullanici()==null)
             {
                 kullaniciDAO.saveOrUpdate(kullanici);
-                daire.setKullanici(kullanici);
-                daireDAO.saveOrUpdate(daire);
-                responseDTO.setMessage("Kullanıcı başarıyla kaydedildi");
+
+                responseDTO=siteService.daireSakinEkle(kullanici,daire);
             }
         } else {
             responseDTO.setMessage("Daireye kayıtlı bir sakin mevcut!");
@@ -99,6 +104,7 @@ public class KullaniciServiceImpl implements KullaniciService {
      */
 
     @Override
+    @Transactional
     public ResponseDTO KullaniciGiris(KullaniciGirisBilgiDTO kullaniciGirisBilgiDTO) {
         Kullanici kullanici = new Kullanici();
         ResponseDTO responseDTO = new ResponseDTO();
@@ -129,6 +135,7 @@ public class KullaniciServiceImpl implements KullaniciService {
      */
 
     @Override
+    @Transactional
     public KullaniciResponseDTO KullaniciBilgi(Long kullaniciId) {
         Kullanici kullanici = new Kullanici();
         List<Kullanici> kullaniciList = kullaniciDAO.getObjectsByParam(Kullanici.class, "kullaniciId", kullaniciId);

@@ -20,10 +20,14 @@ export const ENDPOINTS = {
   BLOK: {
     BASE: '/structure/blok',
     EKLE: '/structure/blok/ekle',
-    BY_SITE: '/structure/bloklar' // Site ID'si ile blokları getirmek için
+    BY_SITE: '/structure/bloklar', // Site ID'si ile blokları getirmek için
+    BY_ID: '/structure/blok' // Blok detaylarını ID ile getirmek için
   },
   DAIRE: {
     BASE: '/structure/daire',
     BY_BLOK: '/structure/daireler' // Blok ID'si ile daireleri getirmek için - backend endpoint'i
+  },
+  STRUCTURE: {
+    DAIRE_BY_ID: '/structure/daire' // Daire detaylarını ID ile getirmek için
   }
 };

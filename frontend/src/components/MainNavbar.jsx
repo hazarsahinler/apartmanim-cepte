@@ -76,7 +76,9 @@ const MainNavbar = ({ toggleSidebar, isSidebarOpen }) => {
 
   const isDashboard = location.pathname.includes('/dashboard') || 
                     location.pathname.includes('/site-yonetimi') || 
-                    location.pathname.includes('/site-panel');
+                    location.pathname.includes('/site-panel') ||
+                    location.pathname.includes('/blok-detay') ||
+                    location.pathname.includes('/daire-detay');
 
   // Sadece dashboard sayfalarında nav ve sidebar göster
   if (!isDashboard) return null;

@@ -15,6 +15,7 @@ import com.apartmanimcepte.backend.structure.entity.Blok;
 import com.apartmanimcepte.backend.structure.entity.Daire;
 import com.apartmanimcepte.backend.structure.entity.Site;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ public class SiteServiceImpl implements SiteService {
     }
 
     @Override
+    @Transactional
     public ResponseDTO SiteKayit(SiteKayitDTO siteKayitDTO) {
         ResponseDTO responseDTO = new ResponseDTO();
 
@@ -75,6 +77,7 @@ public class SiteServiceImpl implements SiteService {
     }
 
     @Override
+    @Transactional
     public List<SiteResponseDTO> sitelerim(Long kullaniciId) {
         List<Kullanici> kullaniciList = kullaniciDAO.getObjectsByParam(Kullanici.class, "kullaniciId", kullaniciId);
         List<Site> siteList = siteDAO.getObjectsByParam(Site.class, "kullanici", kullaniciList.get(0));
@@ -96,6 +99,7 @@ public class SiteServiceImpl implements SiteService {
     }
 
     @Override
+    @Transactional
     public ResponseDTO BlokKayit(BlokKayitDTO blokKayitDTO) {
         ResponseDTO responseDTO = new ResponseDTO();
 
@@ -141,6 +145,7 @@ public class SiteServiceImpl implements SiteService {
     }
 
     @Override
+    @Transactional
     public List<BlokResponseDTO> getBloklar(Long siteId) {
         List<BlokResponseDTO> blokResponseDTOS = new ArrayList<>();
         List<Site> siteList = siteDAO.getObjectsByParam(Site.class, "siteId", siteId);
@@ -166,6 +171,8 @@ public class SiteServiceImpl implements SiteService {
     }
 
     @Override
+    @Transactional
+
     public List<DaireResponseDTO> getDaireler(Long blokId) {
         List<DaireResponseDTO> daireResponseDTOS = new ArrayList<>();
         List<Blok> blokList = blokDAO.getObjectsByParam(Blok.class, "blokId", blokId);
@@ -193,5 +200,33 @@ public class SiteServiceImpl implements SiteService {
 
         return daireResponseDTOS;
     }
+
+    @Override
+    @Transactional
+    public DaireResponseDTO getDaireById(Long daireId) {
+        List<Daire> daireList= daireDAO.getObjectsByParam(Daire.class, "daireId", daireId);
+        Daire daire = daireList.get(0);
+        DaireResponseDTO daireResponseDTO = new DaireResponseDTO();
+        daireResponseDTO.setDaireId(daire.getDaireId());
+        daireResponseDTO.setDaireNo(daire.getDaireNo());
+        daireResponseDTO.setKatNo(daire.getKatNo());
+        daireResponseDTO.setBlokId(daire.getBlok().getBlokId());
+        daireResponseDTO.setKullaniciId(daire.getKullanici().getKullaniciId());
+        return daireResponseDTO;
+    }
+
+    @Override
+    @Transactional
+    public ResponseDTO daireSakinEkle(Kullanici kullanici, Daire daire) {
+        ResponseDTO responseDTO = new  ResponseDTO();
+        daire.setKullanici(kullanici);
+        daireDAO.saveOrUpdate(daire);
+        if(daire.getKullanici()!=null){
+            responseDTO.setMessage("KULLANICI DAİREYE EKLENMEDİ");
+        }
+        responseDTO.setMessage("KULLANICI DAİREYE BAŞARIYLA EKLENDİ");
+        return responseDTO;
+    }
+
 
 }
