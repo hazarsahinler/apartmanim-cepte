@@ -13,6 +13,7 @@ import NetworkStatusMonitor from '../components/NetworkStatusMonitor';
 import MainNavbar from '../components/MainNavbar';
 import Sidebar from '../components/Sidebar';
 import api from '../services/api';
+import axios from 'axios';
 
 const SiteYonetimSayfasi = () => {
   const navigate = useNavigate();
@@ -168,9 +169,24 @@ const SiteYonetimSayfasi = () => {
           }
           
           try {
-            // Gerçek API çağrısını geri getiriyoruz
+            // Doğrudan URL kullanarak - chunked encoding hatasını aşmak için
             console.log('Site verileri API\'den çekiliyor...');
-            const response = await api.get(`${ENDPOINTS.SITE.BY_KULLANICI}/${userData.id}`);
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+              console.error('Token bulunamadı');
+              throw new Error('Oturumunuz sonlanmış. Lütfen tekrar giriş yapın.');
+            }
+            
+            console.log('Site verileri için kullanılan token:', token.substring(0, 20) + '...');
+            
+            const response = await axios.get(`http://localhost:8080/api/structure/site/${userData.id}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              timeout: 30000
+            });
             
             if (response.data && response.data.length > 0) {
               // API'den gelen verileri set et ve önbelleğe al
@@ -798,8 +814,14 @@ const SiteEkleModal = ({ onClose, userId, onSuccess }) => {
       
       console.log('Site ekleme isteği gönderiliyor:', requestData);
       
-      // endpoints.js'den alarak endpoint'i kullanıyoruz
-      const response = await api.post(ENDPOINTS.SITE.EKLE, requestData);
+      // Doğrudan URL kullanarak - chunked encoding hatasını aşmak için
+      const response = await axios.post('http://localhost:8080/api/structure/site/ekle', requestData, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000
+      });
       
       console.log('Site ekleme yanıtı:', response.data);
       
@@ -809,7 +831,13 @@ const SiteEkleModal = ({ onClose, userId, onSuccess }) => {
         
         try {
           // Backend'den site listesini yeniden çek - SiteResponseDTO listesi
-          const sitesResponse = await api.get(`/structure/site/${userId}`);
+          const sitesResponse = await axios.get(`http://localhost:8080/api/structure/site/${userId}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+              'Content-Type': 'application/json'
+            },
+            timeout: 30000
+          });
           console.log('Yeni eklenen site için backend response:', sitesResponse.data);
           
           if (sitesResponse.data && sitesResponse.data.length > 0) {

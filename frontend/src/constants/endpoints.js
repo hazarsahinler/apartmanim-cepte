@@ -4,7 +4,8 @@ export const ENDPOINTS = {
     YONETICI_KAYIT: '/identity/yonetici/kayit',
     SAKIN_KAYIT: '/identity/apartman/sakin/kayit',
     LOGIN: '/identity/giris', // Backend'de /giris endpoint'i var
-    KULLANICI_BILGI: '/identity/kullanici/bilgi' // Kullanıcı bilgisi endpoint'i
+    KULLANICI_BILGI: '/identity/kullanici/bilgi', // Kullanıcı bilgisi endpoint'i
+    TELEFON_KONTROL: '/identity/kullanici/telefon' // Backend: /identity/kullanici/telefon/{telefon}
   },
   DUYURU: {
     BASE: '/duyuru',
@@ -13,7 +14,7 @@ export const ENDPOINTS = {
   },
   SITE: {
     BASE: '/structure/site',
-    BY_KULLANICI: '/structure/site',  // Kullanıcı ID'si ile site bilgilerini almak için
+    BY_KULLANICI: '/structure/site',  // Backend: GET /structure/site/{kullaniciId}
     EKLE: '/structure/site/ekle',
     DETAY: '/structure/site/detay'
   },
@@ -25,7 +26,8 @@ export const ENDPOINTS = {
   },
   DAIRE: {
     BASE: '/structure/daire',
-    BY_BLOK: '/structure/daireler' // Blok ID'si ile daireleri getirmek için - backend endpoint'i
+    BY_BLOK: '/structure/daireler', // Blok ID'si ile daireleri getirmek için - backend endpoint'i
+    SAKIN_EKLE: '/structure/daire/ekle' // Mevcut kullanıcıyı daireye ekleme
   },
   STRUCTURE: {
     DAIRE_BY_ID: '/structure/daire' // Daire detaylarını ID ile getirmek için

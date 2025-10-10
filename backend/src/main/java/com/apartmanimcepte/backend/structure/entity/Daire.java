@@ -3,6 +3,12 @@ package com.apartmanimcepte.backend.structure.entity;
 import com.apartmanimcepte.backend.identity.entity.Kullanici;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -22,7 +28,13 @@ public class Daire {
     @JoinColumn(name = "blok_id", nullable = false)
     private Blok blok;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "kullanici_id", nullable = true)
-    private Kullanici kullanici;
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(
+            name = "daire_sakinleri",
+            joinColumns = @JoinColumn(name = "daire_id"),
+            inverseJoinColumns = @JoinColumn(name = "kullanici_id")
+    )
+    @ToString.Exclude // BU SATIRI EKLEYİN
+    @EqualsAndHashCode.Exclude // Bunu da ekleyin
+    private Set<Kullanici> kullanicilar = new HashSet<>();
 }

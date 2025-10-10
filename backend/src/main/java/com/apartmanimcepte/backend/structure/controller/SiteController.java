@@ -1,5 +1,6 @@
 package com.apartmanimcepte.backend.structure.controller;
 
+import com.apartmanimcepte.backend.identity.dto.DaireyeSakinEkleDTO;
 import com.apartmanimcepte.backend.identity.dto.ResponseDTO;
 import com.apartmanimcepte.backend.structure.bus.SiteService;
 import com.apartmanimcepte.backend.structure.dto.RequestDTO.BlokKayitDTO;
@@ -38,6 +39,13 @@ public class SiteController {
         ResponseDTO responseDTO = siteService.BlokKayit(blokKayitDTO);
         return responseDTO;
     }
+    @PostMapping("/structure/daire/ekle")
+    public ResponseDTO daireEkle(@RequestBody DaireyeSakinEkleDTO daireyeSakinEkleDTO) throws Exception{
+        ResponseDTO responseDTO = new ResponseDTO();
+        responseDTO=siteService.daireSakinEkle(daireyeSakinEkleDTO);
+        return responseDTO;
+    }
+
     @GetMapping("/structure/bloklar/{siteId}")
     public List<BlokResponseDTO> getBloklar(@PathVariable("siteId") Long siteId) throws IOException{
         return siteService.getBloklar(siteId);
@@ -50,4 +58,5 @@ public class SiteController {
     public DaireResponseDTO getDaireById(@PathVariable("daireId") Long daireId) throws IOException{
         return siteService.getDaireById(daireId);
     }
+
 }

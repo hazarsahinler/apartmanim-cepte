@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Home, User, Phone, Mail, Building, UserCheck, MapPin } from 'lucide-react';
+import { ArrowLeft, Home, User, Phone, Mail, Building, UserCheck, MapPin, Users, UserPlus, Plus } from 'lucide-react';
 import { daireService } from '../services/daireService';
 import { toast } from 'react-toastify';
 import MainNavbar from '../components/MainNavbar';
@@ -10,9 +10,10 @@ const DaireDetay = () => {
   const { daireId } = useParams();
   const navigate = useNavigate();
   const [daire, setDaire] = useState(null);
-  const [kullanici, setKullanici] = useState(null);
+  const [sakinler, setSakinler] = useState([]); // Çoklu sakin desteği
   const [blok, setBlok] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sakinEkleModalAcik, setSakinEkleModalAcik] = useState(false);
   
   // Sidebar state - ana şablona uyum için
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -59,14 +60,13 @@ const DaireDetay = () => {
         }
       }
       
-      // Eğer dairede kullanıcı varsa, kullanıcı bilgilerini getir
-      if (daireData.kullaniciId && daireData.kullaniciId !== 0) {
-        console.log('DaireDetay - Kullanıcı bilgileri getiriliyor, ID:', daireData.kullaniciId);
-        const kullaniciData = await daireService.getKullaniciBilgi(daireData.kullaniciId);
-        console.log('DaireDetay - Kullanıcı bilgileri:', kullaniciData);
-        setKullanici(kullaniciData);
+      // @ManyToMany: Dairede kullanıcılar varsa, hepsinin bilgilerini getir
+      if (daireData.kullaniciResponseDTOS && daireData.kullaniciResponseDTOS.length > 0) {
+        console.log('DaireDetay - Kullanıcı bilgileri getiriliyor, Kullanıcı sayısı:', daireData.kullaniciResponseDTOS.length);
+        setSakinler(Array.from(daireData.kullaniciResponseDTOS)); // Set'i Array'e çevir
       } else {
         console.log('DaireDetay - Daire boş, kullanıcı bilgisi yok');
+        setSakinler([]);
       }
     } catch (error) {
       console.error('DaireDetay - Hata detayları:', error);
@@ -131,7 +131,7 @@ const DaireDetay = () => {
     );
   }
 
-  const daireBos = !daire.kullaniciId || daire.kullaniciId === 0;
+  const daireBos = !sakinler || sakinler.length === 0;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -212,11 +212,18 @@ const DaireDetay = () => {
 
             {/* Sakin Bilgileri */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-              <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b dark:border-gray-600">
+              <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b dark:border-gray-600 flex items-center justify-between">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-                  <User className="h-5 w-5 mr-2 text-green-600 dark:text-green-400" />
-                  Sakin Bilgileri
+                  <Users className="h-5 w-5 mr-2 text-green-600 dark:text-green-400" />
+                  Sakin Bilgileri ({sakinler.length})
                 </h3>
+                <button
+                  onClick={() => setSakinEkleModalAcik(true)}
+                  className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center text-sm"
+                >
+                  <UserPlus className="h-4 w-4 mr-1" />
+                  Sakin Ekle
+                </button>
               </div>
               
               <div className="p-6">
@@ -226,71 +233,315 @@ const DaireDetay = () => {
                     <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                       Sakin Bulunmuyor
                     </h4>
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
                       Bu dairede henüz kayıtlı sakin bulunmamaktadır.
                     </p>
-                  </div>
-                ) : kullanici ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Ad Soyad:</span>
-                      <span className="text-gray-900 dark:text-white font-medium">
-                        {kullanici.kullaniciAdi} {kullanici.kullaniciSoyadi}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600 dark:text-gray-400 flex items-center">
-                        <Phone className="h-4 w-4 mr-1" />
-                        Telefon:
-                      </span>
-                      <span className="text-gray-900 dark:text-white font-medium">
-                        {kullanici.kullaniciTelefon}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600 dark:text-gray-400 flex items-center">
-                        <Mail className="h-4 w-4 mr-1" />
-                        E-posta:
-                      </span>
-                      <span className="text-gray-900 dark:text-white font-medium">
-                        {kullanici.kullaniciEposta}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600 dark:text-gray-400 flex items-center">
-                        <Building className="h-4 w-4 mr-1" />
-                        Apartman Rolü:
-                      </span>
-                      <span className="text-gray-900 dark:text-white font-medium">
-                        {kullanici.apartmanRol}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600 dark:text-gray-400 flex items-center">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        Konut Kullanımı:
-                      </span>
-                      <span className="text-gray-900 dark:text-white font-medium">
-                        {kullanici.konutKullanim}
-                      </span>
-                    </div>
+                    <button
+                      onClick={() => setSakinEkleModalAcik(true)}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center mx-auto"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      İlk Sakini Ekle
+                    </button>
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Kullanıcı bilgileri yükleniyor...
-                    </p>
+                  <div className="space-y-4">
+                    {sakinler.map((sakin, index) => (
+                      <div key={sakin.kullaniciId || index} className="border dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
+                        <div className="flex items-center justify-between mb-3">
+                          <h5 className="font-medium text-gray-900 dark:text-white">
+                            {sakin.kullaniciAdi} {sakin.kullaniciSoyadi}
+                          </h5>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            sakin.konutKullanim === 'EvSahibi' 
+                              ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
+                              : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                          }`}>
+                            {sakin.konutKullanim === 'EvSahibi' ? 'Ev Sahibi' : 'Kiracı'}
+                          </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                          <div className="flex items-center">
+                            <Phone className="h-4 w-4 mr-2 text-gray-400" />
+                            <span className="text-gray-600 dark:text-gray-400">{sakin.kullaniciTelefon}</span>
+                          </div>
+                          
+                          <div className="flex items-center">
+                            <Mail className="h-4 w-4 mr-2 text-gray-400" />
+                            <span className="text-gray-600 dark:text-gray-400">{sakin.kullaniciEposta}</span>
+                          </div>
+                          
+                          <div className="flex items-center">
+                            <Building className="h-4 w-4 mr-2 text-gray-400" />
+                            <span className="text-gray-600 dark:text-gray-400">
+                              {sakin.apartmanRol || 'Sakin'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
             </div>
           </div>
         </div>
+
+        {/* Sakin Ekleme Modal'ı */}
+        {sakinEkleModalAcik && (
+          <SakinEkleModal
+            daire={daire}
+            onClose={() => setSakinEkleModalAcik(false)}
+            onSuccess={() => {
+              fetchDaireDetay();
+              setSakinEkleModalAcik(false);
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Sakin Ekleme Modal Bileşeni - İki Aşamalı Sistem
+const SakinEkleModal = ({ daire, onClose, onSuccess }) => {
+  const [step, setStep] = useState(1); // 1: Telefon kontrolü, 2: Kayıt formu
+  const [telefon, setTelefon] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  // Kayıt formu için state
+  const [formData, setFormData] = useState({
+    kullaniciAdi: '',
+    kullaniciSoyadi: '',
+    kullaniciEposta: '',
+    kullaniciSifre: '',
+    konutKullanim: 0 // 0: Ev Sahibi, 1: Kiracı
+  });
+
+  const handleTelefonKontrol = async () => {
+    if (!telefon.trim()) {
+      toast.error('Lütfen telefon numarası giriniz');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      console.log('Telefon kontrol ediliyor:', telefon);
+      
+      // Telefon numarası ile kullanıcı kontrolü
+      const kullanici = await daireService.checkUserByPhone(telefon);
+      
+      if (kullanici) {
+        // Kullanıcı kayıtlı - direkt daireye ekle
+        console.log('Kullanıcı kayıtlı, daireye ekleniyor:', kullanici);
+        
+        await daireService.addExistingUserToDaire(telefon, daire.daireId);
+        
+        toast.success(`${kullanici.kullaniciAdi} ${kullanici.kullaniciSoyadi} daireye eklendi!`);
+        onSuccess();
+      } else {
+        // Kullanıcı kayıtlı değil - kayıt formuna geç
+        console.log('Kullanıcı kayıtlı değil, kayıt formuna geçiliyor');
+        setStep(2);
+        toast.info('Kullanıcı kayıtlı değil. Lütfen kayıt bilgilerini doldurun.');
+      }
+    } catch (error) {
+      console.error('Telefon kontrol hatası:', error);
+      toast.error('Telefon kontrolü sırasında hata oluştu: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKayitVeEkle = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.kullaniciAdi || !formData.kullaniciSoyadi || !formData.kullaniciEposta || !formData.kullaniciSifre) {
+      toast.error('Lütfen tüm alanları doldurun');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // ApartmanSakinKayitDTO formatında veri hazırla
+      const sakinData = {
+        kullaniciAdi: formData.kullaniciAdi,
+        kullaniciSoyadi: formData.kullaniciSoyadi,
+        kullaniciEposta: formData.kullaniciEposta,
+        kullaniciSifre: formData.kullaniciSifre,
+        kullaniciTelefon: telefon,
+        konutKullanim: formData.konutKullanim,
+        daireId: daire.daireId
+      };
+      
+      console.log('Yeni kullanıcı kaydediliyor:', sakinData);
+      
+      await daireService.registerSakin(sakinData);
+      
+      toast.success('Kullanıcı kaydedildi ve daireye eklendi!');
+      onSuccess();
+    } catch (error) {
+      console.error('Kayıt hatası:', error);
+      toast.error('Kayıt sırasında hata oluştu: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFormChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 shadow-xl">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+          Sakin Ekle - {daire.katNo}. Kat Daire {daire.daireNo}
+        </h3>
+        
+        {step === 1 ? (
+          // Telefon Kontrolü Adımı
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Telefon Numarası
+              </label>
+              <input
+                type="tel"
+                value={telefon}
+                onChange={(e) => setTelefon(e.target.value)}
+                placeholder="05XX XXX XX XX"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                disabled={loading}
+              />
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Önce telefon numarası ile kontrol edeceğiz
+              </p>
+            </div>
+            
+            <div className="flex space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                disabled={loading}
+              >
+                İptal
+              </button>
+              <button
+                type="button"
+                onClick={handleTelefonKontrol}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                disabled={loading || !telefon.trim()}
+              >
+                {loading ? 'Kontrol Ediliyor...' : 'Kontrol Et'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          // Kayıt Formu Adımı
+          <form onSubmit={handleKayitVeEkle} className="space-y-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg">
+              <strong>{telefon}</strong> numarası kayıtlı değil. Yeni kullanıcı kaydı yapılacak.
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Ad
+                </label>
+                <input
+                  type="text"
+                  name="kullaniciAdi"
+                  value={formData.kullaniciAdi}
+                  onChange={handleFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Soyad
+                </label>
+                <input
+                  type="text"
+                  name="kullaniciSoyadi"
+                  value={formData.kullaniciSoyadi}
+                  onChange={handleFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                E-posta
+              </label>
+              <input
+                type="email"
+                name="kullaniciEposta"
+                value={formData.kullaniciEposta}
+                onChange={handleFormChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Şifre
+              </label>
+              <input
+                type="password"
+                name="kullaniciSifre"
+                value={formData.kullaniciSifre}
+                onChange={handleFormChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Konut Kullanımı
+              </label>
+              <select
+                name="konutKullanim"
+                value={formData.konutKullanim}
+                onChange={handleFormChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value={0}>Ev Sahibi</option>
+                <option value={1}>Kiracı</option>
+              </select>
+            </div>
+            
+            <div className="flex space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                disabled={loading}
+              >
+                Geri
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                disabled={loading}
+              >
+                {loading ? 'Kaydediliyor...' : 'Kaydet ve Ekle'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

@@ -2,8 +2,15 @@ package com.apartmanimcepte.backend.identity.entity;
 
 import com.apartmanimcepte.backend.identity.Enum.ApartmanRol;
 import com.apartmanimcepte.backend.identity.Enum.KonutKullanimRol;
+import com.apartmanimcepte.backend.structure.entity.Daire;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+import java.util.HashSet;
+import java.util.Set;
 
 
 @Entity
@@ -37,4 +44,10 @@ public class Kullanici {
     @Enumerated(EnumType.ORDINAL)
     @Column(columnDefinition = "smallint")
     private KonutKullanimRol konutKullanimRol;
+
+    @ManyToMany(mappedBy = "kullanicilar")
+    @JsonBackReference
+    @ToString.Exclude // BU SATIRI EKLEYİN
+    @EqualsAndHashCode.Exclude // Döngüsel bağımlılığı kırmak için bunu da eklemek iyi bir pratiktir.
+    private Set<Daire> daireler = new HashSet<>();
 }

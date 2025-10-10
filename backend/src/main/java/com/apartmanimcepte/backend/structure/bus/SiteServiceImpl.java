@@ -1,6 +1,8 @@
 package com.apartmanimcepte.backend.structure.bus;
 
 import com.apartmanimcepte.backend.identity.dao.KullaniciDAO;
+import com.apartmanimcepte.backend.identity.dto.DaireyeSakinEkleDTO;
+import com.apartmanimcepte.backend.identity.dto.KullaniciResponseDTO;
 import com.apartmanimcepte.backend.identity.dto.ResponseDTO;
 import com.apartmanimcepte.backend.identity.entity.Kullanici;
 import com.apartmanimcepte.backend.structure.dao.BlokDAO;
@@ -19,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class SiteServiceImpl implements SiteService {
@@ -185,11 +189,21 @@ public class SiteServiceImpl implements SiteService {
                 daireResponseDTO.setDaireId(daire.getDaireId());
                 daireResponseDTO.setDaireNo(daire.getDaireNo());
                 daireResponseDTO.setKatNo(daire.getKatNo());
-                if(daire.getKullanici()!=null){
-                    daireResponseDTO.setKullaniciId(daire.getKullanici().getKullaniciId());
+                if (daire.getKullanicilar() != null) {
+                    Set<KullaniciResponseDTO> kullaniciDTOlari = daire.getKullanicilar()
+                            .stream()
+                            .map(kullaniciEntity -> {
+                                KullaniciResponseDTO dto = new KullaniciResponseDTO();
+                                dto.setKullaniciId(kullaniciEntity.getKullaniciId());
+                                dto.setKullaniciAdi(kullaniciEntity.getKullaniciAdi());
+                                dto.setKullaniciSoyadi(kullaniciEntity.getKullaniciSoyadi());
+                                dto.setKullaniciEposta(kullaniciEntity.getKullaniciEposta());
+                                dto.setKonutKullanim(kullaniciEntity.getKonutKullanimRol().name());
+                                return dto;
+                            })
+                            .collect(Collectors.toSet());
 
                 }
-
 
 
                 daireResponseDTOS.add(daireResponseDTO);
@@ -204,27 +218,60 @@ public class SiteServiceImpl implements SiteService {
     @Override
     @Transactional
     public DaireResponseDTO getDaireById(Long daireId) {
-        List<Daire> daireList= daireDAO.getObjectsByParam(Daire.class, "daireId", daireId);
+        List<Daire> daireList = daireDAO.getObjectsByParam(Daire.class, "daireId", daireId);
         Daire daire = daireList.get(0);
         DaireResponseDTO daireResponseDTO = new DaireResponseDTO();
+        Set<KullaniciResponseDTO> kullaniciDTOlari = daire.getKullanicilar()
+                .stream()
+                .map(kullaniciEntity -> {
+                    KullaniciResponseDTO dto = new KullaniciResponseDTO();
+                    dto.setKullaniciId(kullaniciEntity.getKullaniciId());
+                    dto.setKullaniciAdi(kullaniciEntity.getKullaniciAdi());
+                    dto.setKullaniciSoyadi(kullaniciEntity.getKullaniciSoyadi());
+                    dto.setKullaniciEposta(kullaniciEntity.getKullaniciEposta());
+                    dto.setKonutKullanim(kullaniciEntity.getKonutKullanimRol().name());
+                    return dto;
+                })
+                .collect(Collectors.toSet());
         daireResponseDTO.setDaireId(daire.getDaireId());
         daireResponseDTO.setDaireNo(daire.getDaireNo());
         daireResponseDTO.setKatNo(daire.getKatNo());
         daireResponseDTO.setBlokId(daire.getBlok().getBlokId());
-        daireResponseDTO.setKullaniciId(daire.getKullanici().getKullaniciId());
+
+
         return daireResponseDTO;
     }
 
     @Override
     @Transactional
-    public ResponseDTO daireSakinEkle(Kullanici kullanici, Daire daire) {
-        ResponseDTO responseDTO = new  ResponseDTO();
-        daire.setKullanici(kullanici);
+    public ResponseDTO daireYeniSakinEkle(Kullanici kullanici, Daire daire) {
+        ResponseDTO responseDTO = new ResponseDTO();
+        List<Kullanici> kullanicilar = (List<Kullanici>) daire.getKullanicilar();
+        kullanicilar.add(kullanici);
+        daire.setKullanicilar((Set<Kullanici>) kullanicilar);
         daireDAO.saveOrUpdate(daire);
-        if(daire.getKullanici()!=null){
+        if (daire.getKullanicilar() != null) {
             responseDTO.setMessage("KULLANICI DAİREYE EKLENMEDİ");
         }
         responseDTO.setMessage("KULLANICI DAİREYE BAŞARIYLA EKLENDİ");
+        return responseDTO;
+    }
+
+    @Override
+    @Transactional
+    public ResponseDTO daireSakinEkle(DaireyeSakinEkleDTO daireyeSakinEkleDTO) {
+        ResponseDTO responseDTO = new ResponseDTO();
+        List<Kullanici> kullaniciList = kullaniciDAO.getObjectsByParam(Kullanici.class, "kullaniciTelefon", daireyeSakinEkleDTO.getKullaniciTelefon());
+        List<Daire> daireList = daireDAO.getObjectsByParam(Daire.class, "daireId", daireyeSakinEkleDTO.getDaireId());
+        if (kullaniciList.isEmpty()) {
+            responseDTO.setMessage("Kullanici bulunamadı!!!");
+        } else {
+            Kullanici kullanici = kullaniciList.get(0);
+            Daire daire = daireList.get(0);
+            daire.setKullanicilar((Set<Kullanici>) kullaniciList);
+            daireDAO.saveOrUpdate(daire);
+            responseDTO.setMessage("Kullanici eklendi!");
+        }
         return responseDTO;
     }
 

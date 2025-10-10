@@ -16,4 +16,6 @@ public interface KullaniciService {
 
     KullaniciResponseDTO KullaniciBilgi(Long kullaniciId);
 
+
+
 }

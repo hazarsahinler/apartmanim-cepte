@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, Home, PlusCircle, UserPlus, Building, UserMinus, Layers } from 'lucide-react';
+import { ArrowLeft, Users, Home, Building, Layers } from 'lucide-react';
 import { daireService } from '../services/daireService';
 import { toast } from 'react-toastify';
 import MainNavbar from '../components/MainNavbar';
@@ -11,9 +11,6 @@ const BlokDetay = () => {
   const navigate = useNavigate();
   const [daireler, setDaireler] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sakinEkleModalAcik, setSakinEkleModalAcik] = useState(false);
-  const [secilenDaire, setSecilenDaire] = useState(null);
-  const [kullanicilar, setKullanicilar] = useState({}); // Kullanıcı bilgilerini cache'lemek için
   
   // Sidebar state - ana şablona uyum için
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -37,25 +34,6 @@ const BlokDetay = () => {
       // Daireleri numaraya göre sırala (sabit sıralama)
       const siraliDaireler = (daireData || []).sort((a, b) => a.daireNo - b.daireNo);
       setDaireler(siraliDaireler);
-      
-      // Dolu daireler için kullanıcı bilgilerini getir
-      const doluDaireler = siraliDaireler.filter(daire => daire.kullaniciId && daire.kullaniciId !== 0);
-      const kullaniciBilgileri = {};
-      
-      for (const daire of doluDaireler) {
-        try {
-          const kullaniciBilgi = await daireService.getKullaniciBilgi(daire.kullaniciId);
-          kullaniciBilgileri[daire.kullaniciId] = kullaniciBilgi;
-        } catch (error) {
-          console.error(`Kullanıcı ${daire.kullaniciId} bilgileri yüklenemedi:`, error);
-          kullaniciBilgileri[daire.kullaniciId] = {
-            kullaniciAdi: 'Bilinmeyen',
-            kullaniciSoyadi: 'Kullanıcı'
-          };
-        }
-      }
-      
-      setKullanicilar(kullaniciBilgileri);
     } catch (error) {
       console.error('Daire verileri yüklenirken hata:', error);
       toast.error('Daire verileri yüklenirken hata oluştu');
@@ -65,31 +43,10 @@ const BlokDetay = () => {
     }
   };
 
-  const handleSakinEkle = (daire) => {
-    if (!daire.kullaniciId || daire.kullaniciId === 0) {
-      setSecilenDaire(daire);
-      setSakinEkleModalAcik(true);
-    } else {
-      toast.info('Bu daire zaten dolu');
-    }
-  };
-
   const handleSakinBilgi = (daire) => {
     // DaireDetay sayfasına git
     navigate(`/daire-detay/${daire.daireId}`);
   };
-
-  const handleSakinSil = async (daire) => {
-    if (window.confirm(`${daire.katNo}. Kat Daire ${daire.daireNo}'daki kullanıcıyı silmek istediğinize emin misiniz?`)) {
-      try {
-        await daireService.removeSakin(daire.daireId);
-        toast.success('Kullanıcı başarıyla silindi');
-        fetchDaireler(); // Listeyi yenile
-      } catch (error) {
-        toast.error('Kullanıcı silinirken hata oluştu');
-      }
-    }
-    };
 
   const katlarGroupBy = () => {
     const katlar = {};
@@ -216,25 +173,26 @@ const BlokDetay = () => {
               <div className="p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {katlarData[katNo].map(daire => {
-                    const dairebos = !daire.kullaniciId || daire.kullaniciId === 0;
+                    const daireDolu = daire.kullaniciId && daire.kullaniciId !== 0; // @ManyToMany için basit kontrol
                     
                     return (
                       <div
                         key={daire.daireId}
-                        className={`relative p-4 rounded-lg border-2 transition-all duration-300 ${
-                          dairebos
-                            ? 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500'
-                            : 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/30 hover:border-green-600'
+                        onClick={() => handleSakinBilgi(daire)}
+                        className={`relative p-4 rounded-lg border-2 transition-all duration-300 cursor-pointer ${
+                          daireDolu
+                            ? 'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/30 hover:border-green-600'
+                            : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500'
                         } hover:shadow-md transform hover:-translate-y-1`}
                       >
                         <div className="text-center">
                           <div className={`w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center ${
-                            dairebos ? 'bg-gray-200 dark:bg-gray-600' : 'bg-green-500 dark:bg-green-600 text-white'
+                            daireDolu ? 'bg-green-500 dark:bg-green-600 text-white' : 'bg-gray-200 dark:bg-gray-600'
                           }`}>
-                            {dairebos ? (
-                              <Home className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                            ) : (
+                            {daireDolu ? (
                               <Users className="h-4 w-4" />
+                            ) : (
+                              <Home className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                             )}
                           </div>
                           
@@ -242,45 +200,17 @@ const BlokDetay = () => {
                             Daire {daire.daireNo}
                           </p>
                           
-                          {dairebos ? (
-                            <div className="space-y-2">
-                              <p className="text-xs text-gray-500 dark:text-gray-400">Boş</p>
-                              <button
-                                onClick={() => handleSakinEkle(daire)}
-                                className="w-full px-2 py-1 text-xs bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white rounded transition-colors flex items-center justify-center"
-                              >
-                                <UserPlus className="h-3 w-3 mr-1" />
-                                Sakin Ekle
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              <div className="text-xs text-green-700 dark:text-green-400">
-                                <p className="font-medium">
-                                  {kullanicilar[daire.kullaniciId] 
-                                    ? `${kullanicilar[daire.kullaniciId].kullaniciAdi} ${kullanicilar[daire.kullaniciId].kullaniciSoyadi}`
-                                    : 'Kullanıcı bilgisi yükleniyor...'
-                                  }
-                                </p>
-                              </div>
-                              <div className="space-y-1">
-                                <button
-                                  onClick={() => handleSakinBilgi(daire)}
-                                  className="w-full px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded transition-colors flex items-center justify-center"
-                                >
-                                  <Users className="h-3 w-3 mr-1" />
-                                  Sakin Bilgi
-                                </button>
-                                <button
-                                  onClick={() => handleSakinSil(daire)}
-                                  className="w-full px-2 py-1 text-xs bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white rounded transition-colors flex items-center justify-center"
-                                >
-                                  <UserMinus className="h-3 w-3 mr-1" />
-                                  Kullanıcı Sil
-                                </button>
-                              </div>
-                            </div>
-                          )}
+                          <p className={`text-xs font-medium ${
+                            daireDolu 
+                              ? 'text-green-700 dark:text-green-400' 
+                              : 'text-gray-500 dark:text-gray-400'
+                          }`}>
+                            {daireDolu ? 'Dolu' : 'Boş'}
+                          </p>
+                          
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                            Detaylar için tıklayın
+                          </p>
                         </div>
                       </div>
                     );
@@ -303,192 +233,6 @@ const BlokDetay = () => {
           </div>
         )}
       </div>
-
-      {/* Sakin Ekleme Modal'ı */}
-      {sakinEkleModalAcik && secilenDaire && (
-        <SakinEkleModal
-          daire={secilenDaire}
-          onClose={() => {
-            setSakinEkleModalAcik(false);
-            setSecilenDaire(null);
-          }}
-          onSuccess={() => {
-            fetchDaireler();
-            setSakinEkleModalAcik(false);
-            setSecilenDaire(null);
-          }}
-        />
-      )}
-      </div>
-    </div>
-  );
-};
-
-// Sakin Ekleme Modal Bileşeni
-const SakinEkleModal = ({ daire, onClose, onSuccess }) => {
-  const [formData, setFormData] = useState({
-    kullaniciAdi: '',
-    kullaniciSoyadi: '',
-    email: '',
-    sifre: '',
-    telefon: '',
-    konutKullanim: 'EvSahibi' // Varsayılan değer - KonutKullanimRol enum'una göre
-  });
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!formData.kullaniciAdi || !formData.kullaniciSoyadi || !formData.email || !formData.sifre || !formData.telefon) {
-      toast.error('Lütfen tüm alanları doldurun');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      const sakinData = {
-        ...formData,
-        daireId: daire.daireId
-      };
-      
-      console.log('Frontend\'den gönderilecek sakin verisi:', sakinData);
-      console.log('Daire bilgisi:', daire);
-      
-      await daireService.registerSakin(sakinData);
-      toast.success('Sakin başarıyla eklendi');
-      onSuccess();
-    } catch (error) {
-      console.error('Sakin eklenirken hata:', error);
-      console.error('Error response:', error.response);
-      console.error('Error message:', error.message);
-      
-      // Backend'den gelen hata mesajını göster
-      const errorMessage = error.message || 'Sakin eklenirken hata oluştu';
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 shadow-xl">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-          Sakin Ekle - {daire.katNo}. Kat Daire {daire.daireNo}
-        </h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Ad
-            </label>
-            <input
-              type="text"
-              name="kullaniciAdi"
-              value={formData.kullaniciAdi}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Soyad
-            </label>
-            <input
-              type="text"
-              name="kullaniciSoyadi"
-              value={formData.kullaniciSoyadi}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Şifre
-            </label>
-            <input
-              type="password"
-              name="sifre"
-              value={formData.sifre}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Telefon
-            </label>
-            <input
-              type="tel"
-              name="telefon"
-              value={formData.telefon}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Konut Kullanım
-            </label>
-            <select
-              name="konutKullanim"
-              value={formData.konutKullanim}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="EvSahibi">Ev Sahibi</option>
-              <option value="Kiracı">Kiracı</option>
-            </select>
-          </div>
-          
-          <div className="flex space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
-              disabled={loading}
-            >
-              İptal
-            </button>
-            <button
-              type="submit"
-              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-              disabled={loading}
-            >
-              {loading ? 'Ekleniyor...' : 'Sakin Ekle'}
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   );

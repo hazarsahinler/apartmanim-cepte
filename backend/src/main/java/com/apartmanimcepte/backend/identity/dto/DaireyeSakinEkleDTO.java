@@ -9,14 +9,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class KullaniciResponseDTO {
-    private long kullaniciId;
-    private String kullaniciAdi;
-    private String kullaniciSoyadi;
-    private String kullaniciEposta;
+@NoArgsConstructor
+public class DaireyeSakinEkleDTO {
+
+
+    @NotEmpty(message = "Telefon numarası boş olamaz")
     private String kullaniciTelefon;
-    private String konutKullanim;
-    private String ApartmanRol;
+
+
+    private long daireId;
 }
+

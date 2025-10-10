@@ -164,6 +164,17 @@ const clearUserSiteData = (userId) => {
   }
 };
 
+// Son fetch zamanını getir
+const getLastFetchTime = (userId = null) => {
+  try {
+    const lastFetch = localStorage.getItem(STORAGE_KEYS.LAST_FETCH);
+    return lastFetch ? new Date(lastFetch) : null;
+  } catch (e) {
+    console.error('Son fetch zamanı okunamadı:', e);
+    return null;
+  }
+};
+
 export const siteStorageService = {
   saveSites,
   getSites,
@@ -171,5 +182,6 @@ export const siteStorageService = {
   saveSiteDetail,
   getSiteDetail,
   isCacheStale,
-  clearUserSiteData
+  clearUserSiteData,
+  getLastFetchTime
 };

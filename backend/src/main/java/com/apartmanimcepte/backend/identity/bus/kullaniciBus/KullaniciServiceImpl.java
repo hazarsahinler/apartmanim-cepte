@@ -82,15 +82,13 @@ public class KullaniciServiceImpl implements KullaniciService {
             kullanici.setApartmanRol(ApartmanRol.ApartmanSakin);
             kullanici.setKonutKullanimRol(KonutKullanimRol.fromRole(apartmanSakinKayitDTO.getKonutKullanim()));
             List<Daire> daireList = daireDAO.getObjectsByParam(Daire.class, "daireId", apartmanSakinKayitDTO.getDaireId());
-            Daire daire=daireList.get(0);
-            if(daire.getKullanici()==null)
-            {
-                kullaniciDAO.saveOrUpdate(kullanici);
+            Daire daire = daireList.get(0);
+            kullaniciDAO.saveOrUpdate(kullanici);
+            responseDTO = siteService.daireYeniSakinEkle(kullanici, daire);
 
-                responseDTO=siteService.daireSakinEkle(kullanici,daire);
-            }
-        } else {
-            responseDTO.setMessage("Daireye kayıtlı bir sakin mevcut!");
+        } else{
+
+            responseDTO.setMessage("Kullanıcı bulunamadı!");
         }
         return responseDTO;
     }
