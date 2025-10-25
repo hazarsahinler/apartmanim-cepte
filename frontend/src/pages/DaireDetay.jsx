@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, User, Phone, Mail, Building, UserCheck, MapPin, Users, UserPlus, Plus } from 'lucide-react';
 import { daireService } from '../services/daireService';
+import { siteService } from '../services/siteService';
 import { toast } from 'react-toastify';
 import MainNavbar from '../components/MainNavbar';
 import Sidebar from '../components/Sidebar';
@@ -14,13 +15,6 @@ const DaireDetay = () => {
   const [blok, setBlok] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sakinEkleModalAcik, setSakinEkleModalAcik] = useState(false);
-  
-  // Sidebar state - ana şablona uyum için
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
 
   useEffect(() => {
     if (daireId) {
@@ -88,10 +82,10 @@ const DaireDetay = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-        <Sidebar isOpen={sidebarOpen} />
+        <MainNavbar />
+        <Sidebar />
         
-        <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
+        <div className="pt-16 ml-64">
           <div className="container mx-auto px-4 py-8">
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -105,10 +99,10 @@ const DaireDetay = () => {
   if (!daire) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-        <Sidebar isOpen={sidebarOpen} />
+        <MainNavbar />
+        <Sidebar />
         
-        <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
+        <div className="pt-16 ml-64">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center py-12">
               <Home className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
@@ -135,10 +129,10 @@ const DaireDetay = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-      <Sidebar isOpen={sidebarOpen} />
+      <MainNavbar />
+      <Sidebar />
       
-      <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
+      <div className="pt-16 ml-64">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
@@ -294,7 +288,11 @@ const DaireDetay = () => {
             daire={daire}
             onClose={() => setSakinEkleModalAcik(false)}
             onSuccess={() => {
-              fetchDaireDetay();
+              console.log('Sakin ekleme başarılı, daire verileri yenileniyor...');
+              // Biraz bekleyip sonra veriyi yenile (backend'in güncellenmesi için)
+              setTimeout(() => {
+                fetchDaireDetay();
+              }, 500);
               setSakinEkleModalAcik(false);
             }}
           />
@@ -306,9 +304,10 @@ const DaireDetay = () => {
 
 // Sakin Ekleme Modal Bileşeni - İki Aşamalı Sistem
 const SakinEkleModal = ({ daire, onClose, onSuccess }) => {
-  const [step, setStep] = useState(1); // 1: Telefon kontrolü, 2: Kayıt formu
+  const [step, setStep] = useState(1); // 1: Telefon arama, 2: Kullanıcı seçimi, 3: Kayıt formu
   const [telefon, setTelefon] = useState('');
   const [loading, setLoading] = useState(false);
+  const [bulunanKullanici, setBulunanKullanici] = useState(null);
   
   // Kayıt formu için state
   const [formData, setFormData] = useState({
@@ -329,26 +328,50 @@ const SakinEkleModal = ({ daire, onClose, onSuccess }) => {
       setLoading(true);
       console.log('Telefon kontrol ediliyor:', telefon);
       
-      // Telefon numarası ile kullanıcı kontrolü
-      const kullanici = await daireService.checkUserByPhone(telefon);
+      // Telefon numarası ile kullanıcı kontrolü - yeni siteService kullan
+      const result = await siteService.searchUserByPhone(telefon);
       
-      if (kullanici) {
-        // Kullanıcı kayıtlı - direkt daireye ekle
-        console.log('Kullanıcı kayıtlı, daireye ekleniyor:', kullanici);
-        
-        await daireService.addExistingUserToDaire(telefon, daire.daireId);
-        
-        toast.success(`${kullanici.kullaniciAdi} ${kullanici.kullaniciSoyadi} daireye eklendi!`);
-        onSuccess();
+      if (result.success && result.user) {
+        // Kullanıcı kayıtlı - seçim aşamasına geç
+        console.log('Kullanıcı bulundu:', result.user);
+        setBulunanKullanici(result.user);
+        setStep(2); // Kullanıcı seçim aşamasına geç
+        toast.success(`Kullanıcı bulundu: ${result.user.kullaniciAdi} ${result.user.kullaniciSoyadi}`);
       } else {
         // Kullanıcı kayıtlı değil - kayıt formuna geç
         console.log('Kullanıcı kayıtlı değil, kayıt formuna geçiliyor');
-        setStep(2);
+        setBulunanKullanici(null);
+        setStep(3); // Kayıt formu aşamasına geç
         toast.info('Kullanıcı kayıtlı değil. Lütfen kayıt bilgilerini doldurun.');
       }
     } catch (error) {
       console.error('Telefon kontrol hatası:', error);
       toast.error('Telefon kontrolü sırasında hata oluştu: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKullaniciSec = async () => {
+    if (!bulunanKullanici) {
+      toast.error('Seçilecek kullanıcı bulunamadı');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      console.log('Kullanıcı daireye ekleniyor:', bulunanKullanici);
+      
+      await siteService.addUserToApartment(
+        bulunanKullanici.kullaniciId || bulunanKullanici.id, 
+        daire.daireId
+      );
+      
+      toast.success(`${bulunanKullanici.kullaniciAdi} ${bulunanKullanici.kullaniciSoyadi} daireye eklendi!`);
+      onSuccess();
+    } catch (addError) {
+      console.error('Daireye ekleme hatası:', addError);
+      toast.error(addError.message || 'Kullanıcı daireye eklenirken hata oluştu');
     } finally {
       setLoading(false);
     }
@@ -440,6 +463,55 @@ const SakinEkleModal = ({ daire, onClose, onSuccess }) => {
                 disabled={loading || !telefon.trim()}
               >
                 {loading ? 'Kontrol Ediliyor...' : 'Kontrol Et'}
+              </button>
+            </div>
+          </div>
+        ) : step === 2 ? (
+          // Kullanıcı Seçim Adımı
+          <div className="space-y-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-4 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
+              <strong>{telefon}</strong> numarasıyla kayıtlı kullanıcı bulundu!
+            </div>
+            
+            {bulunanKullanici && (
+              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-2">
+                <div className="flex items-center space-x-2">
+                  <User className="w-5 h-5 text-blue-600" />
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {bulunanKullanici.kullaniciAdi} {bulunanKullanici.kullaniciSoyadi}
+                  </span>
+                </div>
+                
+                <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                  <Phone className="w-4 h-4" />
+                  <span>{bulunanKullanici.kullaniciTelefon || telefon}</span>
+                </div>
+                
+                {bulunanKullanici.kullaniciEposta && (
+                  <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                    <Mail className="w-4 h-4" />
+                    <span>{bulunanKullanici.kullaniciEposta}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <div className="flex space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                disabled={loading}
+              >
+                Geri
+              </button>
+              <button
+                type="button"
+                onClick={handleKullaniciSec}
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                disabled={loading}
+              >
+                {loading ? 'Ekleniyor...' : 'Daireye Ekle'}
               </button>
             </div>
           </div>

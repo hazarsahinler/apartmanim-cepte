@@ -11,13 +11,6 @@ const BlokDetay = () => {
   const navigate = useNavigate();
   const [daireler, setDaireler] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // Sidebar state - ana şablona uyum için
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
 
   useEffect(() => {
     if (blokId) {
@@ -67,16 +60,25 @@ const BlokDetay = () => {
 
   const katlarData = katlarGroupBy();
   const katSayilari = Object.keys(katlarData).sort((a, b) => parseInt(b) - parseInt(a));
-  const doluDaireler = daireler.filter(d => d.kullaniciId && d.kullaniciId !== 0);
-  const bosDaireler = daireler.filter(d => !d.kullaniciId || d.kullaniciId === 0);
+  
+  // Daire doluluk kontrolü için @ManyToMany desteği
+  const doluDaireler = daireler.filter(d => {
+    // kullaniciResponseDTOS array'i varsa ve boş değilse dolu kabul et
+    return d.kullaniciResponseDTOS && Array.isArray(d.kullaniciResponseDTOS) && d.kullaniciResponseDTOS.length > 0;
+  });
+  
+  const bosDaireler = daireler.filter(d => {
+    // kullaniciResponseDTOS array'i yoksa veya boşsa boş kabul et
+    return !d.kullaniciResponseDTOS || !Array.isArray(d.kullaniciResponseDTOS) || d.kullaniciResponseDTOS.length === 0;
+  });
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-        <Sidebar isOpen={sidebarOpen} />
+        <MainNavbar />
+        <Sidebar />
         
-        <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
+        <div className="pt-16 ml-64">
           <div className="flex justify-center items-center h-screen">
             <div className="flex flex-col items-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
@@ -90,10 +92,10 @@ const BlokDetay = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-      <Sidebar isOpen={sidebarOpen} />
+      <MainNavbar />
+      <Sidebar />
       
-      <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
+      <div className="pt-16 ml-64">
         <div className="container mx-auto px-4 py-8">
           {/* Blok Header */}
           <div className="mb-8">
@@ -173,7 +175,12 @@ const BlokDetay = () => {
               <div className="p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {katlarData[katNo].map(daire => {
-                    const daireDolu = daire.kullaniciId && daire.kullaniciId !== 0; // @ManyToMany için basit kontrol
+                    // @ManyToMany desteği için doluluk kontrolü
+                    const daireDolu = daire.kullaniciResponseDTOS && 
+                                     Array.isArray(daire.kullaniciResponseDTOS) && 
+                                     daire.kullaniciResponseDTOS.length > 0;
+                    
+                    const sakinSayisi = daireDolu ? daire.kullaniciResponseDTOS.length : 0;
                     
                     return (
                       <div
@@ -205,7 +212,7 @@ const BlokDetay = () => {
                               ? 'text-green-700 dark:text-green-400' 
                               : 'text-gray-500 dark:text-gray-400'
                           }`}>
-                            {daireDolu ? 'Dolu' : 'Boş'}
+                            {daireDolu ? `Dolu (${sakinSayisi} kişi)` : 'Boş'}
                           </p>
                           
                           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">

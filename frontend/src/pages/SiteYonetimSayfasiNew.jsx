@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { authService } from '../services/authService';
+import { siteService } from '../services/siteService';
 import { siteStorageService } from '../services/siteStorageService';
 import { iller, getIlceler } from '../constants/turkiyeVeri';
 import { ENDPOINTS } from '../constants/endpoints';
@@ -22,7 +23,6 @@ const SiteYonetimSayfasi = () => {
   const [siteler, setSiteler] = useState([]);
   const [siteEkleModalAcik, setSiteEkleModalAcik] = useState(false);
   const [user, setUser] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterQuery, setFilterQuery] = useState('');
   const [filteredSiteler, setFilteredSiteler] = useState([]);
@@ -31,24 +31,6 @@ const SiteYonetimSayfasi = () => {
   
   // Infinite loop önlemek için flag kullanıyoruz
   const [isDataFetched, setIsDataFetched] = useState(false);
-
-  // Mobil görünümü izle
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      if (mobile && sidebarOpen) {
-        setSidebarOpen(false);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [sidebarOpen]);
-
-  // Sidebar'ı aç/kapat
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
 
   // Filtreleme panelini aç/kapat
   const toggleFilter = () => {
@@ -151,12 +133,12 @@ const SiteYonetimSayfasi = () => {
         setUser(userData);
         
         if (userData && userData.id) {
-          // Önce önbellekten site verilerini kontrol edelim
+          // Önce önbellekten site verilerini kontrol edelim (geçici olarak gösterim için)
           const { sites: cachedSites, lastFetch } = siteStorageService.getSites(userData.id);
           
-          // Önbellek verileri varsa, hemen göster
+          // Önbellek verileri varsa, geçici olarak göster (API'dan veri gelene kadar)
           if (cachedSites && cachedSites.length > 0) {
-            console.log('Önbellekte site verileri bulundu, gösteriliyor:', cachedSites);
+            console.log('Önbellekte site verileri bulundu, geçici olarak gösteriliyor:', cachedSites);
             setSiteler(cachedSites);
             
             // Önbellek güncel değilse (24 saatten eski), arka planda güncelleme yapalım
@@ -178,26 +160,28 @@ const SiteYonetimSayfasi = () => {
               throw new Error('Oturumunuz sonlanmış. Lütfen tekrar giriş yapın.');
             }
             
+            // Token'ı decode et ve rol bilgilerini kontrol et
+            const decodedToken = authService.decodeToken();
+            console.log('Decoded Token:', decodedToken);
+            console.log('Token roles:', decodedToken.roles);
+            console.log('Token apartmanRol:', decodedToken.apartmanRol);
+            
             console.log('Site verileri için kullanılan token:', token.substring(0, 20) + '...');
+            console.log('API çağrısı yapılıyor:', `http://localhost:8080/api/structure/site/${userData.id}`);
             
-            const response = await axios.get(`http://localhost:8080/api/structure/site/${userData.id}`, {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              },
-              timeout: 30000
-            });
+            // siteService kullanarak API çağrısı yap
+            const siteData = await siteService.getUserSites(userData.id);
             
-            if (response.data && response.data.length > 0) {
+            if (siteData && siteData.length > 0) {
               // API'den gelen verileri set et ve önbelleğe al
-              setSiteler(response.data);
-              siteStorageService.saveSites(response.data, userData.id);
+              setSiteler(siteData);
+              siteStorageService.saveSites(siteData, userData.id);
               
-              console.log('Kullanıcının siteleri başarıyla yüklendi:', response.data);
+              console.log('Kullanıcının siteleri başarıyla yüklendi:', siteData);
               
               // Eski önbellek varsa, güncellendiğini bildir
               if (cachedSites && cachedSites.length > 0 && 
-                  JSON.stringify(cachedSites) !== JSON.stringify(response.data)) {
+                  JSON.stringify(cachedSites) !== JSON.stringify(siteData)) {
                 toast.success('Site bilgileriniz güncellendi', {
                   position: "bottom-right", 
                   autoClose: 3000
@@ -206,20 +190,24 @@ const SiteYonetimSayfasi = () => {
             } else {
               console.log('Kullanıcıya ait site bulunamadı, boş liste döndü');
               
+              // Kullanıcının sitesi yoksa state'i ve önbelleği temizle
+              setSiteler([]);
+              siteStorageService.clearUserSiteData(userData.id);
+              
               // Önbellekte site varsa ama API'de yoksa, kullanıcıya bildir
               if (cachedSites && cachedSites.length > 0) {
-                toast.warning('Sunucuda site veriniz bulunamadı ama önbellekteki veriler gösteriliyor', {
+                toast.warning('Site verileriniz sunucuda bulunamadı. Önbellek temizlendi.', {
                   position: "bottom-center", 
                   autoClose: 5000
                 });
-              } else {
-                // Site bulunamadı, mecburi site ekleme modalını aç
-                setSiteEkleModalAcik(true);
-                toast.info('Henüz site eklememişsiniz. Lütfen ilk sitenizi ekleyin!', { 
-                  position: "top-center", 
-                  autoClose: 4000 
-                });
               }
+              
+              // Site bulunamadı, mecburi site ekleme modalını aç
+              setSiteEkleModalAcik(true);
+              toast.info('Henüz site eklememişsiniz. Lütfen ilk sitenizi ekleyin!', { 
+                position: "top-center", 
+                autoClose: 4000 
+              });
             }
           } catch (siteErr) {
             console.error("Site verileri alınamadı:", siteErr);
@@ -238,10 +226,13 @@ const SiteYonetimSayfasi = () => {
             
             // Önbellekten veri gösteriliyor mu kontrol edelim
             if (cachedSites && cachedSites.length > 0) {
-              // Zaten önbellekten gösterdiğimiz için sadece bilgi mesajı verelim
-              toast.info('Sunucuya erişilemiyor, önbellek verileri gösteriliyor', {
+              // API hatası varsa önbelleği de temizle (tutarsızlık olmasın)
+              setSiteler([]);
+              siteStorageService.clearUserSiteData(userData.id);
+              
+              toast.warning('Sunucuya erişilemiyor ve veri tutarsızlığı olabilir. Önbellek temizlendi.', {
                 position: "bottom-right", 
-                autoClose: 4000
+                autoClose: 5000
               });
             } else {
               // API'den site alınamadı, hata handling
@@ -301,7 +292,7 @@ const SiteYonetimSayfasi = () => {
     };
 
     fetchUserAndSites();
-  }, [navigate]); // navigate dependency'sini dahil ettik
+  }, [navigate, isDataFetched]); // navigate ve isDataFetched dependency'lerini dahil ettik
 
   // Site'ye tıklandığında site paneline yönlendir
   const handleSiteClick = (siteId) => {
@@ -342,13 +333,13 @@ const SiteYonetimSayfasi = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Navbar */}
-      <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
+      <MainNavbar />
       
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} />
+      <Sidebar />
       
       {/* Main Content */}
-      <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
+      <div className="pt-16 ml-64"> {/* Sidebar her zaman açık olduğu için sabit 256px margin */}
         <div className="container mx-auto px-4 py-8">
           {/* Başlık ve Özetler */}
           <div className="mb-8">

@@ -1,15 +1,13 @@
 package com.apartmanimcepte.backend.structure.bus;
 
 
-import com.apartmanimcepte.backend.identity.dto.DaireyeSakinEkleDTO;
 import com.apartmanimcepte.backend.identity.dto.ResponseDTO;
-import com.apartmanimcepte.backend.identity.entity.Kullanici;
 import com.apartmanimcepte.backend.structure.dto.RequestDTO.BlokKayitDTO;
+import com.apartmanimcepte.backend.structure.dto.RequestDTO.DaireyeSakinEkleDTO;
 import com.apartmanimcepte.backend.structure.dto.RequestDTO.SiteKayitDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.BlokResponseDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.DaireResponseDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.SiteResponseDTO;
-import com.apartmanimcepte.backend.structure.entity.Daire;
 
 import java.util.List;
 
@@ -26,9 +24,8 @@ public interface SiteService {
 
     DaireResponseDTO getDaireById(Long daireId);
 
-    ResponseDTO daireYeniSakinEkle(Kullanici kullanici, Daire daire);
-
     ResponseDTO daireSakinEkle(DaireyeSakinEkleDTO daireyeSakinEkleDTO);
+
 
 
 }

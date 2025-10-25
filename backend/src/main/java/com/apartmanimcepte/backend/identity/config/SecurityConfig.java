@@ -55,12 +55,18 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/identity/giris",
                                 "/api/identity/yonetici/kayit",
+                                "/api/identity/kullanici/kayit",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
 
                         // Site, blok, daire ekleme/silme/güncelleme gibi işlemleri SADECE YONETICI yapabilsin
-                        .requestMatchers("/api/structure/**").hasRole("YONETICI") // "ROLE_" ön ekini Spring otomatik ekler
+                        .requestMatchers("/api/structure/site/ekle").hasRole("YONETICI")
+                        .requestMatchers("/api/structure/blok/ekle").hasRole("YONETICI")
+                        .requestMatchers("/api/structure/bloklar/**").hasRole("YONETICI")
+                        .requestMatchers("/api/structure/daire/sakin/ekle").hasRole("YONETICI")
+                        .requestMatchers("/api/structure/site/{kullaniciId}").hasRole("YONETICI")
+
 
                         // Geriye kalan TÜM istekler için kimlik doğrulaması (login) zorunlu olsun
                         .anyRequest().authenticated()

@@ -1,7 +1,6 @@
 package com.apartmanimcepte.backend.structure.bus;
 
 import com.apartmanimcepte.backend.identity.dao.KullaniciDAO;
-import com.apartmanimcepte.backend.identity.dto.DaireyeSakinEkleDTO;
 import com.apartmanimcepte.backend.identity.dto.KullaniciResponseDTO;
 import com.apartmanimcepte.backend.identity.dto.ResponseDTO;
 import com.apartmanimcepte.backend.identity.entity.Kullanici;
@@ -9,6 +8,7 @@ import com.apartmanimcepte.backend.structure.dao.BlokDAO;
 import com.apartmanimcepte.backend.structure.dao.DaireDAO;
 import com.apartmanimcepte.backend.structure.dao.SiteDAO;
 import com.apartmanimcepte.backend.structure.dto.RequestDTO.BlokKayitDTO;
+import com.apartmanimcepte.backend.structure.dto.RequestDTO.DaireyeSakinEkleDTO;
 import com.apartmanimcepte.backend.structure.dto.RequestDTO.SiteKayitDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.BlokResponseDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.DaireResponseDTO;
@@ -43,7 +43,7 @@ public class SiteServiceImpl implements SiteService {
     public ResponseDTO SiteKayit(SiteKayitDTO siteKayitDTO) {
         ResponseDTO responseDTO = new ResponseDTO();
 
-        Kullanici kullanici = kullaniciDAO.getObjectById(Kullanici.class, (int) siteKayitDTO.getYoneticiId());
+        Kullanici kullanici = kullaniciDAO.getObjectById(Kullanici.class,siteKayitDTO.getYoneticiId());
         if (kullanici == null) {
             responseDTO.setMessage("Hata: Yönetici bulunamadı.");
             return responseDTO;
@@ -112,11 +112,12 @@ public class SiteServiceImpl implements SiteService {
                 // Blok oluştur
                 Blok blok = new Blok();
                 blok.setBlokIsmi(blokKayitDTO.getBlokIsmi());
-                blok.setSite(siteDAO.getObjectById(Site.class, Math.toIntExact(blokKayitDTO.getSiteId())));
+                blok.setSite(siteDAO.getObjectById(Site.class, blokKayitDTO.getSiteId()));
                 blokDAO.saveOrUpdate(blok);
 
                 int katSayisi = blokKayitDTO.getKatSayisi();
                 int katBasiDaire = blokKayitDTO.getHerKattakiDaireSayisi();
+                int total= katSayisi*katBasiDaire;
                 int k = 0;
                 int a = 0;
                 for (int i = 1; i <= katSayisi; i++) {
@@ -135,7 +136,7 @@ public class SiteServiceImpl implements SiteService {
 
                 }
 
-                responseDTO.setMessage("Blok oluşturuldu, " + (katSayisi * katBasiDaire) + " daire eklendi!");
+                responseDTO.setMessage("Blok oluşturuldu, " + (total) + " daire eklendi!");
                 return responseDTO;
 
             } catch (Exception e) {
@@ -176,7 +177,6 @@ public class SiteServiceImpl implements SiteService {
 
     @Override
     @Transactional
-
     public List<DaireResponseDTO> getDaireler(Long blokId) {
         List<DaireResponseDTO> daireResponseDTOS = new ArrayList<>();
         List<Blok> blokList = blokDAO.getObjectsByParam(Blok.class, "blokId", blokId);
@@ -195,13 +195,16 @@ public class SiteServiceImpl implements SiteService {
                             .map(kullaniciEntity -> {
                                 KullaniciResponseDTO dto = new KullaniciResponseDTO();
                                 dto.setKullaniciId(kullaniciEntity.getKullaniciId());
+                                dto.setKullaniciTelefon(kullaniciEntity.getKullaniciTelefon());
                                 dto.setKullaniciAdi(kullaniciEntity.getKullaniciAdi());
                                 dto.setKullaniciSoyadi(kullaniciEntity.getKullaniciSoyadi());
                                 dto.setKullaniciEposta(kullaniciEntity.getKullaniciEposta());
                                 dto.setKonutKullanim(kullaniciEntity.getKonutKullanimRol().name());
+                                dto.setApartmanRol(kullaniciEntity.getApartmanRol().name());
                                 return dto;
                             })
                             .collect(Collectors.toSet());
+                    daireResponseDTO.setKullaniciResponseDTOS(kullaniciDTOlari);
 
                 }
 
@@ -226,10 +229,12 @@ public class SiteServiceImpl implements SiteService {
                 .map(kullaniciEntity -> {
                     KullaniciResponseDTO dto = new KullaniciResponseDTO();
                     dto.setKullaniciId(kullaniciEntity.getKullaniciId());
+                    dto.setKullaniciTelefon(kullaniciEntity.getKullaniciTelefon());
                     dto.setKullaniciAdi(kullaniciEntity.getKullaniciAdi());
                     dto.setKullaniciSoyadi(kullaniciEntity.getKullaniciSoyadi());
                     dto.setKullaniciEposta(kullaniciEntity.getKullaniciEposta());
                     dto.setKonutKullanim(kullaniciEntity.getKonutKullanimRol().name());
+                    dto.setApartmanRol(kullaniciEntity.getApartmanRol().name());
                     return dto;
                 })
                 .collect(Collectors.toSet());
@@ -237,6 +242,8 @@ public class SiteServiceImpl implements SiteService {
         daireResponseDTO.setDaireNo(daire.getDaireNo());
         daireResponseDTO.setKatNo(daire.getKatNo());
         daireResponseDTO.setBlokId(daire.getBlok().getBlokId());
+        daireResponseDTO.setKullaniciResponseDTOS(kullaniciDTOlari);
+
 
 
         return daireResponseDTO;
@@ -244,34 +251,22 @@ public class SiteServiceImpl implements SiteService {
 
     @Override
     @Transactional
-    public ResponseDTO daireYeniSakinEkle(Kullanici kullanici, Daire daire) {
-        ResponseDTO responseDTO = new ResponseDTO();
-        List<Kullanici> kullanicilar = (List<Kullanici>) daire.getKullanicilar();
-        kullanicilar.add(kullanici);
-        daire.setKullanicilar((Set<Kullanici>) kullanicilar);
-        daireDAO.saveOrUpdate(daire);
-        if (daire.getKullanicilar() != null) {
-            responseDTO.setMessage("KULLANICI DAİREYE EKLENMEDİ");
-        }
-        responseDTO.setMessage("KULLANICI DAİREYE BAŞARIYLA EKLENDİ");
-        return responseDTO;
-    }
-
-    @Override
-    @Transactional
     public ResponseDTO daireSakinEkle(DaireyeSakinEkleDTO daireyeSakinEkleDTO) {
         ResponseDTO responseDTO = new ResponseDTO();
-        List<Kullanici> kullaniciList = kullaniciDAO.getObjectsByParam(Kullanici.class, "kullaniciTelefon", daireyeSakinEkleDTO.getKullaniciTelefon());
-        List<Daire> daireList = daireDAO.getObjectsByParam(Daire.class, "daireId", daireyeSakinEkleDTO.getDaireId());
-        if (kullaniciList.isEmpty()) {
-            responseDTO.setMessage("Kullanici bulunamadı!!!");
-        } else {
-            Kullanici kullanici = kullaniciList.get(0);
-            Daire daire = daireList.get(0);
-            daire.setKullanicilar((Set<Kullanici>) kullaniciList);
-            daireDAO.saveOrUpdate(daire);
-            responseDTO.setMessage("Kullanici eklendi!");
+        Daire daire = daireDAO.getObjectById(Daire.class,daireyeSakinEkleDTO.getDaireId());
+        Set<Kullanici> mevcutSakinler = daire.getKullanicilar();
+
+        for(Kullanici kullanici : mevcutSakinler) {
+            if(kullanici.getKullaniciId()==daireyeSakinEkleDTO.getKullaniciId()){
+                responseDTO.setMessage("HATA: BU KULLANICI MEVCUT DAIREYE DAHA ÖNCE EKLENMİS");
+                return responseDTO;
+            }
         }
+        Kullanici kullanici = kullaniciDAO.getObjectById(Kullanici.class,daireyeSakinEkleDTO.getKullaniciId());
+        mevcutSakinler.add(kullanici);
+        daire.setKullanicilar(mevcutSakinler);
+        daireDAO.saveOrUpdate(daire);
+        responseDTO.setMessage("Ekleme İşlemi Başarıyla Gerçekleşti!");
         return responseDTO;
     }
 

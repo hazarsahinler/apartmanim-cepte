@@ -10,11 +10,15 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.GrantedAuthority; // Spring Security'den import ediyoruz
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.util.Collection; // Collection import ediyoruz
 import java.util.Date;
+import java.util.List; // List import ediyoruz
 import java.util.function.Function;
+import java.util.stream.Collectors; // Stream API için import
 
 @Service
 public class JwtService {
@@ -28,15 +32,23 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String username, Long userId) {
+    // DEĞİŞİKLİK BURADA BAŞLIYOR: Metodun imzasına rol parametresi ekledik.
+    public String generateToken(String username, Long userId, Collection<? extends GrantedAuthority> authorities) {
+        // GrantedAuthority listesini String listesine çeviriyoruz.
+        List<String> roles = authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
         return Jwts.builder()
                 .setSubject(username)
-                .claim("userId", userId) // Kullanıcı ID'sini token'a ekle
+                .claim("userId", userId)
+                .claim("roles", roles) // Rolleri "roles" claim'i olarak token'a ekliyoruz
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(getSigningKey())
                 .compact();
     }
+    // DEĞİŞİKLİK BURADA BİTİYOR
 
     public Claims extractAllClaims(String token) {
         try {
@@ -61,10 +73,6 @@ public class JwtService {
             logger.warn("JWT claims string is empty: {}", e.getMessage());
             throw e;
         }
-        // Your original catch block:
-        // catch (Exception e) {
-        //     throw new RuntimeException("ZAMAN ASIMI.LOGIN SAYFASINA YONLENDIRILIYORSUNUZ " + e.getMessage());
-        // }
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

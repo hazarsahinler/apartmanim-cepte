@@ -35,7 +35,7 @@ public class KullaniciController {
         this.userDetailsService = userDetailsService;
     }
 
-
+    //test edildi
     @PostMapping("/identity/yonetici/kayit")
     public ResponseEntity<String> yoneticiKayit(@Valid @RequestBody KullaniciKayitDTO kullaniciKayitDTO) throws IOException {
         try {
@@ -46,21 +46,36 @@ public class KullaniciController {
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    //test edildi
+    @PostMapping("/identity/kullanici/kayit")
+    public ResponseEntity<String> KullaniciKayit(@Valid @RequestBody KullaniciKayitDTO kullaniciKayitDTO) throws IOException {
+        try {
+            ResponseDTO responseDTO = kullaniciService.KullaniciKayit(kullaniciKayitDTO);
+            return new ResponseEntity<>(responseDTO.getMessage(), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Kayıt işlemi sırasında bir hata oluştu: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
+    //test edildi
     @PostMapping("/identity/giris")
     public ResponseEntity<ResponseDTO> kullaniciGiris(@Valid @RequestBody KullaniciGirisBilgiDTO kullaniciGirisBilgiDTO) throws IOException {
         ResponseDTO responseDTO = new ResponseDTO();
         responseDTO= kullaniciService.KullaniciGiris(kullaniciGirisBilgiDTO);
         return new ResponseEntity<>(responseDTO,HttpStatus.OK);
     }
+
+    //test edildi
     @GetMapping("/identity/kullanici/bilgi/{kullaniciId}")
     public KullaniciResponseDTO kullaniciBilgileri(@PathVariable("kullaniciId") Long kullaniciId) throws IOException {
         KullaniciResponseDTO responseDTO = new KullaniciResponseDTO();
         responseDTO=kullaniciService.KullaniciBilgi(kullaniciId);
         return responseDTO;
     }
+    //test edildi
     @GetMapping("/identity/kullanici/telefon/{telefon}")
-    public ResponseEntity<KullaniciResponseDTO> kullaniciTelefonKontrol(@PathVariable String telefon) {
+    public ResponseEntity<KullaniciResponseDTO> kullaniciTelefonKontrol(@PathVariable ("telefon") String telefon) {
         try {
            Kullanici kullanici = userDetailsService.loadUserByUsername(telefon);
             if (kullanici==null) {
@@ -81,15 +96,7 @@ public class KullaniciController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @PostMapping("/identity/apartman/sakin/kayit")
-    public ResponseEntity<String> apartmanSakinKayit(@Valid @RequestBody ApartmanSakinKayitDTO apartmanSakinKayitDTO) throws IOException {
-        try {
-            ResponseDTO responseDTO = kullaniciService.ApartmanSakinKayit(apartmanSakinKayitDTO);
-            return new ResponseEntity<>(responseDTO.getMessage(), HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Kayıt işlemi sırasında bir hata oluştu: " + e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+
+
 
 }

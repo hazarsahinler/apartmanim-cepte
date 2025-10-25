@@ -16,7 +16,7 @@ public class BaseDAO {
     }
 
 
-    public <T> T getObjectById(Class<T> clazz, Integer id) {
+    public <T> T getObjectById(Class<T> clazz, Long id) {
         return sessionFactory.getCurrentSession().get(clazz, id);
     }
 
@@ -59,7 +59,7 @@ public class BaseDAO {
         sessionFactory.getCurrentSession().delete(object);
     }
 
-    public <T> void deleteObjectById(Class<T> clazz, Integer id) {
+    public <T> void deleteObjectById(Class<T> clazz, Long id) {
         sessionFactory.getCurrentSession().delete(getObjectById(clazz, id));
     }
 

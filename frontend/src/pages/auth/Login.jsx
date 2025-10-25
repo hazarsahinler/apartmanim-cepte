@@ -52,21 +52,53 @@ const Login = () => {
         const userInfo = await authService.getUserInfo();
         console.log('Kullanıcı bilgileri alındı:', userInfo);
         
-        // Kullanıcı rolüne göre yönlendir (API'dan dönen bilgilere göre)
-        // Veritabanında apartmanRol değeri 0 (YONETICI) veya 1 (SAKIN) olabilir
-        const role = userInfo.apartmanRol;
+        // Token'dan rol bilgisini de al
+        const decodedToken = authService.decodeToken();
+        console.log('Token bilgileri:', decodedToken);
         
-        if (role === 0 || role === 'YONETICI') { // 0 = YONETICI
+        // Kullanıcı rolüne göre yönlendir
+        // Önce API'dan gelen rol bilgisini kontrol et, yoksa token'dan al
+        let role = userInfo.apartmanRol;
+        
+        // Eğer API'dan rol gelmiyorsa token'dan al
+        if (role === null || role === undefined) {
+          role = decodedToken.apartmanRol;
+        }
+        
+        console.log('API\'dan gelen userInfo:', userInfo);
+        console.log('API\'dan gelen rol (userInfo.apartmanRol):', userInfo.apartmanRol);
+        console.log('Token\'dan gelen rol (decodedToken.apartmanRol):', decodedToken.apartmanRol);
+        console.log('Belirlenen final rol:', role);
+        
+        if (role === 'ROLE_YONETICI' || role === 'ApartmanYonetici' || role === 'Yonetici') {
+          console.log('Yönetici olarak yönlendiriliyor...');
           navigate('/site-yonetimi');
-        } else if (role === 1 || role === 'SAKIN') { // 1 = SAKIN
-          navigate('/site-yonetimi'); // Şimdilik herkesi site yönetimine yönlendir
+        } else if (role === 'ROLE_APARTMANSAKIN' || role === 'ApartmanSakin' || role === 'Sakin') {
+          console.log('Kullanıcı olarak yönlendiriliyor...');
+          navigate('/kullanici-dashboard');
         } else {
+          console.warn('Rol belirsiz, varsayılan yönetici dashboardına yönlendiriliyor:', role);
           navigate('/site-yonetimi');
         }
       } catch (userInfoErr) {
         console.error('Kullanıcı bilgileri alınamadı:', userInfoErr);
-        // Kullanıcı bilgileri alınamazsa varsayılan olarak site yönetimine yönlendir
-        navigate('/site-yonetimi');
+        
+        // Kullanıcı bilgileri alınamazsa token'dan rol kontrolü yap
+        try {
+          const decodedToken = authService.decodeToken();
+          const tokenRole = decodedToken.apartmanRol;
+          
+          if (tokenRole === 'ROLE_YONETICI' || tokenRole === 'ApartmanYonetici' || tokenRole === 'Yonetici') {
+            navigate('/site-yonetimi');
+          } else if (tokenRole === 'ROLE_APARTMANSAKIN' || tokenRole === 'ApartmanSakin' || tokenRole === 'Sakin') {
+            navigate('/kullanici-dashboard');
+          } else {
+            navigate('/site-yonetimi');
+          }
+        } catch (tokenErr) {
+          console.error('Token decode hatası:', tokenErr);
+          navigate('/site-yonetimi');
+        }
       }
     } catch (err) {
       setError(err.message || 'Giriş yapılırken bir hata oluştu.');
@@ -209,16 +241,25 @@ const Login = () => {
 
             {/* Footer */}
             <div className="text-center mt-6">
-              <p className="text-gray-600 text-sm">
-                Hesabınız yok mu?{' '}
+              <p className="text-gray-600 text-sm mb-4">
+                Hesabınız yok mu?
+              </p>
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => navigate('/kullanici-kayit')}
+                  className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  Apartman Sakin Kayıt
+                </button>
                 <button
                   type="button"
                   onClick={() => navigate('/yonetici-kayit')}
-                  className="text-green-600 hover:text-green-500 font-medium underline"
+                  className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
                 >
-                  Kayıt Ol
+                  Yönetici Kayıt
                 </button>
-              </p>
+              </div>
             </div>
           </form>
         </div>

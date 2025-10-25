@@ -47,7 +47,7 @@ public class Kullanici {
 
     @ManyToMany(mappedBy = "kullanicilar")
     @JsonBackReference
-    @ToString.Exclude // BU SATIRI EKLEYİN
-    @EqualsAndHashCode.Exclude // Döngüsel bağımlılığı kırmak için bunu da eklemek iyi bir pratiktir.
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<Daire> daireler = new HashSet<>();
 }

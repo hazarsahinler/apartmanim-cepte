@@ -43,6 +43,20 @@ export const authService = {
     }
   },
 
+  // Kullanıcı (sakin) kaydı
+  registerUser: async (userData) => {
+    try {
+      // ENDPOINTS kullanarak
+      const response = await api.post(ENDPOINTS.IDENTITY.SAKIN_KAYIT, userData);
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || 
+        'Kayıt sırasında bir hata oluştu.'
+      );
+    }
+  },
+
   // Giriş - KullaniciGirisBilgiDTO'ya göre field mapping
   login: async (credentials) => {
     try {
@@ -90,8 +104,12 @@ export const authService = {
       const decodedToken = jwtDecode(token);
       console.log('Decoded token:', decodedToken);
       
-      // JWT token içinde kullanıcı ID'si 'userId' veya 'sub' claim'inde saklanıyor olabilir
+      // JWT token içinde kullanıcı ID'si 'userId' claim'inde saklanıyor
       const kullaniciId = decodedToken.userId || decodedToken.sub || decodedToken.id;
+      
+      // JWT token'dan rolleri al
+      const roles = decodedToken.roles || [];
+      console.log('Token\'dan alınan roller:', roles);
 
       if (!kullaniciId) {
         console.error('Token içeriği:', decodedToken);
@@ -115,12 +133,35 @@ export const authService = {
         });
         // API yanıtını kullan
         const userInfo = response.data;
-        console.log('Kullanıcı bilgileri alındı:', userInfo);
+        console.log('API\'dan gelen ham kullanıcı bilgileri:', userInfo);
+        console.log('API\'dan gelen apartmanRol:', userInfo.apartmanRol);
+        
+        // Rol bilgisini token'dan al ve apartmanRol field'ını güncelle
+        let apartmanRol = userInfo.apartmanRol;
+        console.log('İlk apartmanRol değeri (API\'dan):', apartmanRol);
+        
+        // Eğer API'dan rol bilgisi gelmiyorsa token'dan al
+        if ((apartmanRol === null || apartmanRol === undefined) && roles.length > 0) {
+          console.log('API\'dan rol gelmedi, token\'dan alınıyor...');
+          // Backend'deki rol formatını kontrol et
+          if (roles.includes('ROLE_YONETICI')) {
+            apartmanRol = 'ROLE_YONETICI';
+            console.log('Token\'dan ROLE_YONETICI belirlendi');
+          } else if (roles.includes('ROLE_APARTMANSAKIN')) {
+            apartmanRol = 'ROLE_APARTMANSAKIN';
+            console.log('Token\'dan ROLE_APARTMANSAKIN belirlendi');
+          }
+          console.log('Token\'dan belirlenen apartmanRol:', apartmanRol);
+        } else {
+          console.log('API\'dan rol bilgisi var:', apartmanRol);
+        }
         
         // ID bilgisini token'dan alınmış ID ile birleştir (API dönüşünde olmayabilir)
         const enhancedUserInfo = {
           ...userInfo,
-          id: kullaniciId // ID'yi token'dan alıp ekliyoruz
+          id: kullaniciId, // ID'yi token'dan alıp ekliyoruz
+          apartmanRol: apartmanRol, // Rol bilgisini güncelle
+          roles: roles // Token'dan alınan rolleri de ekle
         };
         
         console.log('Zenginleştirilmiş kullanıcı bilgileri:', enhancedUserInfo);
@@ -163,7 +204,7 @@ export const authService = {
             kullaniciSoyadi: '',
             kullaniciTelefon: decodedToken.sub || '',
             kullaniciEposta: '',
-            apartmanRol: 0 // YONETICI olarak varsay
+            apartmanRol: 'ROLE_YONETICI' // Varsayılan olarak yönetici
           };
           
           // localStorage'a kaydet
@@ -227,12 +268,25 @@ export const authService = {
         throw new Error('Token bulunamadı');
       }
       
-      // Artık gerçek JWT token yapısını taklit eden bir test token kullanıyoruz
-      // Bu nedenle bu kodu kaldırdık ve doğrudan decode etmeyi kullanıyoruz
-      
       const decoded = jwtDecode(token);
       console.log('Decoded token data:', decoded);
-      return decoded;
+      
+      // Rolleri al
+      const roles = decoded.roles || [];
+      
+      // apartmanRol değerini rollere göre belirle
+      let apartmanRol = null;
+      if (roles.includes('ROLE_YONETICI')) {
+        apartmanRol = 'ROLE_YONETICI';
+      } else if (roles.includes('ROLE_APARTMANSAKIN')) {
+        apartmanRol = 'ROLE_APARTMANSAKIN';
+      }
+      
+      return {
+        ...decoded,
+        apartmanRol: apartmanRol,
+        roles: roles
+      };
     } catch (error) {
       console.error('Token çözümleme hatası:', error);
       return {}; // Boş nesne döndür
@@ -276,7 +330,7 @@ export const authService = {
             kullaniciAdi: "Kullanıcı",
             kullaniciSoyadi: "",
             kullaniciTelefon: decodedToken.sub || "",
-            ApartmanRol: "YONETICI"
+            ApartmanRol: "ROLE_YONETICI"
           };
           
           // Sonradan kullanılmak üzere sakla

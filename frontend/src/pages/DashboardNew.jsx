@@ -199,7 +199,9 @@ const Dashboard = () => {
                 </h1>
                 <div className="flex flex-wrap items-center mt-2">
                   <span className="inline-flex items-center px-3 py-1 mr-2 mb-2 rounded-full text-xs font-medium bg-green-200 text-green-800">
-                    {userInfo.ApartmanRol === 0 ? 'Yönetici' : userInfo.ApartmanRol === 1 ? 'Sakin' : userInfo.ApartmanRol || 'Yönetici'}
+                    {(userInfo.ApartmanRol === 'ROLE_YONETICI' || userInfo.ApartmanRol === 'ApartmanYonetici' || userInfo.ApartmanRol === 'Yonetici') ? 'Yönetici' : 
+                     (userInfo.ApartmanRol === 'ROLE_APARTMANSAKIN' || userInfo.ApartmanRol === 'ApartmanSakin' || userInfo.ApartmanRol === 'Sakin') ? 'Sakin' : 
+                     userInfo.ApartmanRol || 'Yönetici'}
                   </span>
                   <span className="inline-flex items-center px-3 py-1 mr-2 mb-2 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     {userInfo.kullaniciEposta}

@@ -20,13 +20,6 @@ const SitePanelSayfasi = () => {
   const [bloklar, setBloklar] = useState([]);
   const [blokYukleniyor, setBlokYukleniyor] = useState(true);
   const [blokEkleModalAcik, setBlokEkleModalAcik] = useState(false);
-  
-  // Sidebar state
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
 
   const toggleBlokEkleModal = () => {
     setBlokEkleModalAcik(!blokEkleModalAcik);
@@ -207,10 +200,10 @@ const SitePanelSayfasi = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-        <Sidebar isOpen={sidebarOpen} />
+        <MainNavbar />
+        <Sidebar />
         
-        <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
+        <div className="pt-16 ml-64">
           <div className="flex justify-center items-center h-screen">
             <div className="flex flex-col items-center">
               <Loader2 className="h-12 w-12 text-green-500 animate-spin" />
@@ -225,10 +218,10 @@ const SitePanelSayfasi = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-        <Sidebar isOpen={sidebarOpen} />
+        <MainNavbar />
+        <Sidebar />
         
-        <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
+        <div className="pt-16 ml-64">
           <div className="container mx-auto px-4 py-8">
             <div className="max-w-5xl mx-auto">
               <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg relative" role="alert">
@@ -255,10 +248,10 @@ const SitePanelSayfasi = () => {
   if (!siteData) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-        <Sidebar isOpen={sidebarOpen} />
+        <MainNavbar />
+        <Sidebar />
         
-        <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
+        <div className="pt-16 ml-64">
           <div className="container mx-auto px-4 py-8">
             <div className="max-w-5xl mx-auto">
               <div className="bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-400 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 px-4 py-3 rounded-lg relative" role="alert">
@@ -285,13 +278,13 @@ const SitePanelSayfasi = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Navbar */}
-      <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
+      <MainNavbar />
       
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} />
+      <Sidebar />
       
       {/* Main Content */}
-      <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
+      <div className="pt-16 ml-64"> {/* Sidebar her zaman açık olduğu için sabit margin */}
         <div className="container mx-auto px-4 py-8">
           {/* Site Header */}
           <div className="mb-8">

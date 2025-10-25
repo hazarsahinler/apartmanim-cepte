@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { authService } from '../services/authService';
 
-const Sidebar = ({ isOpen }) => {
+const Sidebar = () => { // isOpen prop'unu kaldırdık - artık her zaman açık
   const [activeMenu, setActiveMenu] = useState('');
   const [user, setUser] = useState(null);
   const [siteler, setSiteler] = useState([]);
@@ -148,29 +148,26 @@ const Sidebar = ({ isOpen }) => {
 
   return (
     <aside 
-      className={`fixed left-0 top-16 h-full bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 ease-in-out z-40
-        ${isOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-full sm:w-16 sm:translate-x-0'}`}
+      className="fixed left-0 top-16 h-full w-64 bg-white dark:bg-gray-800 shadow-lg z-40"
     >
       <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
-        <div className={`py-4 ${!isOpen && 'hidden sm:block'}`}>
-          {/* Kullanıcı bilgileri - sadece açık durumda veya büyük ekranlarda göster */}
-          {isOpen && (
-            <div className="px-4 py-2 mb-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                  {user && user.kullaniciAdi ? user.kullaniciAdi.charAt(0) : 'K'}
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-800 dark:text-white">
-                    {user ? `${user.kullaniciAdi} ${user.kullaniciSoyadi || ''}` : 'Kullanıcı'}
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {user?.rol || user?.ApartmanRol || 'Yönetici'}
-                  </p>
-                </div>
+        <div className="py-4">
+          {/* Kullanıcı bilgileri */}
+          <div className="px-4 py-2 mb-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                {user && user.kullaniciAdi ? user.kullaniciAdi.charAt(0) : 'K'}
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-800 dark:text-white">
+                  {user ? `${user.kullaniciAdi} ${user.kullaniciSoyadi || ''}` : 'Kullanıcı'}
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {user?.rol || user?.ApartmanRol || 'Yönetici'}
+                </p>
               </div>
             </div>
-          )}
+          </div>
           
           {/* Ana menü */}
           <nav className="mt-1">
@@ -187,19 +184,17 @@ const Sidebar = ({ isOpen }) => {
                           : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50'}`}
                     >
                       <div className="flex items-center">
-                        <span className={`${!isOpen && 'mx-auto'}`}>{item.icon}</span>
-                        {isOpen && <span className="ml-3 text-sm font-medium">{item.label}</span>}
+                        <span>{item.icon}</span>
+                        <span className="ml-3 text-sm font-medium">{item.label}</span>
                       </div>
                       
-                      {isOpen && (
-                        <>
-                          {activeMenu === item.id ? (
-                            <ChevronDown size={16} />
-                          ) : (
-                            <ChevronRight size={16} />
-                          )}
-                        </>
-                      )}
+                      <>
+                        {activeMenu === item.id ? (
+                          <ChevronDown size={16} />
+                        ) : (
+                          <ChevronRight size={16} />
+                        )}
+                      </>
                     </button>
                   ) : (
                     <Link
@@ -210,24 +205,19 @@ const Sidebar = ({ isOpen }) => {
                           : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50'}`}
                     >
                       <div className="flex items-center">
-                        <span className={`${!isOpen && 'mx-auto'}`}>{item.icon}</span>
-                        {isOpen && <span className="ml-3 text-sm font-medium">{item.label}</span>}
+                        <span>{item.icon}</span>
+                        <span className="ml-3 text-sm font-medium">{item.label}</span>
                       </div>
-                      {isOpen && item.badge && (
+                      {item.badge && (
                         <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                           {item.badge}
                         </span>
-                      )}
-                      
-                      {/* Rozet - sadece küçük ekranlarda ve kapalı durumdayken göster */}
-                      {!isOpen && item.badge && (
-                        <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
                       )}
                     </Link>
                   )}
                   
                   {/* Alt menü */}
-                  {item.hasSubmenu && isOpen && activeMenu === item.id && (
+                  {item.hasSubmenu && activeMenu === item.id && (
                     <ul className="pl-8 mt-1 space-y-1">
                       {(item.submenu || []).map((subItem) => (
                         <li key={subItem.id}>

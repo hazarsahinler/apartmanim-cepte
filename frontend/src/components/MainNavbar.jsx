@@ -7,7 +7,7 @@ import {
 import { authService } from '../services/authService';
 import { toast } from 'react-toastify';
 
-const MainNavbar = ({ toggleSidebar, isSidebarOpen }) => {
+const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
   const [user, setUser] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -88,14 +88,19 @@ const MainNavbar = ({ toggleSidebar, isSidebarOpen }) => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            {/* Hamburger menü iconu */}
-            <button 
-              onClick={toggleSidebar}
-              className="mr-2 p-2 rounded-md text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
-              aria-label={isSidebarOpen ? "Kenar çubuğunu kapat" : "Kenar çubuğunu aç"}
-            >
-              {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
+            {/* Hamburger Menu Button - Mobile Only */}
+            {(toggleUserSidebar) && (
+              <button
+                onClick={toggleUserSidebar}
+                className="lg:hidden mr-3 p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                {isUserSidebarOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
+              </button>
+            )}
             
             {/* Logo */}
             <Link to="/site-yonetimi" className="flex-shrink-0 flex items-center">
