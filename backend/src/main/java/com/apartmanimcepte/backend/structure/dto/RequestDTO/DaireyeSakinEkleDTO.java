@@ -12,4 +12,3 @@ public class DaireyeSakinEkleDTO {
     private long kullaniciId;
     private long daireId;
 }
-

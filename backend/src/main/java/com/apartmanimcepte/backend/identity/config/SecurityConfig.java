@@ -56,6 +56,7 @@ public class SecurityConfig {
                                 "/api/identity/giris",
                                 "/api/identity/yonetici/kayit",
                                 "/api/identity/kullanici/kayit",
+                                "/api/identity/apartman/sakin/kayit",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
