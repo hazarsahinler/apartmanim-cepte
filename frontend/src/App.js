@@ -6,6 +6,9 @@ import Login from './pages/auth/Login';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import KullaniciDashboard from './pages/KullaniciDashboard';
+import YoneticiDashboard from './pages/YoneticiDashboard';
+import AlacakYonetimi from './pages/AlacakYonetimi';
+import GiderYonetimi from './pages/GiderYonetimi';
 import './index.css';
 import TestPage from './pages/TestPage';
 import Duyurular from './pages/Duyurular';
@@ -59,8 +62,11 @@ function App() {
             
             {/* Site Yönetim Sayfaları */}
             <Route path="/site-yonetimi" element={<SiteYonetimSayfasiNew />} />
+            <Route path="/yonetici-dashboard" element={<YoneticiDashboard />} />
             <Route path="/kullanici-dashboard" element={<KullaniciDashboard />} />
             <Route path="/site-panel/:siteId" element={<SitePanelSayfasi />} />
+            <Route path="/alacak-yonetimi/:siteId" element={<AlacakYonetimi />} />
+            <Route path="/gider-yonetimi/:siteId" element={<GiderYonetimi />} />
             <Route path="/blok-detay/:blokId" element={<BlokDetay />} />
             <Route path="/daire-detay/:daireId" element={<DaireDetay />} />
             

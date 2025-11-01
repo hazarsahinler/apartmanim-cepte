@@ -34,7 +34,7 @@ public class Daire {
             joinColumns = @JoinColumn(name = "daire_id"),
             inverseJoinColumns = @JoinColumn(name = "kullanici_id")
     )
-    @ToString.Exclude // BU SATIRI EKLEYİN
-    @EqualsAndHashCode.Exclude // Bunu da ekleyin
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<Kullanici> kullanicilar = new HashSet<>();
 }

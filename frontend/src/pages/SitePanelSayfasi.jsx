@@ -365,6 +365,47 @@ const SitePanelSayfasi = () => {
             </div>
           </div>
 
+          {/* Finansal İşlemler Butonları */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-8">
+            <button
+              onClick={() => navigate(`/alacak-yonetimi/${siteId}`)}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 text-left group border-l-4 border-green-500"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Alacak Yönetimi</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Aidat ve özel masrafları yönetin
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-800 transition-colors">
+                  <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => navigate(`/gider-yonetimi/${siteId}`)}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-all duration-300 text-left group border-l-4 border-red-500"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Gider Yönetimi</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Faturalar ve diğer giderleri yönetin
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center group-hover:bg-red-200 dark:group-hover:bg-red-800 transition-colors">
+                  <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                </div>
+              </div>
+            </button>
+          </div>
+
           {/* Ana İçerik Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Sol Kolon - Bloklar ve Daireler */}

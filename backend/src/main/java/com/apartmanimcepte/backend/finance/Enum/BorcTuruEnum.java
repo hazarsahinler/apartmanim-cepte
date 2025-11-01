@@ -1,12 +1,12 @@
 package com.apartmanimcepte.backend.finance.Enum;
 
-public enum OdemeTurEnum {
+public enum BorcTuruEnum {
     AIDAT("Aylık Aidat"),
     OZEL_MASRAF("Özel Masraf");
 
     private final String aciklama;
 
-    OdemeTurEnum(String aciklama) {
+    BorcTuruEnum(String aciklama) {
         this.aciklama = aciklama;
     }
 
@@ -14,8 +14,8 @@ public enum OdemeTurEnum {
         return aciklama;
     }
 
-    public static OdemeTurEnum fromString(String text) {
-        for (OdemeTurEnum tur : OdemeTurEnum.values()) {
+    public static BorcTuruEnum fromString(String text) {
+        for (BorcTuruEnum tur : BorcTuruEnum.values()) {
             if (tur.name().equalsIgnoreCase(text)) {
                 return tur;
             }
