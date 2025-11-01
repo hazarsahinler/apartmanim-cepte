@@ -1,6 +1,6 @@
 package com.apartmanimcepte.backend.finance.entity;
 
-import com.apartmanimcepte.backend.finance.Enum.BorcTuruEnum; // AlacakTurEnum'u BorcTuruEnum olarak yeniden isimlendirmek daha mantıklı
+import com.apartmanimcepte.backend.finance.Enum.BorcTuruEnum;
 import com.apartmanimcepte.backend.structure.entity.Site;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Entity
 @Data
-@Table(name = "BorcTanimi") // Tablo adını daha anlaşılır yapalım
+@Table(name = "BorcTanimi")
 public class BorcTanimi {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

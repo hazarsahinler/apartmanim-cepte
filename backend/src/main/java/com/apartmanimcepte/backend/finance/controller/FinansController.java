@@ -16,7 +16,7 @@ public class FinansController {
     public FinansController(FinansService finansService) {
         this.finansService = finansService;
     }
-    @PostMapping("/borc/ekle")
+    @PostMapping("/finance/borc/ekle")
     public ResponseDTO borcEkle(@RequestBody BorcTanimiCreateRequestDto borcTanimiCreateRequestDto){
         return finansService.borcTanim(borcTanimiCreateRequestDto);
     }

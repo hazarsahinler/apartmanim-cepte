@@ -62,7 +62,8 @@ public class HibernateConfig {
         // Entity sınıflarınızın bulunduğu doğru paketi buraya yazın!
         sessionFactory.setPackagesToScan(
                 "com.apartmanimcepte.backend.identity.entity",
-                "com.apartmanimcepte.backend.structure.entity"
+                "com.apartmanimcepte.backend.structure.entity",
+                "com.apartmanimcepte.backend.finance.entity"
         );
         sessionFactory.setHibernateProperties(hibernateProperties());
 
