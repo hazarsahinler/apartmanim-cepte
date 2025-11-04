@@ -31,5 +31,9 @@ export const ENDPOINTS = {
   },
   STRUCTURE: {
     DAIRE_BY_ID: '/structure/daire' // Daire detaylarını ID ile getirmek için
+  },
+  FINANCE: {
+    BORC_EKLE: '/finance/borc/ekle', // POST - Yeni borç tanımı ekleme
+    EKLENEN_BORCLAR: '/finance/eklenen/borclar' // GET - Tanımlanmış borçları getirme
   }
 };

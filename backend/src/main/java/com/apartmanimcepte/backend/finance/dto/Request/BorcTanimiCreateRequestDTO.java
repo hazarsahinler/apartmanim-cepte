@@ -1,17 +1,21 @@
-package com.apartmanimcepte.backend.finance.dto;
+package com.apartmanimcepte.backend.finance.dto.Request;
 
 import com.apartmanimcepte.backend.finance.Enum.BorcTuruEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
-public class BorcTanimiCreateRequestDto {
+@NoArgsConstructor
+@AllArgsConstructor
+public class BorcTanimiCreateRequestDTO {
 
     @NotNull(message = "Tutar boş olamaz.")
     @Positive(message = "Tutar pozitif bir değer olmalıdır.")
