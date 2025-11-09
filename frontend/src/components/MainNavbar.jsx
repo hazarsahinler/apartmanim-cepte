@@ -78,7 +78,10 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
                     location.pathname.includes('/site-yonetimi') || 
                     location.pathname.includes('/site-panel') ||
                     location.pathname.includes('/blok-detay') ||
-                    location.pathname.includes('/daire-detay');
+                    location.pathname.includes('/daire-detay') ||
+                    location.pathname.includes('/finansal-islemler') ||
+                    location.pathname.includes('/finansal-alacak-yonetimi') ||
+                    location.pathname.includes('/finansal-gider-yonetimi');
 
   // Sadece dashboard sayfalarında nav ve sidebar göster
   if (!isDashboard) return null;

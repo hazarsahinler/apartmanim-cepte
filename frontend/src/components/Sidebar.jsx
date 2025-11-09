@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Home, Users, FileText, Building, Calendar, CreditCard, Settings,
+  Home, Users, Building, Calendar, CreditCard, Settings,
   BarChart2, MessageSquare, ChevronDown, ChevronRight, Inbox, User
 } from 'lucide-react';
 import { authService } from '../services/authService';
@@ -45,16 +45,10 @@ const Sidebar = () => { // isOpen prop'unu kaldırdık - artık her zaman açık
       path: '/site-sakinleri',
     },
     {
-      id: 'payments',
-      label: 'Aidat ve Ödemeler',
+      id: 'financial',
+      label: 'Finansal İşlemler',
       icon: <CreditCard size={20} />,
-      path: '/aidat-yonetimi',
-    },
-    {
-      id: 'expenses',
-      label: 'Giderler',
-      icon: <FileText size={20} />,
-      path: '/giderler',
+      path: '/finansal-islemler',
     },
     {
       id: 'calendar',

@@ -2,7 +2,7 @@
 export const ENDPOINTS = {
   IDENTITY: {
     YONETICI_KAYIT: '/identity/yonetici/kayit',
-    SAKIN_KAYIT: '/identity/apartman/sakin/kayit',
+    SAKIN_KAYIT: '/identity/kullanici/kayit',
     LOGIN: '/identity/giris', // Backend'de /giris endpoint'i var
     KULLANICI_BILGI: '/identity/kullanici/bilgi', // Kullanıcı bilgisi endpoint'i
     TELEFON_KONTROL: '/identity/kullanici/telefon' // Backend: /identity/kullanici/telefon/{telefon}
@@ -34,6 +34,7 @@ export const ENDPOINTS = {
   },
   FINANCE: {
     BORC_EKLE: '/finance/borc/ekle', // POST - Yeni borç tanımı ekleme
-    EKLENEN_BORCLAR: '/finance/eklenen/borclar' // GET - Tanımlanmış borçları getirme
+    EKLENEN_BORCLAR: '/finance/eklenen/borclar', // GET - Tanımlanmış borçları getirme
+    DAIRE_BORCLAR: '/finance/daireler/borc' // GET - Belirli borca ait daire borçları
   }
 };

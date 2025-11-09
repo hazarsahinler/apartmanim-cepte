@@ -7,8 +7,11 @@ import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import KullaniciDashboard from './pages/KullaniciDashboard';
 import YoneticiDashboard from './pages/YoneticiDashboard';
-import AlacakYonetimi from './pages/AlacakYonetimi';
-import GiderYonetimi from './pages/GiderYonetimi';
+import DaireBorcDetay from './pages/DaireBorcDetay';
+import FinansalIslemlerSiteSecimi from './pages/FinansalIslemlerSiteSecimi';
+import FinansalIslemlerPanel from './pages/FinansalIslemlerPanel';
+import FinansalAlacakYonetimi from './pages/FinansalAlacakYonetimi';
+import FinansalGiderYonetimi from './pages/FinansalGiderYonetimi';
 import './index.css';
 import TestPage from './pages/TestPage';
 import Duyurular from './pages/Duyurular';
@@ -65,8 +68,14 @@ function App() {
             <Route path="/yonetici-dashboard" element={<YoneticiDashboard />} />
             <Route path="/kullanici-dashboard" element={<KullaniciDashboard />} />
             <Route path="/site-panel/:siteId" element={<SitePanelSayfasi />} />
-            <Route path="/alacak-yonetimi/:siteId" element={<AlacakYonetimi />} />
-            <Route path="/gider-yonetimi/:siteId" element={<GiderYonetimi />} />
+            <Route path="/daire-borc-detay/:siteId/:borcId" element={<DaireBorcDetay />} />
+            
+            {/* Finansal İşlemler Routes */}
+            <Route path="/finansal-islemler" element={<FinansalIslemlerSiteSecimi />} />
+            <Route path="/finansal-islemler/:siteId" element={<FinansalIslemlerPanel />} />
+            <Route path="/finansal-alacak-yonetimi/:siteId" element={<FinansalAlacakYonetimi />} />
+            <Route path="/finansal-gider-yonetimi/:siteId" element={<FinansalGiderYonetimi />} />
+            
             <Route path="/blok-detay/:blokId" element={<BlokDetay />} />
             <Route path="/daire-detay/:daireId" element={<DaireDetay />} />
             
