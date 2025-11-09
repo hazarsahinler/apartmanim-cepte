@@ -17,7 +17,7 @@ public class DaireBorcResponseDTO {
     private boolean odendiMi;
     private LocalDate odemeTarihi;
     private Long daireId;
-    private String daireNo;
+    private int daireNo;
     private String borcAciklamasi;
     private LocalDate sonOdemeTarihi;
 

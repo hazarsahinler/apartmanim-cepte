@@ -19,4 +19,6 @@ public class BorcTanimiResponseDTO {
     private LocalDate olusturulmaTarihi;
     private LocalDate sonOdemeTarihi;
     private Long siteId;
+    private Long odemeYapanDaireSay;
+
 }

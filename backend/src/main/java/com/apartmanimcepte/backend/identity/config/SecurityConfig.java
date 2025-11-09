@@ -68,6 +68,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/structure/daire/sakin/ekle").hasRole("YONETICI")
                         .requestMatchers("/api/structure/site/{kullaniciId}").hasRole("YONETICI")
                         .requestMatchers("/api/finance/borc/ekle").hasRole("YONETICI")
+                        .requestMatchers("/api/finance/daireler/borc/{borcId}").hasRole("YONETICI")
+                        .requestMatchers("/api/finance/eklenen/borclar").hasRole("YONETICI")
 
 
                         // Geriye kalan TÜM istekler için kimlik doğrulaması (login) zorunlu olsun

@@ -23,7 +23,8 @@ public class BorcTanimiDAO extends BaseDAO {
         StringBuilder hql = new StringBuilder();
 
         hql.append(" SELECT NEW com.apartmanimcepte.backend.finance.dto.Response.BorcTanimiResponseDTO( ");
-        hql.append("   bt.id, bt.tutar, bt.borcTuru, bt.aciklama, bt.olusturulmaTarihi, bt.sonOdemeTarihi, bt.site.siteId ");
+        hql.append("   bt.id, bt.tutar, bt.borcTuru, bt.aciklama, bt.olusturulmaTarihi, bt.sonOdemeTarihi, bt.site.siteId, ");
+        hql.append("   (SELECT COUNT(db) FROM DaireBorc db WHERE db.borcTanimi = bt AND db.odendiMi = true) ");
         hql.append(" ) ");
         hql.append(" FROM BorcTanimi bt WHERE 1=1 ");
 

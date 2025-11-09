@@ -6,6 +6,7 @@ import com.apartmanimcepte.backend.finance.dao.DaireBorcDAO;
 import com.apartmanimcepte.backend.finance.dto.Request.BorcTanimiCreateRequestDTO;
 import com.apartmanimcepte.backend.finance.dto.Request.TanimlanmisBorcFiltreDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.BorcTanimiResponseDTO;
+import com.apartmanimcepte.backend.finance.dto.Response.DaireBorcResponseDTO;
 import com.apartmanimcepte.backend.finance.entity.BorcTanimi;
 import com.apartmanimcepte.backend.finance.entity.DaireBorc;
 import com.apartmanimcepte.backend.identity.dto.ResponseDTO;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -53,7 +55,7 @@ public class FinansServiceImpl implements FinansService {
         borcTanimiDAO.saveOrUpdate(borcTanimi);
         List<Long> daireIdList = daireDAO.getDaireIdsBySiteId(site.getSiteId());
         //eğer aidat ise bu çalışacak ve girilen tutar direkt dairelere yansıyacak.
-        if (borcTanimiCreateRequestDto.getBorcTuru().equals(borcTuruEnum) ) {
+        if (borcTanimiCreateRequestDto.getBorcTuru().equals(borcTuruEnum)) {
             for (Long daireId : daireIdList) {
                 Daire daire = daireDAO.getObjectById(Daire.class, daireId);
                 DaireBorc daireBorc = new DaireBorc();
@@ -65,8 +67,8 @@ public class FinansServiceImpl implements FinansService {
             }
         } else {//eğer girilen aidat değil özel masrafsa (örneğin dış cephe tamiratı gibi) tüm dairelere eşit bölünür set edilir.
             int size = daireIdList.size();
-            bolunMusBorc = borcTanimiCreateRequestDto.getTutar() ;
-            bolunMusBorc = bolunMusBorc.divide(BigDecimal.valueOf(size),2, RoundingMode.HALF_UP);
+            bolunMusBorc = borcTanimiCreateRequestDto.getTutar();
+            bolunMusBorc = bolunMusBorc.divide(BigDecimal.valueOf(size), 2, RoundingMode.HALF_UP);
             for (Long daireId : daireIdList) {
                 Daire daire = daireDAO.getObjectById(Daire.class, daireId);
                 DaireBorc daireBorc = new DaireBorc();
@@ -88,4 +90,27 @@ public class FinansServiceImpl implements FinansService {
     public List<BorcTanimiResponseDTO> tanimlananBorclar(TanimlanmisBorcFiltreDTO tanimlanmisBorcFiltreDTO) {
         return borcTanimiDAO.getTanimlananBorclar(tanimlanmisBorcFiltreDTO);
     }
+
+    @Override
+    @Transactional
+    public List<DaireBorcResponseDTO> daireBorclar(Long borcId) {
+        BorcTanimi borcTanimi = borcTanimiDAO.getObjectById(BorcTanimi.class, borcId);
+        List<DaireBorc> daireBorcs = daireBorcDAO.getObjectsByParam(DaireBorc.class, "borcTanimi", borcTanimi);
+        List<DaireBorcResponseDTO> daireBorcResponseDTOS = new ArrayList<>();
+        for (DaireBorc daireBorc : daireBorcs) {
+            DaireBorcResponseDTO daireBorcResponseDTO = new DaireBorcResponseDTO();
+            daireBorcResponseDTO.setId(daireBorc.getId());
+            daireBorcResponseDTO.setDaireNo(daireBorc.getDaire().getDaireNo());
+            daireBorcResponseDTO.setTutar(daireBorc.getTutar());
+            daireBorcResponseDTO.setDaireId(daireBorc.getDaire().getDaireId());
+            daireBorcResponseDTO.setBorcAciklamasi(borcTanimi.getAciklama());
+            daireBorcResponseDTO.setSonOdemeTarihi(borcTanimi.getSonOdemeTarihi());
+            daireBorcResponseDTO.setOdemeTarihi(daireBorc.getOdemeTarihi());
+            daireBorcResponseDTO.setOdendiMi(daireBorc.isOdendiMi());
+            daireBorcResponseDTOS.add(daireBorcResponseDTO);
+        }
+
+        return daireBorcResponseDTOS;
+    }
+
 }
