@@ -20,5 +20,7 @@ public class BorcTanimiResponseDTO {
     private LocalDate sonOdemeTarihi;
     private Long siteId;
     private Long odemeYapanDaireSay;
+    private Long odemeYapmayanDaireSay;
+
 
 }

@@ -107,33 +107,70 @@ const FinansalIslemlerPanel = () => {
       if (alacakResponse.ok) {
         const alacakData = await alacakResponse.json();
         
-        // Toplam gelir hesapla (tutar * odeme yapan daire sayısı)
+        // Muhtemel field isimleri kontrol et
+        let toplamDaireSayisi = currentSiteData?.daireCount || 
+                               currentSiteData?.daireAdedi || 
+                               currentSiteData?.toplamDaireSayisi || 
+                               currentSiteData?.daireSayisi ||
+                               currentSiteData?.totalApartments ||
+                               currentSiteData?.apartmentCount ||
+                               0;
+                               
+        console.log('Site bilgileri:', currentSiteData);
+        console.log('Toplam daire sayısı bulunan:', toplamDaireSayisi);
+        
+        // Eğer hala 0 ise, varsayılan bir değer ata
+        if (toplamDaireSayisi === 0) {
+          console.warn('Daire sayısı bulunamadı, varsayılan değer (20) kullanılıyor');
+          toplamDaireSayisi = 20;
+        }
+        
+        // Toplam gelir hesapla (gelen gelir - ödenen kısım)
         const toplamGelir = alacakData.reduce((toplam, borc) => {
-          return toplam + (parseFloat(borc.tutar) * (borc.odemeYapanDaireSay || 0));
+          const tutar = parseFloat(borc.tutar);
+          const odeyenDaireSay = borc.odemeYapanDaireSay || 0;
+          const odenmeyen = borc.odemeYapmayanDaireSay || 0;
+          const toplamDaireSayisiBorc = odeyenDaireSay + odenmeyen;
+          
+          if (borc.borcTuru === 'AIDAT') {
+            // Aylık Aidat: Tutar × ödenen daire sayısı
+            return toplam + (tutar * odeyenDaireSay);
+          } else if (borc.borcTuru === 'OZEL_MASRAF') {
+            // Özel Masraf: (Toplam tutar / toplam daire) × ödeme yapan daire sayısı
+            if (toplamDaireSayisiBorc > 0) {
+              const daireBasi = tutar / toplamDaireSayisiBorc;
+              return toplam + (daireBasi * odeyenDaireSay);
+            } else {
+              console.error('Toplam daire sayısı 0, OZEL_MASRAF hesaplanamadı');
+              return toplam;
+            }
+          } else {
+            return toplam + (tutar * odeyenDaireSay);
+          }
         }, 0);
         
-        // Bekleyen alacak hesapla (ödenmeyen daire sayısı * borç tutarı)
-        console.log('Site bilgileri DETAY:', currentSiteData);
-        console.log('Site bilgileri keys:', Object.keys(currentSiteData || {}));
-        
-        // Muhtemel field isimleri kontrol et
-        const toplamDaireSayisi = currentSiteData?.daireCount || 
-                                  currentSiteData?.daireAdedi || 
-                                  currentSiteData?.toplamDaireSayisi || 
-                                  currentSiteData?.daireSayisi ||
-                                  currentSiteData?.totalApartments ||
-                                  currentSiteData?.apartmentCount ||
-                                  20; // Fallback değer (loglara bakarak güncellenecek)
-                                  
-        console.log('Toplam daire sayısı:', toplamDaireSayisi);
-        
+        // Bekleyen alacak hesapla (backend'den gelen ödenmeyen daire sayısı kullan)
         const bekleyenAlacak = alacakData.reduce((toplam, borc) => {
-          const odenmeyen = toplamDaireSayisi - (borc.odemeYapanDaireSay || 0);
-          const borcBekleyen = parseFloat(borc.tutar) * Math.max(0, odenmeyen);
+          const tutar = parseFloat(borc.tutar);
+          const odeyenDaireSay = borc.odemeYapanDaireSay || 0;
+          const odenmeyen = borc.odemeYapmayanDaireSay || 0;
+          const toplamDaireSayisiBorc = odeyenDaireSay + odenmeyen;
           
-          console.log(`Borç: ${borc.aciklama}, Tutar: ${borc.tutar}, Ödeyen: ${borc.odemeYapanDaireSay}, Ödenmeyen: ${odenmeyen}, Bekleyen: ${borcBekleyen}`);
-          
-          return toplam + borcBekleyen;
+          if (borc.borcTuru === 'AIDAT') {
+            // Aylık Aidat: Tutar × ödenmeyen daire sayısı
+            return toplam + (tutar * odenmeyen);
+          } else if (borc.borcTuru === 'OZEL_MASRAF') {
+            // Özel Masraf: (Toplam tutar / toplam daire) × ödenmeyen daire sayısı
+            if (toplamDaireSayisiBorc > 0) {
+              const daireBasi = tutar / toplamDaireSayisiBorc;
+              return toplam + (daireBasi * odenmeyen);
+            } else {
+              console.error('Toplam daire sayısı 0, OZEL_MASRAF hesaplanamadı');
+              return toplam;
+            }
+          } else {
+            return toplam + (tutar * odenmeyen);
+          }
         }, 0);
 
         setFinansalOzet({

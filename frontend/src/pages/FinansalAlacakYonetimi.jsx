@@ -58,19 +58,104 @@ const FinansalAlacakYonetimi = () => {
 
       console.log('Finansal alacaklar API yanıtı:', response.data);
       
-      // Backend'den gelen veriyi dönüştür ve toplam geliri hesapla
+      // Site bilgisini al (daire sayısı için gerekli)
+      let toplamDaireSayisi = 0;
+      try {
+        const siteResponse = await axios.get(
+          `http://localhost:8080/api/structure/site/${authService.getCurrentUser()?.id}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        const currentSite = siteResponse.data.find(site => 
+          site.id === parseInt(siteId) || site.siteId === parseInt(siteId)
+        );
+        
+        console.log('Site bilgileri TAMAMI:', JSON.stringify(currentSite, null, 2));
+        console.log('currentSite?.daireCount:', currentSite?.daireCount);
+        console.log('currentSite?.daireAdedi:', currentSite?.daireAdedi);
+        console.log('currentSite?.toplamDaireSayisi:', currentSite?.toplamDaireSayisi);
+        console.log('currentSite?.daireSayisi:', currentSite?.daireSayisi);
+        console.log('currentSite?.totalApartments:', currentSite?.totalApartments);
+        console.log('currentSite?.apartmentCount:', currentSite?.apartmentCount);
+        console.log('Tüm keys:', Object.keys(currentSite || {}));
+        
+        // Tüm muhtemel field isimlerini dene
+        toplamDaireSayisi = currentSite?.daireCount || 
+                           currentSite?.daireAdedi || 
+                           currentSite?.toplamDaireSayisi || 
+                           currentSite?.daireSayisi ||
+                           currentSite?.totalApartments ||
+                           currentSite?.apartmentCount ||
+                           0;
+                           
+        console.log('Site bilgileri:', currentSite);
+        console.log('Toplam daire sayısı bulunan:', toplamDaireSayisi);
+        
+        // Eğer hala 0 ise, varsayılan bir değer ata
+        if (toplamDaireSayisi === 0) {
+          console.warn('Daire sayısı bulunamadı, varsayılan değer (20) kullanılıyor');
+          toplamDaireSayisi = 20;
+        }
+      } catch (siteError) {
+        console.error('Site bilgisi alınamadı:', siteError);
+        toplamDaireSayisi = 20; // Fallback değer
+      }
+      
+      // Backend'den gelen veriyi dönüştür ve doğru hesapla
       const transformedAlacaklar = response.data.map((borc) => {
-        const toplamGelir = parseFloat(borc.tutar) * (borc.odemeYapanDaireSay || 0);
+        const tutar = parseFloat(borc.tutar);
+        const odeyenDaireSay = borc.odemeYapanDaireSay || 0;
+        const odenmeyen = borc.odemeYapmayanDaireSay || 0;
+        
+        // Toplam daire sayısını backend'den gelen verilerden hesapla
+        const toplamDaireSayisiBorc = odeyenDaireSay + odenmeyen;
+        
+        console.log(`Borç: ${borc.aciklama}, Tutar: ${tutar}, Ödeyen: ${odeyenDaireSay}, Ödemeyen: ${odenmeyen}, Toplam Daire: ${toplamDaireSayisiBorc}, Tür: ${borc.borcTuru}`);
+        
+        let alacakTutari, gelenGelir, bekleyenGelir;
+        
+        if (borc.borcTuru === 'AIDAT') {
+          // Aylık Aidat: Tutar daire başı alacak tutarı
+          alacakTutari = tutar; // Daire başı tutar
+          gelenGelir = alacakTutari * odeyenDaireSay;
+          bekleyenGelir = alacakTutari * odenmeyen;
+        } else if (borc.borcTuru === 'OZEL_MASRAF') {
+          // Özel Masraf: Toplam tutarı daire sayısına böl
+          if (toplamDaireSayisiBorc > 0) {
+            alacakTutari = tutar / toplamDaireSayisiBorc; // Daire başı tutar
+            gelenGelir = alacakTutari * odeyenDaireSay;
+            bekleyenGelir = alacakTutari * odenmeyen;
+          } else {
+            console.error('Toplam daire sayısı 0, OZEL_MASRAF hesaplanamadı');
+            alacakTutari = 0;
+            gelenGelir = 0;
+            bekleyenGelir = 0;
+          }
+        } else {
+          // Diğer türler için varsayılan
+          alacakTutari = tutar;
+          gelenGelir = tutar * odeyenDaireSay;
+          bekleyenGelir = tutar * odenmeyen;
+        }
         
         return {
           id: borc.id,
           tur: borc.borcTuru,
-          tutar: parseFloat(borc.tutar),
+          tutar: tutar, // Orijinal tutar (API'den gelen)
+          alacakTutari: Number(alacakTutari.toFixed(2)), // Daire başı alacak tutarı
           aciklama: borc.aciklama,
           sonTarih: borc.sonOdemeTarihi,
           olusturmaTarihi: borc.olusturulmaTarihi,
-          odemeYapanDaireSay: borc.odemeYapanDaireSay,
-          toplamGelir: toplamGelir, // Tutar * Ödeyen daire sayısı
+          odemeYapanDaireSay: odeyenDaireSay,
+          toplamDaireSayisi: toplamDaireSayisiBorc, // Backend'den hesaplanan toplam
+          gelenGelir: Number(gelenGelir.toFixed(2)), // Ödenen kısım
+          bekleyenGelir: Number(bekleyenGelir.toFixed(2)), // Bekleyen kısım
+          toplamGelir: Number((gelenGelir + bekleyenGelir).toFixed(2)), // Toplam
           siteId: borc.siteId,
           durum: 'bekliyor'
         };
@@ -238,10 +323,12 @@ const FinansalAlacakYonetimi = () => {
     }
   };
 
-  // Toplam geliri hesapla
-  const toplamGelir = alacaklar.reduce((sum, alacak) => sum + (alacak.toplamGelir || 0), 0);
-  const toplamAlacak = alacaklar.reduce((sum, alacak) => sum + alacak.tutar, 0);
+  // Toplam geliri hesapla (yeni mantık)
+  const gelenToplamGelir = alacaklar.reduce((sum, alacak) => sum + (alacak.gelenGelir || 0), 0);
+  const bekleyenToplamGelir = alacaklar.reduce((sum, alacak) => sum + (alacak.bekleyenGelir || 0), 0);
+  const toplamPotansiyelGelir = alacaklar.reduce((sum, alacak) => sum + (alacak.toplamGelir || 0), 0);
   const toplamOdeyen = alacaklar.reduce((sum, alacak) => sum + (alacak.odemeYapanDaireSay || 0), 0);
+  const toplamBekleyen = alacaklar.reduce((sum, alacak) => sum + ((alacak.toplamDaireSayisi || 0) - (alacak.odemeYapanDaireSay || 0)), 0);
 
   if (loading) {
     return (
@@ -300,16 +387,16 @@ const FinansalAlacakYonetimi = () => {
 
           {/* Gelir İstatistikleri */}
           {alacaklar.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                 <div className="flex items-center">
                   <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
                     <CreditCard className="h-6 w-6 text-green-600 dark:text-green-300" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Toplam Gelir</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Gelen Gelir</p>
                     <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      {toplamGelir.toLocaleString('tr-TR')}₺
+                      {gelenToplamGelir.toLocaleString('tr-TR')}₺
                     </p>
                   </div>
                 </div>
@@ -317,27 +404,13 @@ const FinansalAlacakYonetimi = () => {
 
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                 <div className="flex items-center">
-                  <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                    <Building className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+                  <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
+                    <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-300" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Ödeme Yapan</p>
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {toplamOdeyen} daire
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                <div className="flex items-center">
-                  <div className="p-3 bg-indigo-100 dark:bg-indigo-900 rounded-lg">
-                    <TrendingUp className="h-6 w-6 text-indigo-600 dark:text-indigo-300" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Alacak Tutarı</p>
-                    <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                      {toplamAlacak.toLocaleString('tr-TR')}₺
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Bekleyen Gelir</p>
+                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                      {bekleyenToplamGelir.toLocaleString('tr-TR')}₺
                     </p>
                   </div>
                 </div>
@@ -445,7 +518,7 @@ const FinansalAlacakYonetimi = () => {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tür</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Açıklama</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Daire Başı</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Alacak Tutarı</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ödeme Durumu</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Toplam Gelir</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Son Tarih</th>
@@ -467,24 +540,40 @@ const FinansalAlacakYonetimi = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-                          {alacak.tutar.toLocaleString('tr-TR')}₺
+                          {(alacak.alacakTutari || 0).toLocaleString('tr-TR')}₺
                         </span>
+                        {alacak.tur === 'OZEL_MASRAF' && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            (Toplam: {alacak.tutar.toLocaleString('tr-TR')}₺)
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-2">
-                          <div className="flex items-center space-x-1">
-                            <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                              {alacak.odemeYapanDaireSay || 0}
-                            </span>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">daire ödedi</span>
+                        <div className="flex flex-col space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-1">
+                              <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
+                              <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                                {alacak.odemeYapanDaireSay || 0}
+                              </span>
+                              <span className="text-sm text-gray-500 dark:text-gray-400">/ {alacak.toplamDaireSayisi}</span>
+                            </div>
+                          </div>
+                          <div className="text-xs">
+                            <span className="text-green-600 dark:text-green-400">Gelen: {(alacak.gelenGelir || 0).toLocaleString('tr-TR')}₺</span>
+                            <span className="text-red-600 dark:text-red-400 ml-2">Bekleyen: {(alacak.bekleyenGelir || 0).toLocaleString('tr-TR')}₺</span>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-bold text-green-600 dark:text-green-400">
-                          {(alacak.toplamGelir || 0).toLocaleString('tr-TR')}₺
-                        </span>
+                        <div className="flex flex-col space-y-1">
+                          <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                            {(alacak.toplamGelir || 0).toLocaleString('tr-TR')}₺
+                          </span>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Toplam Potansiyel
+                          </div>
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-900 dark:text-white">

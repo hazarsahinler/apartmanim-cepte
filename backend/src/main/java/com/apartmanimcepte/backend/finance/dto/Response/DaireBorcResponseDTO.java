@@ -18,6 +18,8 @@ public class DaireBorcResponseDTO {
     private LocalDate odemeTarihi;
     private Long daireId;
     private int daireNo;
+    private int daireKat;
+    private String daireBlok;
     private String borcAciklamasi;
     private LocalDate sonOdemeTarihi;
 

@@ -98,11 +98,14 @@ public class FinansServiceImpl implements FinansService {
         List<DaireBorc> daireBorcs = daireBorcDAO.getObjectsByParam(DaireBorc.class, "borcTanimi", borcTanimi);
         List<DaireBorcResponseDTO> daireBorcResponseDTOS = new ArrayList<>();
         for (DaireBorc daireBorc : daireBorcs) {
+            Daire daire = daireDAO.getObjectById(Daire.class, daireBorc.getDaire().getDaireId());
             DaireBorcResponseDTO daireBorcResponseDTO = new DaireBorcResponseDTO();
             daireBorcResponseDTO.setId(daireBorc.getId());
             daireBorcResponseDTO.setDaireNo(daireBorc.getDaire().getDaireNo());
             daireBorcResponseDTO.setTutar(daireBorc.getTutar());
             daireBorcResponseDTO.setDaireId(daireBorc.getDaire().getDaireId());
+            daireBorcResponseDTO.setDaireKat(daire.getKatNo());
+            daireBorcResponseDTO.setDaireBlok(daire.getBlok().getBlokIsmi());
             daireBorcResponseDTO.setBorcAciklamasi(borcTanimi.getAciklama());
             daireBorcResponseDTO.setSonOdemeTarihi(borcTanimi.getSonOdemeTarihi());
             daireBorcResponseDTO.setOdemeTarihi(daireBorc.getOdemeTarihi());
