@@ -16,14 +16,38 @@ const UserSidebar = ({ isOpen = true, onClose }) => {
     navigate('/giris');
   };
 
+  // Kullanıcı rolünü al ve ana sayfa path'ini belirle
+  const getHomePath = () => {
+    try {
+      const decodedToken = authService.decodeToken();
+      const userRole = decodedToken?.roles?.[0] || decodedToken?.apartmanRol;
+      
+      // Yönetici rolleri için site yönetimi sayfası
+      if (userRole === 'ROLE_YONETICI' || userRole === 'ApartmanYonetici' || userRole === 'Yonetici') {
+        return '/site-yonetimi';
+      }
+      
+      // Apartman sakinleri için kullanıcı sayfası
+      if (userRole === 'ROLE_APARTMANSAKIN' || userRole === 'ApartmanSakin' || userRole === 'Sakin') {
+        return '/kullanici-sayfasi';
+      }
+      
+      // Varsayılan olarak kullanıcı sayfası
+      return '/kullanici-sayfasi';
+    } catch (error) {
+      console.error('UserSidebar - Role belirleme hatası:', error);
+      return '/kullanici-sayfasi';
+    }
+  };
+
   // Kullanıcı menü öğeleri - apartman sakinleri için uygun
   const menuItems = [
     {
       id: 'dashboard',
       label: 'Ana Sayfa',
       icon: Home,
-      path: '/kullanici-dashboard',
-      description: 'Dashboard ana sayfası'
+      path: getHomePath(),
+      description: 'Ana sayfa'
     },
     {
       id: 'announcements',

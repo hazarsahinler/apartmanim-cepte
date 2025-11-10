@@ -65,17 +65,38 @@ public class FinansController {
         return finansService.daireBorc(daireId);
     }
 
+    /**
+     * Site Idsi alarak kullanıcıdan gelen borc odeme isteklerinin takibi.
+     * @param siteId
+     * @return
+     * @throws IOException
+     */
     @GetMapping("/finance/odeme/istekler/{siteId}")
     public List<BorcOdemeIstekResponseDTO> borcOdemeIstekler(@PathVariable ("siteId") Long siteId) throws IOException {
         return finansService.borcOdemeIstekler(siteId);
     }
+
+    /**
+     * Daire borc Id ile isteklerin kabul edilmesi
+     * @param daireBorcId
+     * @return
+     * @throws IOException
+     */
     @PostMapping("/finance/odeme/istek/kabul/{daireBorcId}")
     public ResponseDTO borcOde(@PathVariable ("daireBorcId") Long daireBorcId) throws IOException {
         return finansService.borcIstekKabul(daireBorcId);
     }
+
+    /**
+     * Daire sakini bu api vasıtasıyla yöneticiye ödedim onayla diyecek.
+     * @param daireBorcId
+     * @return
+     * @throws IOException
+     */
     @PostMapping("/finance/odeme/istek/gonder/{daireBorcId}")
     public ResponseDTO borcOdemeIstegiGonder(@PathVariable ("daireBorcId") Long daireBorcId) throws IOException {
         return finansService.borcOdemeIstegiGonder(daireBorcId);
     }
+
 
 }

@@ -75,7 +75,7 @@ const Login = () => {
           navigate('/site-yonetimi');
         } else if (role === 'ROLE_APARTMANSAKIN' || role === 'ApartmanSakin' || role === 'Sakin') {
           console.log('Kullanıcı olarak yönlendiriliyor...');
-          navigate('/kullanici-dashboard');
+          navigate('/kullanici-sayfasi');
         } else {
           console.warn('Rol belirsiz, varsayılan yönetici dashboardına yönlendiriliyor:', role);
           navigate('/site-yonetimi');
@@ -91,7 +91,7 @@ const Login = () => {
           if (tokenRole === 'ROLE_YONETICI' || tokenRole === 'ApartmanYonetici' || tokenRole === 'Yonetici') {
             navigate('/site-yonetimi');
           } else if (tokenRole === 'ROLE_APARTMANSAKIN' || tokenRole === 'ApartmanSakin' || tokenRole === 'Sakin') {
-            navigate('/kullanici-dashboard');
+            navigate('/kullanici-sayfasi');
           } else {
             navigate('/site-yonetimi');
           }

@@ -296,14 +296,28 @@ export const authService = {
   // Token kontrolü
   isAuthenticated: () => {
     const token = localStorage.getItem('token');
-    if (!token) return false;
+    if (!token) {
+      console.log('authService.isAuthenticated: Token bulunamadı');
+      return false;
+    }
 
     try {
       // Token'ın süresinin dolup dolmadığını kontrol et
       const decodedToken = jwtDecode(token);
       const currentTime = Date.now() / 1000;
-      return decodedToken.exp > currentTime;
+      const isValid = decodedToken.exp > currentTime;
+      
+      console.log('authService.isAuthenticated: Token exp:', decodedToken.exp);
+      console.log('authService.isAuthenticated: Current time:', currentTime);
+      console.log('authService.isAuthenticated: Token valid:', isValid);
+      
+      if (!isValid) {
+        console.warn('authService.isAuthenticated: Token süresi dolmuş');
+      }
+      
+      return isValid;
     } catch (error) {
+      console.error('authService.isAuthenticated: Token decode hatası:', error);
       return false; // Token decode edilemezse geçersizdir.
     }
   },

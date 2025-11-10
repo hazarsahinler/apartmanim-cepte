@@ -55,9 +55,9 @@ public class DaireDAO extends BaseDAO {
         hql.append(" ) ");
         hql.append(" FROM Daire d ");
         hql.append(" JOIN d.kullanicilar k ");
-        hql.append(" WHERE k.telefonNo = :telefonNo ");
+        hql.append(" WHERE k.kullaniciTelefon = :kullaniciTelefon ");
         Query<DaireResponseByKullaniciDTO> query = sessionFactory.getCurrentSession().createQuery(hql.toString(), DaireResponseByKullaniciDTO.class);
-        query.setParameter("telefonNo", telefonNo);
+        query.setParameter("kullaniciTelefon", telefonNo);
 
         return query.list();
     }

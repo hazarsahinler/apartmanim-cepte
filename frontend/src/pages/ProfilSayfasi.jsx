@@ -3,6 +3,7 @@ import { User, Phone, Mail, Calendar, Edit3, Save, X, Loader2 } from 'lucide-rea
 import { authService } from '../services/authService';
 import MainNavbar from '../components/MainNavbar';
 import Sidebar from '../components/Sidebar';
+import UserSidebar from '../components/UserSidebar';
 
 const ProfilSayfasi = () => {
   const [userInfo, setUserInfo] = useState(null);
@@ -11,6 +12,7 @@ const ProfilSayfasi = () => {
   const [editForm, setEditForm] = useState({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -19,12 +21,31 @@ const ProfilSayfasi = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
+  // Kullanıcının rolüne göre uygun sidebar'ı belirle
+  const isApartmentResident = () => {
+    return userRole === 'ROLE_APARTMANSAKIN' || userRole === 'ApartmanSakin' || userRole === 'Sakin';
+  };
+
+  const renderSidebar = () => {
+    if (isApartmentResident()) {
+      return <UserSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />;
+    } else {
+      return <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />;
+    }
+  };
+
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
         setLoading(true);
         const user = await authService.getUserInfo();
         setUserInfo(user);
+        
+        // Kullanıcı rolünü belirle
+        const decodedToken = authService.decodeToken();
+        const role = user.apartmanRol || decodedToken?.roles?.[0] || decodedToken?.apartmanRol;
+        setUserRole(role);
+        
         setEditForm({
           kullaniciAdi: user.kullaniciAdi || '',
           kullaniciSoyadi: user.kullaniciSoyadi || '',
@@ -96,7 +117,7 @@ const ProfilSayfasi = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-        <Sidebar isOpen={sidebarOpen} />
+        {renderSidebar()}
         
         <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
           <div className="flex justify-center items-center h-screen">
@@ -114,7 +135,7 @@ const ProfilSayfasi = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-        <Sidebar isOpen={sidebarOpen} />
+        {renderSidebar()}
         
         <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
           <div className="container mx-auto px-4 py-8">
@@ -135,8 +156,8 @@ const ProfilSayfasi = () => {
       {/* Navbar */}
       <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
       
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} />
+      {/* Sidebar - Kullanıcı rolüne göre dinamik */}
+      {renderSidebar()}
       
       {/* Main Content */}
       <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
