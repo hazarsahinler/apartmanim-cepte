@@ -6,6 +6,7 @@ import com.apartmanimcepte.backend.structure.dto.RequestDTO.BlokKayitDTO;
 import com.apartmanimcepte.backend.structure.dto.RequestDTO.DaireyeSakinEkleDTO;
 import com.apartmanimcepte.backend.structure.dto.RequestDTO.SiteKayitDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.BlokResponseDTO;
+import com.apartmanimcepte.backend.structure.dto.ResponseDTO.DaireResponseByKullaniciDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.DaireResponseDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.SiteResponseDTO;
 import org.springframework.web.bind.annotation.*;
@@ -66,6 +67,11 @@ public class SiteController {
     public ResponseDTO sakinEkle(@RequestBody DaireyeSakinEkleDTO daireyeSakinEkleDTO) throws Exception {
         ResponseDTO responseDTO = siteService.daireSakinEkle(daireyeSakinEkleDTO);
         return responseDTO;
+    }
+    @GetMapping("/structure/kullanici/daire/bul/{telefonNo}")
+    public List<DaireResponseByKullaniciDTO> getDaireByKullanici (@PathVariable ("telefonNo") String telefonNo) throws IOException {
+        return siteService.getDaireByKullanici(telefonNo);
+
     }
 
 }

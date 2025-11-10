@@ -1,12 +1,15 @@
 package com.apartmanimcepte.backend.finance.bus;
 
 import com.apartmanimcepte.backend.finance.Enum.BorcTuruEnum;
+import com.apartmanimcepte.backend.finance.dao.BorcOdemeIsteklerDAO;
 import com.apartmanimcepte.backend.finance.dao.BorcTanimiDAO;
 import com.apartmanimcepte.backend.finance.dao.DaireBorcDAO;
 import com.apartmanimcepte.backend.finance.dto.Request.BorcTanimiCreateRequestDTO;
 import com.apartmanimcepte.backend.finance.dto.Request.TanimlanmisBorcFiltreDTO;
+import com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekResponseDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.BorcTanimiResponseDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.DaireBorcResponseDTO;
+import com.apartmanimcepte.backend.finance.entity.BorcOdemeIstekler;
 import com.apartmanimcepte.backend.finance.entity.BorcTanimi;
 import com.apartmanimcepte.backend.finance.entity.DaireBorc;
 import com.apartmanimcepte.backend.identity.dto.ResponseDTO;
@@ -22,6 +25,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FinansServiceImpl implements FinansService {
@@ -30,13 +34,15 @@ public class FinansServiceImpl implements FinansService {
     private final DaireDAO daireDAO;
     private final DaireBorcDAO daireBorcDAO;
     private final BorcTanimiDAO borcTanimiDAO;
+    private final BorcOdemeIsteklerDAO borcOdemeIsteklerDAO;
 
-    public FinansServiceImpl(SiteDAO siteDAO, DaireDAO daireDAO, DaireBorcDAO daireBorcDAO, BorcTanimiDAO borcTanimiDAO) {
+    public FinansServiceImpl(SiteDAO siteDAO, DaireDAO daireDAO, DaireBorcDAO daireBorcDAO, BorcTanimiDAO borcTanimiDAO, BorcOdemeIsteklerDAO borcOdemeIsteklerDAO, BorcOdemeIsteklerDAO borcOdemeIsteklerDAO1) {
         this.siteDAO = siteDAO;
         this.daireDAO = daireDAO;
 
         this.daireBorcDAO = daireBorcDAO;
         this.borcTanimiDAO = borcTanimiDAO;
+        this.borcOdemeIsteklerDAO = borcOdemeIsteklerDAO1;
     }
 
     @Override
@@ -115,5 +121,64 @@ public class FinansServiceImpl implements FinansService {
 
         return daireBorcResponseDTOS;
     }
+
+    @Override
+    @Transactional
+    public List<DaireBorcResponseDTO> daireBorc(Long daireId) {
+        return daireBorcDAO.getDaireBorc(daireId);
+    }
+
+    @Override
+    @Transactional
+    public ResponseDTO borcIstekKabul(Long daireBorcId) {
+        DaireBorc daireBorc = daireBorcDAO.getObjectById(DaireBorc.class, daireBorcId);
+        List<BorcOdemeIstekler> borcOdemeIstekler = borcOdemeIsteklerDAO.getObjectsByParam(BorcOdemeIstekler.class, "daireBorc", daireBorc);
+        BorcOdemeIstekler borcOdemeIstekler1 = borcOdemeIstekler.get(0);
+        ResponseDTO responseDTO = new ResponseDTO();
+        if (daireBorc.isOdendiMi()) {
+            responseDTO.setMessage("Seçilen dairenin borcu ödenmiş.");
+        } else {
+            borcOdemeIstekler1.setOnaylandiMi(true);
+            borcOdemeIstekler1.setOnayTarihi(LocalDate.now());
+            daireBorc.setOdendiMi(true);
+            daireBorc.setOdemeTarihi(borcOdemeIstekler1.getIstekTarihi());
+            daireBorcDAO.saveOrUpdate(daireBorc);
+            borcOdemeIsteklerDAO.saveOrUpdate(borcOdemeIstekler1);
+            responseDTO.setMessage("Borc odeme işlemi başarılı şekilde onaylanmıştır.");
+        }
+        return responseDTO;
+    }
+
+    @Override
+    @Transactional
+    public ResponseDTO borcOdemeIstegiGonder(Long daireBorcId) {
+        ResponseDTO responseDTO = new ResponseDTO();
+        DaireBorc daireBorc = daireBorcDAO.getObjectById(DaireBorc.class, daireBorcId);
+        if (daireBorc.isOdendiMi()) {
+            responseDTO.setMessage("Bu borç zaten ödenmiş durumdadır.");
+            return responseDTO;
+        }
+        Optional<BorcOdemeIstekler> existingRequest = borcOdemeIsteklerDAO.findPendingRequestByDaireBorc(daireBorc);
+
+        if (existingRequest.isPresent()) {
+            responseDTO.setMessage("Bu borç için zaten bir ödeme onayı bekleniyor.");
+            return responseDTO;
+        }
+
+        BorcOdemeIstekler borcOdemeIstekler = new BorcOdemeIstekler();
+        borcOdemeIstekler.setDaireBorc(daireBorc);
+        borcOdemeIstekler.setIstekTarihi(LocalDate.now());
+        borcOdemeIsteklerDAO.saveOrUpdate(borcOdemeIstekler);
+
+        responseDTO.setMessage("Borç ödeme isteğiniz yöneticinize iletildi. Onaylandıktan sonra 'Ödendi' olarak yansıyacaktır.");
+        return responseDTO;
+    }
+
+    @Override
+    @Transactional
+    public List<BorcOdemeIstekResponseDTO> borcOdemeIstekler(Long siteId) {
+        return borcOdemeIsteklerDAO.getOdemeIstekler(siteId);
+    }
+
 
 }

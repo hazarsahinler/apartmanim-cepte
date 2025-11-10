@@ -11,6 +11,7 @@ import com.apartmanimcepte.backend.structure.dto.RequestDTO.BlokKayitDTO;
 import com.apartmanimcepte.backend.structure.dto.RequestDTO.DaireyeSakinEkleDTO;
 import com.apartmanimcepte.backend.structure.dto.RequestDTO.SiteKayitDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.BlokResponseDTO;
+import com.apartmanimcepte.backend.structure.dto.ResponseDTO.DaireResponseByKullaniciDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.DaireResponseDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.SiteResponseDTO;
 import com.apartmanimcepte.backend.structure.entity.Blok;
@@ -268,6 +269,12 @@ public class SiteServiceImpl implements SiteService {
         daireDAO.saveOrUpdate(daire);
         responseDTO.setMessage("Ekleme İşlemi Başarıyla Gerçekleşti!");
         return responseDTO;
+    }
+
+    @Override
+    @Transactional
+    public List<DaireResponseByKullaniciDTO> getDaireByKullanici(String telefonNo) {
+        return daireDAO.getDaireByKullanici(telefonNo);
     }
 
 

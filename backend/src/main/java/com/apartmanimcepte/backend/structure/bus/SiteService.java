@@ -6,6 +6,7 @@ import com.apartmanimcepte.backend.structure.dto.RequestDTO.BlokKayitDTO;
 import com.apartmanimcepte.backend.structure.dto.RequestDTO.DaireyeSakinEkleDTO;
 import com.apartmanimcepte.backend.structure.dto.RequestDTO.SiteKayitDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.BlokResponseDTO;
+import com.apartmanimcepte.backend.structure.dto.ResponseDTO.DaireResponseByKullaniciDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.DaireResponseDTO;
 import com.apartmanimcepte.backend.structure.dto.ResponseDTO.SiteResponseDTO;
 
@@ -26,6 +27,7 @@ public interface SiteService {
 
     ResponseDTO daireSakinEkle(DaireyeSakinEkleDTO daireyeSakinEkleDTO);
 
+    List<DaireResponseByKullaniciDTO> getDaireByKullanici(String telefonNo);
 
 
 }
