@@ -38,10 +38,12 @@ export const ENDPOINTS = {
     EKLENEN_BORCLAR: '/finance/eklenen/borclar', // GET - Tanımlanmış borçları getirme (YONETICI)
     DAIRELER_BORC: '/finance/daireler/borc', // POST - Dairelere borç atama (YONETICI)
     ODEME_ISTEK_GONDER: '/finance/odeme/istek/gonder', // POST - Ödeme isteği gönderme (APARTMANSAKINI/YONETICI)
-    ODEME_ISTEKLER: '/finance/odeme/istekler', // GET - Site ödeme isteklerini getirme (YONETICI)
-    ODEME_ISTEK_KABUL: '/finance/odeme/istek/kabul', // PUT - Ödeme isteğini kabul etme (YONETICI)
+    ODEME_ISTEKLER: '/finance/odeme/istekler', // GET - Site ödeme isteklerini getirme (YONETICI) - Backend: /finance/odeme/istekler/{siteId}
+    ODEME_ISTEK_KABUL: '/finance/odeme/istek/kabul', // POST - Ödeme isteğini kabul etme (YONETICI) - Backend: /finance/odeme/istek/kabul/{daireBorcId}
     KULLANICI_DAIRE_BORCLAR: '/finance/kullanici/daire/borclar', // GET - Kullanıcının daire borçları (APARTMANSAKINI)
     KULLANICI_FINANSAL_OZET: '/finance/kullanici/ozet', // GET - Kullanıcı finansal özeti (APARTMANSAKINI)
-    DAIRE_BORC: '/finance/daire/borc' // GET - DaireId ile daire borçları (Backend: /finance/daire/borc/{daireId})
+    DAIRE_BORC: '/finance/daire/borc', // GET - DaireId ile daire borçları (Backend: /finance/daire/borc/{daireId})
+    DAIRELER_BORC_BY_ID: '/finance/daireler/borc', // GET - BorcId ile daire borçlarını getir (Backend: /finance/daireler/borc/{borcId})
+    ODEME_ISTEK_DURUM: '/finance/odeme/istek/onay/durum' // GET - Ödeme isteği durumu kontrolü (Backend: /finance/odeme/istek/onay/durum/{daireBorcId})
   }
 };

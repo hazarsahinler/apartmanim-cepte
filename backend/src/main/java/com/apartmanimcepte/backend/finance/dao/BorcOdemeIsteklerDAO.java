@@ -24,23 +24,22 @@ public class BorcOdemeIsteklerDAO extends BaseDAO {
     public List<BorcOdemeIstekResponseDTO> getOdemeIstekler(Long siteId) {
         StringBuilder hql = new StringBuilder();
 
-        hql.append(" SELECT NEW com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIsteklerDAO( ");
-        hql.append("   d.id, d.daireBorc.id,d.daireBorc.daire.daireNo,d.daireBorc.daire.katNo,d.daire.blok.blokIsmi,d.istekTarihi ");
+        hql.append(" SELECT NEW com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekResponseDTO( ");
+        // Hatalı kısım burada düzeltildi: d.daire.blok.blokIsmi -> d.daireBorc.daire.blok.blokIsmi
+        hql.append("   d.id, d.daireBorc.id, d.daireBorc.daire.daireNo, d.daireBorc.daire.katNo, d.daireBorc.daire.blok.blokIsmi, d.istekTarihi ");
         hql.append(" ) ");
         hql.append(" FROM BorcOdemeIstekler d WHERE 1=1 ");
         hql.append(" AND d.onaylandiMi = false ");
 
         if (siteId != null) {
-            hql.append(" AND d.daireBorc.daire.blok.site.siteId= :siteId ");
+            hql.append(" AND d.daireBorc.daire.blok.site.siteId = :siteId ");
         }
-
 
         Query<BorcOdemeIstekResponseDTO> query = sessionFactory.getCurrentSession().createQuery(hql.toString(), BorcOdemeIstekResponseDTO.class);
 
         if (siteId != null) {
             query.setParameter("siteId", siteId);
         }
-
 
         return query.list();
     }

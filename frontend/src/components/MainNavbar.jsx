@@ -5,6 +5,8 @@ import {
   Building2, Moon, Sun, HelpCircle, Search
 } from 'lucide-react';
 import { authService } from '../services/authService';
+import { odemeIstekService } from '../services/odemeIstekService';
+import { siteStorageService } from '../services/siteStorageService';
 import { toast } from 'react-toastify';
 
 const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
@@ -12,6 +14,8 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
   const [darkMode, setDarkMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [odemeIstekSayisi, setOdemeIstekSayisi] = useState(0);
+  const [currentSiteId, setCurrentSiteId] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,7 +36,53 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
       }
     };
 
+    const getSiteId = () => {
+      // URL'den siteId'yi çıkarmaya çalış
+      const pathMatch = location.pathname.match(/\/site\/(\d+)/);
+      if (pathMatch) {
+        return pathMatch[1];
+      }
+
+      // Site panelinden siteId çıkarmaya çalış
+      const sitePanelMatch = location.pathname.match(/\/site-panel\/(\d+)/);
+      if (sitePanelMatch) {
+        return sitePanelMatch[1];
+      }
+
+      // Finansal işlemlerden siteId çıkarmaya çalış
+      const financialMatch = location.pathname.match(/\/finansal-.*\/(\d+)/);
+      if (financialMatch) {
+        return financialMatch[1];
+      }
+
+      // LocalStorage'dan kullanıcının sitelerini al
+      const userData = authService.getCurrentUser();
+      if (userData && userData.id) {
+        const { sites } = siteStorageService.getSites(userData.id);
+        if (sites && sites.length > 0) {
+          return sites[0].id; // İlk site'yi varsayılan olarak al
+        }
+      }
+
+      return null;
+    };
+
+    const loadOdemeIstekleri = async () => {
+      try {
+        const siteId = getSiteId();
+        setCurrentSiteId(siteId);
+        
+        if (siteId) {
+          const istekler = await odemeIstekService.getSiteOdemeIstekleri(siteId);
+          setOdemeIstekSayisi(istekler.length);
+        }
+      } catch (error) {
+        console.error('Ödeme istekleri yüklenemedi:', error);
+      }
+    };
+
     loadUser();
+    loadOdemeIstekleri();
     
     // Dark mode tercihi kontrol et
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -40,7 +90,12 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
     if (savedDarkMode) {
       document.documentElement.classList.add('dark');
     }
-  }, []);
+
+    // Her 30 saniyede bir ödeme isteklerini güncelle
+    const interval = setInterval(loadOdemeIstekleri, 30000);
+    
+    return () => clearInterval(interval);
+  }, [location.pathname]);
 
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode;
@@ -60,6 +115,16 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
 
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   const closeDropdown = () => setDropdownOpen(false);
+
+  const handleBildirimClick = () => {
+    if (currentSiteId) {
+      navigate(`/site/${currentSiteId}/odeme-istekleri`);
+    } else {
+      // Site ID bulunamadıysa kullanıcıyı site seçim sayfasına yönlendir
+      toast.error('Önce bir site seçiniz.');
+      navigate('/site-yonetimi');
+    }
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -81,7 +146,8 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
                     location.pathname.includes('/daire-detay') ||
                     location.pathname.includes('/finansal-islemler') ||
                     location.pathname.includes('/finansal-alacak-yonetimi') ||
-                    location.pathname.includes('/finansal-gider-yonetimi');
+                    location.pathname.includes('/finansal-gider-yonetimi') ||
+                    location.pathname.includes('/odeme-istekleri');
 
   // Sadece dashboard sayfalarında nav ve sidebar göster
   if (!isDashboard) return null;
@@ -151,11 +217,16 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
             
             {/* Bildirimler */}
             <button 
+              onClick={handleBildirimClick}
               className="ml-2 p-2 rounded-md text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none relative"
               aria-label="Bildirimler"
             >
               <Bell size={20} />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              {odemeIstekSayisi > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                  {odemeIstekSayisi > 9 ? '9+' : odemeIstekSayisi}
+                </span>
+              )}
             </button>
             
             {/* Profil dropdown */}

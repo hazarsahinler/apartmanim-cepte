@@ -182,6 +182,34 @@ export const userDaireService = {
     }
   },
 
+  // Ödeme isteği durumu kontrol et
+  odemeIstekDurumKontrol: async (daireBorcId) => {
+    try {
+      console.log('UserDaireService - Ödeme isteği durumu kontrol ediliyor:', daireBorcId);
+      
+      const response = await api.get(`${ENDPOINTS.FINANCE.ODEME_ISTEK_DURUM}/${daireBorcId}`);
+      
+      console.log('UserDaireService - Ödeme isteği durum yanıtı:', response.data);
+      
+      // BorcOdemeIstekDurumResponseDTO response
+      return response.data;
+    } catch (error) {
+      console.error('UserDaireService - Ödeme isteği durum kontrol hatası:', error);
+      
+      if (error.response?.status === 404) {
+        // Ödeme isteği bulunamadı - henüz istek gönderilmemiş
+        return { onaylandiMi: false };
+      } else if (error.response?.status === 403) {
+        throw new Error('Bu bilgilere erişim yetkiniz bulunmamaktadır.');
+      } else if (error.response?.status === 500) {
+        throw new Error('Sunucu hatası. Lütfen daha sonra tekrar deneyiniz.');
+      }
+      
+      // Varsayılan olarak onaylanmamış kabul et
+      return { onaylandiMi: false };
+    }
+  },
+
   // Daire bilgilerini formatla
   formatDaireBilgileri: (daire) => {
     console.log('UserDaireService - formatDaireBilgileri input:', daire);

@@ -12,6 +12,7 @@ import FinansalIslemlerSiteSecimi from './pages/FinansalIslemlerSiteSecimi';
 import FinansalIslemlerPanel from './pages/FinansalIslemlerPanel';
 import FinansalAlacakYonetimi from './pages/FinansalAlacakYonetimi';
 import FinansalGiderYonetimi from './pages/FinansalGiderYonetimi';
+import OdemeIstekleriSayfasi from './pages/OdemeIstekleriSayfasi';
 import './index.css';
 import TestPage from './pages/TestPage';
 import Duyurular from './pages/Duyurular';
@@ -76,6 +77,9 @@ function App() {
             <Route path="/finansal-islemler/:siteId" element={<FinansalIslemlerPanel />} />
             <Route path="/finansal-alacak-yonetimi/:siteId" element={<FinansalAlacakYonetimi />} />
             <Route path="/finansal-gider-yonetimi/:siteId" element={<FinansalGiderYonetimi />} />
+            
+            {/* Ödeme İstekleri */}
+            <Route path="/site/:siteId/odeme-istekleri" element={<OdemeIstekleriSayfasi />} />
             
             <Route path="/blok-detay/:blokId" element={<BlokDetay />} />
             <Route path="/daire-detay/:daireId" element={<DaireDetay />} />

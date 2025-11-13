@@ -3,6 +3,7 @@ package com.apartmanimcepte.backend.finance.controller;
 import com.apartmanimcepte.backend.finance.bus.FinansService;
 import com.apartmanimcepte.backend.finance.dto.Request.BorcTanimiCreateRequestDTO;
 import com.apartmanimcepte.backend.finance.dto.Request.TanimlanmisBorcFiltreDTO;
+import com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekDurumResponseDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekResponseDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.BorcTanimiResponseDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.DaireBorcResponseDTO;
@@ -96,6 +97,15 @@ public class FinansController {
     @PostMapping("/finance/odeme/istek/gonder/{daireBorcId}")
     public ResponseDTO borcOdemeIstegiGonder(@PathVariable ("daireBorcId") Long daireBorcId) throws IOException {
         return finansService.borcOdemeIstegiGonder(daireBorcId);
+    }
+    /**
+     * Daire sakini borç ödeme isteği gönderdiğinde, isteğin beklendiğini görmesi için borc ödeme istekler kısmını kontrol edeceğiz.
+     * EĞer borç ödeme isteğinde o borçId ile onaylanmamış kayıt varsa UI kısmında "ONAY BEKLENİYOR" yazacak.
+     * Eğer onaylanmış ise, "ONAYLANDI" yazak.
+     */
+    @GetMapping("/finance/odeme/istek/onay/durum/{daireBorcId}")
+    public BorcOdemeIstekDurumResponseDTO borcOdemeIstekDurumKontrol(@PathVariable ("daireBorcId") Long daireBorcId) throws IOException {
+        return finansService.borcOdemeIstekDurum(daireBorcId);
     }
 
 

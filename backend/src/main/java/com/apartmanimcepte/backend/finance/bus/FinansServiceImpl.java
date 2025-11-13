@@ -6,6 +6,7 @@ import com.apartmanimcepte.backend.finance.dao.BorcTanimiDAO;
 import com.apartmanimcepte.backend.finance.dao.DaireBorcDAO;
 import com.apartmanimcepte.backend.finance.dto.Request.BorcTanimiCreateRequestDTO;
 import com.apartmanimcepte.backend.finance.dto.Request.TanimlanmisBorcFiltreDTO;
+import com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekDurumResponseDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekResponseDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.BorcTanimiResponseDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.DaireBorcResponseDTO;
@@ -100,7 +101,8 @@ public class FinansServiceImpl implements FinansService {
     @Override
     @Transactional
     public List<DaireBorcResponseDTO> daireBorclar(Long borcId) {
-        BorcTanimi borcTanimi = borcTanimiDAO.getObjectById(BorcTanimi.class, borcId);
+        DaireBorc daireBorcTemp = daireBorcDAO.getObjectById(DaireBorc.class, borcId);
+        BorcTanimi borcTanimi = borcTanimiDAO.getObjectById(BorcTanimi.class,daireBorcTemp.getBorcTanimi().getId());
         List<DaireBorc> daireBorcs = daireBorcDAO.getObjectsByParam(DaireBorc.class, "borcTanimi", borcTanimi);
         List<DaireBorcResponseDTO> daireBorcResponseDTOS = new ArrayList<>();
         for (DaireBorc daireBorc : daireBorcs) {
@@ -178,6 +180,23 @@ public class FinansServiceImpl implements FinansService {
     @Transactional
     public List<BorcOdemeIstekResponseDTO> borcOdemeIstekler(Long siteId) {
         return borcOdemeIsteklerDAO.getOdemeIstekler(siteId);
+    }
+
+    @Override
+    @Transactional
+    public BorcOdemeIstekDurumResponseDTO borcOdemeIstekDurum(Long daireBorcId) {
+        DaireBorc daireBorc = daireBorcDAO.getObjectById(DaireBorc.class, daireBorcId);
+        BorcOdemeIstekDurumResponseDTO responseDTO=  new BorcOdemeIstekDurumResponseDTO();
+        List<BorcOdemeIstekler> borcOdemeIsteklers = borcOdemeIsteklerDAO.getObjectsByParam(BorcOdemeIstekler.class,"daireBorc",daireBorc);
+        BorcOdemeIstekler borcOdemeIstekler = borcOdemeIsteklers.get(0);
+        if(borcOdemeIstekler.isOnaylandiMi())
+        {
+            responseDTO.setOnaylandiMi(true);
+            return responseDTO;
+        }else{
+            responseDTO.setOnaylandiMi(false);
+            return responseDTO;
+        }
     }
 
 

@@ -2,6 +2,7 @@ package com.apartmanimcepte.backend.finance.bus;
 
 import com.apartmanimcepte.backend.finance.dto.Request.BorcTanimiCreateRequestDTO;
 import com.apartmanimcepte.backend.finance.dto.Request.TanimlanmisBorcFiltreDTO;
+import com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekDurumResponseDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekResponseDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.BorcTanimiResponseDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.DaireBorcResponseDTO;
@@ -19,6 +20,7 @@ public interface FinansService {
     ResponseDTO borcIstekKabul (Long daireBorcId);
     ResponseDTO borcOdemeIstegiGonder (Long daireBorcId);
     List<BorcOdemeIstekResponseDTO> borcOdemeIstekler(Long siteId);
+    BorcOdemeIstekDurumResponseDTO borcOdemeIstekDurum (Long daireBorcId);
 
 
 

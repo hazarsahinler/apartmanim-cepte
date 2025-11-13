@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Bell, User, Home, AlertCircle, Loader2, CreditCard, Building, 
-  MapPin, DollarSign, Calendar, Clock, LogOut, Menu, Sun, Moon 
+  MapPin, DollarSign, Calendar, Clock, LogOut, Menu, Sun, Moon,
+  CheckCircle, XCircle 
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { authService } from '../services/authService';
@@ -20,6 +21,7 @@ const KullaniciSayfasi = () => {
   const [daireInfo, setDaireInfo] = useState(null);
   const [finansalOzet, setFinansalOzet] = useState(null);
   const [daireBorclari, setDaireBorclari] = useState([]);
+  const [odemeIstekDurumlari, setOdemeIstekDurumlari] = useState({});
   const [odemeYukleniyor, setOdemeYukleniyor] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -70,6 +72,9 @@ const KullaniciSayfasi = () => {
               const borclar = await userDaireService.getKullaniciDaireBorclari(formattedDaire.daireId);
               setDaireBorclari(borclar);
               
+              // Ödeme isteği durumlarını yükle
+              await loadOdemeIstekDurumlari(borclar);
+              
             } catch (finErr) {
               console.warn('Finansal özet alınamadı:', finErr.message);
             }
@@ -114,6 +119,9 @@ const KullaniciSayfasi = () => {
         
         const guncelFinansal = await userDaireService.getKullaniciFinansalOzet(daireInfo.daireId);
         setFinansalOzet(guncelFinansal);
+        
+        // Ödeme isteği durumlarını güncelle
+        await loadOdemeIstekDurumlari(guncelBorclar);
       }
       
     } catch (error) {
@@ -122,6 +130,91 @@ const KullaniciSayfasi = () => {
     } finally {
       setOdemeYukleniyor(false);
     }
+  };
+
+  // Ödeme isteği durumlarını yükle
+  const loadOdemeIstekDurumlari = async (borclar) => {
+    try {
+      const durumlar = {};
+      
+      // Her borç için ödeme isteği durumunu kontrol et
+      for (const borc of borclar) {
+        try {
+          const durum = await userDaireService.odemeIstekDurumKontrol(borc.id);
+          durumlar[borc.id] = durum.onaylandiMi;
+        } catch (error) {
+          console.warn(`Borç ${borc.id} için durum kontrol edilemedi:`, error.message);
+          durumlar[borc.id] = null; // Durum bilinmiyor
+        }
+      }
+      
+      setOdemeIstekDurumlari(durumlar);
+      console.log('UserDaireService - Ödeme isteği durumları:', durumlar);
+      
+    } catch (error) {
+      console.error('Ödeme isteği durumları yüklenirken hata:', error);
+    }
+  };
+
+  // Ödeme isteği durumu bileşenini render et
+  const renderOdemeIstekDurumu = (borcId) => {
+    const durum = odemeIstekDurumlari[borcId];
+    
+    if (durum === null || durum === undefined) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+          <Clock className="w-3 h-3 mr-1" />
+          Durum Kontrol Ediliyor
+        </span>
+      );
+    }
+    
+    if (durum === true) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300">
+          <CheckCircle className="w-3 h-3 mr-1" />
+          ONAYLANDI
+        </span>
+      );
+    }
+    
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300">
+        <Clock className="w-3 h-3 mr-1" />
+        ONAY BEKLENİYOR
+      </span>
+    );
+  };
+
+  // Ödeme butonunun durumunu belirle
+  const getOdemeButonDurumu = (borcId) => {
+    const durum = odemeIstekDurumlari[borcId];
+    
+    if (durum === true) {
+      return {
+        disabled: true,
+        text: 'Onaylandı',
+        icon: CheckCircle,
+        className: 'px-4 py-2 bg-green-100 text-green-600 text-sm rounded-lg cursor-not-allowed'
+      };
+    }
+    
+    if (durum === false) {
+      return {
+        disabled: true,
+        text: 'İstek Gönderildi',
+        icon: Clock,
+        className: 'px-4 py-2 bg-yellow-100 text-yellow-600 text-sm rounded-lg cursor-not-allowed'
+      };
+    }
+    
+    // Durum bilinmiyorsa ödeme isteği gönderilebilir
+    return {
+      disabled: odemeYukleniyor,
+      text: odemeYukleniyor ? 'Gönderiliyor...' : 'Ödedim, Onayla',
+      icon: odemeYukleniyor ? Loader2 : CreditCard,
+      className: 'px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white text-sm rounded-lg transition-colors'
+    };
   };
 
   if (loading) {
@@ -374,16 +467,19 @@ const KullaniciSayfasi = () => {
                         .filter(borc => !borc.odendiMi) // Sadece ödenmemiş borçları göster
                         .map((borc) => (
                           <div key={borc.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:border-orange-300 dark:hover:border-orange-600 transition-colors">
-                            <div className="flex items-center justify-between mb-2">
-                              <div>
-                                <h4 className="font-medium text-gray-900 dark:text-white">
-                                  {borc.borcAciklamasi || 'Borç açıklaması'}
-                                </h4>
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-1">
+                                  <h4 className="font-medium text-gray-900 dark:text-white">
+                                    {borc.borcAciklamasi || 'Borç açıklaması'}
+                                  </h4>
+                                  {renderOdemeIstekDurumu(borc.id)}
+                                </div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                   Son ödeme tarihi: {new Date(borc.sonOdemeTarihi).toLocaleDateString('tr-TR')}
                                 </p>
                               </div>
-                              <div className="text-right">
+                              <div className="text-right ml-4">
                                 <p className="text-lg font-bold text-red-600 dark:text-red-400">
                                   ₺{borc.tutar?.toLocaleString()}
                                 </p>
@@ -398,23 +494,21 @@ const KullaniciSayfasi = () => {
                                 {new Date(borc.sonOdemeTarihi) < new Date() ? 'Vadesi geçmiş' : 'Ödeme bekliyor'}
                               </div>
                               
-                              <button
-                                onClick={() => handleOdemeIstegi(borc.id)}
-                                disabled={odemeYukleniyor}
-                                className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white text-sm rounded-lg transition-colors flex items-center"
-                              >
-                                {odemeYukleniyor ? (
-                                  <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Gönderiliyor...
-                                  </>
-                                ) : (
-                                  <>
-                                    <CreditCard className="w-4 h-4 mr-2" />
-                                    Ödedim, Onayla
-                                  </>
-                                )}
-                              </button>
+                              {(() => {
+                                const buttonConfig = getOdemeButonDurumu(borc.id);
+                                const Icon = buttonConfig.icon;
+                                
+                                return (
+                                  <button
+                                    onClick={() => !buttonConfig.disabled && handleOdemeIstegi(borc.id)}
+                                    disabled={buttonConfig.disabled}
+                                    className={buttonConfig.className + ' flex items-center'}
+                                  >
+                                    <Icon className={`w-4 h-4 mr-2 ${odemeYukleniyor ? 'animate-spin' : ''}`} />
+                                    {buttonConfig.text}
+                                  </button>
+                                );
+                              })()}
                             </div>
                           </div>
                         ))}
