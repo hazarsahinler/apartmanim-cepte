@@ -6,10 +6,7 @@ import com.apartmanimcepte.backend.finance.dao.BorcTanimiDAO;
 import com.apartmanimcepte.backend.finance.dao.DaireBorcDAO;
 import com.apartmanimcepte.backend.finance.dto.Request.BorcTanimiCreateRequestDTO;
 import com.apartmanimcepte.backend.finance.dto.Request.TanimlanmisBorcFiltreDTO;
-import com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekDurumResponseDTO;
-import com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekResponseDTO;
-import com.apartmanimcepte.backend.finance.dto.Response.BorcTanimiResponseDTO;
-import com.apartmanimcepte.backend.finance.dto.Response.DaireBorcResponseDTO;
+import com.apartmanimcepte.backend.finance.dto.Response.*;
 import com.apartmanimcepte.backend.finance.entity.BorcOdemeIstekler;
 import com.apartmanimcepte.backend.finance.entity.BorcTanimi;
 import com.apartmanimcepte.backend.finance.entity.DaireBorc;
@@ -202,6 +199,12 @@ public class FinansServiceImpl implements FinansService {
             responseDTO.setMessage("Onay Bekliyor");
             return responseDTO;
         }
+    }
+
+    @Override
+    @Transactional
+    public TotalApartmanGelirResponseDTO totalApartmanGelir(Long siteId) {
+        return daireBorcDAO.getTotalApartmanGelir(siteId);
     }
 
 

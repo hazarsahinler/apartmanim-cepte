@@ -3,10 +3,7 @@ package com.apartmanimcepte.backend.finance.controller;
 import com.apartmanimcepte.backend.finance.bus.FinansService;
 import com.apartmanimcepte.backend.finance.dto.Request.BorcTanimiCreateRequestDTO;
 import com.apartmanimcepte.backend.finance.dto.Request.TanimlanmisBorcFiltreDTO;
-import com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekDurumResponseDTO;
-import com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekResponseDTO;
-import com.apartmanimcepte.backend.finance.dto.Response.BorcTanimiResponseDTO;
-import com.apartmanimcepte.backend.finance.dto.Response.DaireBorcResponseDTO;
+import com.apartmanimcepte.backend.finance.dto.Response.*;
 import com.apartmanimcepte.backend.identity.dto.ResponseDTO;
 import org.springframework.web.bind.annotation.*;
 
@@ -107,6 +104,13 @@ public class FinansController {
     public BorcOdemeIstekDurumResponseDTO borcOdemeIstekDurumKontrol(@PathVariable ("daireBorcId") Long daireBorcId) throws IOException {
         return finansService.borcOdemeIstekDurum(daireBorcId);
     }
+    /**
+     * Daire borç tablosunda bulunan ödendiMi bilgisi == TRUE olan kayıtları bulup tutarlarını toplayarak toplam geliri döndürür.
+     * Amaç total geliri görebilmesi daire sakinin.
+     */
+    @GetMapping("/finance/total/gelir/{siteId}")
+    public TotalApartmanGelirResponseDTO totalApartmanGelir(@PathVariable ("siteId") Long siteId) throws IOException {
+        return finansService.totalApartmanGelir(siteId);
 
-
+    }
 }

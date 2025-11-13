@@ -2,10 +2,7 @@ package com.apartmanimcepte.backend.finance.bus;
 
 import com.apartmanimcepte.backend.finance.dto.Request.BorcTanimiCreateRequestDTO;
 import com.apartmanimcepte.backend.finance.dto.Request.TanimlanmisBorcFiltreDTO;
-import com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekDurumResponseDTO;
-import com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekResponseDTO;
-import com.apartmanimcepte.backend.finance.dto.Response.BorcTanimiResponseDTO;
-import com.apartmanimcepte.backend.finance.dto.Response.DaireBorcResponseDTO;
+import com.apartmanimcepte.backend.finance.dto.Response.*;
 import com.apartmanimcepte.backend.identity.dto.ResponseDTO;
 import com.apartmanimcepte.backend.structure.entity.Daire;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +18,7 @@ public interface FinansService {
     ResponseDTO borcOdemeIstegiGonder (Long daireBorcId);
     List<BorcOdemeIstekResponseDTO> borcOdemeIstekler(Long siteId);
     BorcOdemeIstekDurumResponseDTO borcOdemeIstekDurum (Long daireBorcId);
+    TotalApartmanGelirResponseDTO totalApartmanGelir(Long siteId);
 
 
 

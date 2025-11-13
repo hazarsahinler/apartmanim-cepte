@@ -22,6 +22,7 @@ const KullaniciSayfasi = () => {
   const [finansalOzet, setFinansalOzet] = useState(null);
   const [daireBorclari, setDaireBorclari] = useState([]);
   const [odemeIstekDurumlari, setOdemeIstekDurumlari] = useState({});
+  const [totalApartmanGeliri, setTotalApartmanGeliri] = useState(null);
   const [odemeYukleniyor, setOdemeYukleniyor] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -75,6 +76,16 @@ const KullaniciSayfasi = () => {
               // Ödeme isteği durumlarını yükle
               await loadOdemeIstekDurumlari(borclar);
               
+              // Total apartman gelirini yükle
+              try {
+                const gelirData = await userDaireService.getTotalApartmanGelir(formattedDaire.siteId);
+                setTotalApartmanGeliri(gelirData);
+                console.log('KullaniciSayfasi - Total apartman geliri yüklendi:', gelirData);
+              } catch (gelirErr) {
+                console.warn('Total apartman geliri alınamadı:', gelirErr.message);
+                setTotalApartmanGeliri({ tutar: 0 });
+              }
+              
             } catch (finErr) {
               console.warn('Finansal özet alınamadı:', finErr.message);
             }
@@ -122,6 +133,15 @@ const KullaniciSayfasi = () => {
         
         // Ödeme isteği durumlarını güncelle
         await loadOdemeIstekDurumlari(guncelBorclar);
+        
+        // Total apartman gelirini de güncelle
+        try {
+          const guncelGelir = await userDaireService.getTotalApartmanGelir(daireInfo.siteId);
+          setTotalApartmanGeliri(guncelGelir);
+          console.log('KullaniciSayfasi - Total apartman geliri güncellendi:', guncelGelir);
+        } catch (gelirErr) {
+          console.warn('Total apartman geliri güncellenemedi:', gelirErr.message);
+        }
       }
       
     } catch (error) {
@@ -403,7 +423,7 @@ const KullaniciSayfasi = () => {
                     </div>
                     
                     {finansalOzet ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
                           <div className="flex items-center">
                             <DollarSign className="w-6 h-6 text-green-600 mr-2" />
@@ -435,6 +455,18 @@ const KullaniciSayfasi = () => {
                               <p className="text-sm text-blue-600 dark:text-blue-400">Bu Ay</p>
                               <p className="text-lg font-bold text-blue-700 dark:text-blue-300">
                                 ₺{finansalOzet.buAyTutari?.toLocaleString() || '0'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                          <div className="flex items-center">
+                            <Building className="w-6 h-6 text-purple-600 mr-2" />
+                            <div>
+                              <p className="text-sm text-purple-600 dark:text-purple-400">Apartman Geliri</p>
+                              <p className="text-lg font-bold text-purple-700 dark:text-purple-300">
+                                ₺{totalApartmanGeliri?.tutar ? parseFloat(totalApartmanGeliri.tutar).toLocaleString() : '0'}
                               </p>
                             </div>
                           </div>

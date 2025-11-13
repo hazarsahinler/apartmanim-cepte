@@ -3,6 +3,7 @@ package com.apartmanimcepte.backend.finance.dao;
 import com.apartmanimcepte.backend.finance.dto.Request.TanimlanmisBorcFiltreDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.BorcTanimiResponseDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.DaireBorcResponseDTO;
+import com.apartmanimcepte.backend.finance.dto.Response.TotalApartmanGelirResponseDTO;
 import com.apartmanimcepte.backend.identity.dao.BaseDAO;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -41,5 +42,28 @@ public class DaireBorcDAO extends BaseDAO {
 
 
         return query.list();
+    }
+    public TotalApartmanGelirResponseDTO getTotalApartmanGelir(Long siteId) {
+        StringBuilder hql = new StringBuilder();
+
+        hql.append(" SELECT NEW com.apartmanimcepte.backend.finance.dto.Response.TotalApartmanGelirResponseDTO( ");
+        hql.append("   COALESCE(SUM(d.tutar), 0.0) ");
+        hql.append(" ) ");
+        hql.append(" FROM DaireBorc d WHERE 1=1 ");
+
+        hql.append(" AND d.odendiMi = true ");
+
+        if (siteId != null) {
+            hql.append(" AND d.daire.blok.site.siteId = :siteId ");
+        }
+
+        Query<TotalApartmanGelirResponseDTO> query = sessionFactory.getCurrentSession()
+                .createQuery(hql.toString(), TotalApartmanGelirResponseDTO.class);
+
+        if (siteId != null) {
+            query.setParameter("siteId", siteId);
+        }
+
+        return query.getSingleResult();
     }
 }

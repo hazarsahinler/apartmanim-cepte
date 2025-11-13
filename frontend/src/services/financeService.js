@@ -135,6 +135,35 @@ export const financeService = {
     }
   },
 
+  // Total apartman geliri getir
+  getTotalApartmanGelir: async (siteId) => {
+    try {
+      console.log('FinanceService - Total apartman geliri getiriliyor, SiteId:', siteId);
+      
+      const response = await api.get(`/finance/total/gelir/${siteId}`);
+      
+      console.log('FinanceService - Total apartman geliri yanıtı:', response.data);
+      
+      // TotalApartmanGelirResponseDTO döner: { tutar: BigDecimal }
+      return response.data;
+    } catch (error) {
+      console.error('FinanceService - Total apartman geliri getirme hatası:', error);
+      
+      if (error.response?.status === 403) {
+        throw new Error('Bu bilgilere erişim yetkiniz bulunmamaktadır.');
+      } else if (error.response?.status === 404) {
+        // Gelir bulunamadıysa sıfır döner
+        return { tutar: 0 };
+      } else if (error.response?.status === 500) {
+        throw new Error('Sunucu hatası. Lütfen daha sonra tekrar deneyiniz.');
+      }
+      
+      // Hata durumunda sıfır döner
+      console.warn('FinanceService - Total gelir getirilemedi, sıfır döndürülüyor');
+      return { tutar: 0 };
+    }
+  },
+
   // Form validation helper
   validateBorcTanimiForm: (formData) => {
     const errors = {};
