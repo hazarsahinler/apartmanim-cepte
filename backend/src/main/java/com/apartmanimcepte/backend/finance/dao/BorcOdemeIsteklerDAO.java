@@ -26,7 +26,7 @@ public class BorcOdemeIsteklerDAO extends BaseDAO {
 
         hql.append(" SELECT NEW com.apartmanimcepte.backend.finance.dto.Response.BorcOdemeIstekResponseDTO( ");
         // Hatalı kısım burada düzeltildi: d.daire.blok.blokIsmi -> d.daireBorc.daire.blok.blokIsmi
-        hql.append("   d.id, d.daireBorc.id, d.daireBorc.daire.daireNo, d.daireBorc.daire.katNo, d.daireBorc.daire.blok.blokIsmi, d.istekTarihi ");
+        hql.append("   d.id, d.daireBorc.id,d.daireBorc.daire.daireId ,d.daireBorc.daire.daireNo, d.daireBorc.daire.katNo, d.daireBorc.daire.blok.blokIsmi, d.istekTarihi ");
         hql.append(" ) ");
         hql.append(" FROM BorcOdemeIstekler d WHERE 1=1 ");
         hql.append(" AND d.onaylandiMi = false ");

@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BorcOdemeIstekDurumResponseDTO {
-    private boolean onaylandiMi;
-
+    private Boolean onaylandiMi;
+    private String message;
 }

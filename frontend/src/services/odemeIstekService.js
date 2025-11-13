@@ -109,7 +109,31 @@ export const odemeIstekService = {
     }
   },
 
-  // Borç ID'sine göre daire borçlarını getir
+  // DaireId'ye göre daire borçlarını getir (yeni API)
+  getDaireBorcByDaireId: async (daireId) => {
+    try {
+      console.log('OdemeIstekService - Daire borçları alınıyor, daireId:', daireId);
+      
+      const response = await api.get(`${ENDPOINTS.FINANCE.DAIRE_BORC}/${daireId}`);
+      console.log('OdemeIstekService - Daire borçları response:', response.data);
+      
+      return response.data;
+    } catch (error) {
+      console.error('OdemeIstekService - Daire borçları alma hatası:', error);
+      
+      if (error.response?.status === 404) {
+        throw new Error('Daire borç bilgisi bulunamadı.');
+      } else if (error.response?.status === 403) {
+        throw new Error('Bu işlem için yetkiniz bulunmuyor.');
+      } else if (error.response?.status === 401) {
+        throw new Error('Oturumunuz sonlanmış. Lütfen tekrar giriş yapın.');
+      }
+      
+      throw new Error(error.response?.data?.message || 'Daire borçları alınırken bir hata oluştu.');
+    }
+  },
+
+  // Borç ID'sine göre daire borçlarını getir (eski API)
   getDaireBorcByBorcId: async (borcId) => {
     try {
       console.log('OdemeIstekService - Borç detayları alınıyor:', borcId);

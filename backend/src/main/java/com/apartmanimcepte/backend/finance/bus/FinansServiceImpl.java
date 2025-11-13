@@ -101,8 +101,7 @@ public class FinansServiceImpl implements FinansService {
     @Override
     @Transactional
     public List<DaireBorcResponseDTO> daireBorclar(Long borcId) {
-        DaireBorc daireBorcTemp = daireBorcDAO.getObjectById(DaireBorc.class, borcId);
-        BorcTanimi borcTanimi = borcTanimiDAO.getObjectById(BorcTanimi.class,daireBorcTemp.getBorcTanimi().getId());
+        BorcTanimi borcTanimi= borcTanimiDAO.getObjectById(BorcTanimi.class, borcId);
         List<DaireBorc> daireBorcs = daireBorcDAO.getObjectsByParam(DaireBorc.class, "borcTanimi", borcTanimi);
         List<DaireBorcResponseDTO> daireBorcResponseDTOS = new ArrayList<>();
         for (DaireBorc daireBorc : daireBorcs) {
@@ -188,13 +187,19 @@ public class FinansServiceImpl implements FinansService {
         DaireBorc daireBorc = daireBorcDAO.getObjectById(DaireBorc.class, daireBorcId);
         BorcOdemeIstekDurumResponseDTO responseDTO=  new BorcOdemeIstekDurumResponseDTO();
         List<BorcOdemeIstekler> borcOdemeIsteklers = borcOdemeIsteklerDAO.getObjectsByParam(BorcOdemeIstekler.class,"daireBorc",daireBorc);
+        if(borcOdemeIsteklers.isEmpty()){
+           responseDTO.setOnaylandiMi(false);
+           responseDTO.setMessage(null);
+        }
         BorcOdemeIstekler borcOdemeIstekler = borcOdemeIsteklers.get(0);
         if(borcOdemeIstekler.isOnaylandiMi())
         {
             responseDTO.setOnaylandiMi(true);
+            responseDTO.setMessage("Onaylandı");
             return responseDTO;
         }else{
             responseDTO.setOnaylandiMi(false);
+            responseDTO.setMessage("Onay Bekliyor");
             return responseDTO;
         }
     }

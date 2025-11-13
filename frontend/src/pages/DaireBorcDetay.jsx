@@ -18,6 +18,9 @@ const DaireBorcDetay = () => {
   const [user, setUser] = useState(null);
   const [daireBorclar, setDaireBorclar] = useState([]);
   const [borcBilgi, setBorcBilgi] = useState(null);
+  const [odemeDurumlari, setOdemeDurumlari] = useState({});
+  const [islemYapiliyor, setIslemYapiliyor] = useState(false);
+  const [selectedBorc, setSelectedBorc] = useState(null);
 
   const handleLogout = () => {
     if (window.confirm('Çıkış yapmak istediğinize emin misiniz?')) {
@@ -28,22 +31,30 @@ const DaireBorcDetay = () => {
   // Daire borç detaylarını API'den çek
   const fetchDaireBorclar = async (borcId) => {
     try {
+      console.log('fetchDaireBorclar - Gelen borcId parametresi:', borcId);
+      
       const token = authService.getToken();
       if (!token) {
         throw new Error('Token bulunamadı');
       }
 
-      const response = await axios.get(
-        `http://localhost:8080/api${ENDPOINTS.FINANCE.DAIRE_BORCLAR}/${borcId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      const apiUrl = `http://localhost:8080/api${ENDPOINTS.FINANCE.DAIRELER_BORC_BY_ID}/${borcId}`;
+      console.log('fetchDaireBorclar - API URL:', apiUrl);
 
-      console.log('Daire borçları API yanıtı:', response.data);
+      const response = await axios.get(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        // Timestamp ekleyerek cache'i bypass et
+        params: {
+          '_t': Date.now()
+        }
+      });
+
+      console.log('fetchDaireBorclar - API yanıtı:', response.data);
+      console.log('fetchDaireBorclar - İlk kayıt detayı:', response.data[0]);
+      console.log('fetchDaireBorclar - API yanıtında kaç kayıt var:', response.data.length);
       return response.data;
     } catch (error) {
       console.error('Daire borçları yüklenirken hata:', error);
@@ -51,11 +62,87 @@ const DaireBorcDetay = () => {
     }
   };
 
+  // Ödeme isteği durumunu kontrol et
+  const checkOdemeDurumu = async (daireBorcId) => {
+    try {
+      const token = authService.getToken();
+      const response = await axios.get(
+        `http://localhost:8080/api${ENDPOINTS.FINANCE.ODEME_ISTEK_DURUM}/${daireBorcId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      return response.data;
+    } catch (error) {
+      console.error('Ödeme durumu kontrol hatası:', error);
+      return null;
+    }
+  };
+
+  // Ödeme isteğini onayla
+  const onaylaOdemeIstegi = async (daireBorcId) => {
+    if (!window.confirm('Bu ödeme isteğini onaylamak istediğinize emin misiniz?')) {
+      return;
+    }
+
+    try {
+      setIslemYapiliyor(true);
+      setSelectedBorc(daireBorcId);
+      
+      const token = authService.getToken();
+      const response = await axios.post(
+        `http://localhost:8080/api${ENDPOINTS.FINANCE.ODEME_ISTEK_KABUL}/${daireBorcId}`,
+        {},
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      toast.success('Ödeme isteği başarıyla onaylandı!');
+      
+      // Durumları yeniden yükle
+      await loadOdemeDurumlari();
+      
+    } catch (error) {
+      console.error('Ödeme onaylama hatası:', error);
+      toast.error(error.response?.data?.message || 'Ödeme onaylanırken bir hata oluştu.');
+    } finally {
+      setIslemYapiliyor(false);
+      setSelectedBorc(null);
+    }
+  };
+
+  // Tüm borçlar için ödeme durumlarını yükle
+  const loadOdemeDurumlari = async () => {
+    if (daireBorclar.length === 0) return;
+    
+    const durumlar = {};
+    
+    for (const borc of daireBorclar) {
+      const durum = await checkOdemeDurumu(borc.id);
+      durumlar[borc.id] = durum;
+    }
+    
+    setOdemeDurumlari(durumlar);
+  };
+
   // Sayfa yüklendiğinde verileri çek
   useEffect(() => {
     const initializePage = async () => {
       try {
         setLoading(true);
+        
+        // State'leri temizle (cache problemini önlemek için)
+        setDaireBorclar([]);
+        setBorcBilgi(null);
+        setOdemeDurumlari({});
         
         if (!authService.isAuthenticated()) {
           navigate('/giris');
@@ -81,7 +168,11 @@ const DaireBorcDetay = () => {
         
         // API'den daire borçlarını çek
         try {
+          console.log('DaireBorcDetay - URL\'den gelen borcId:', borcId);
+          console.log('DaireBorcDetay - URL\'den gelen siteId:', siteId);
+          
           const daireBorcListesi = await fetchDaireBorclar(borcId);
+          console.log('DaireBorcDetay - API\'den dönen daire borç listesi:', daireBorcListesi);
           setDaireBorclar(daireBorcListesi);
           
           // İlk elemandan borç bilgisini çıkar
@@ -150,8 +241,46 @@ const DaireBorcDetay = () => {
     initializePage();
   }, [navigate, siteId, borcId]);
 
+  // Daire borçları yüklendiğinde ödeme durumlarını da yükle
+  useEffect(() => {
+    if (daireBorclar.length > 0) {
+      loadOdemeDurumlari();
+    }
+  }, [daireBorclar]);
+
   // Ödeme durumuna göre badge rengi
-  const getOdemeDurumuBadge = (odendiMi, sonOdemeTarihi) => {
+  const getOdemeDurumuBadge = (odendiMi, sonOdemeTarihi, daireBorcId) => {
+    const durumResponse = odemeDurumlari[daireBorcId];
+    
+    // Backend'den message varsa onu kullan
+    if (durumResponse && durumResponse.message) {
+      const message = durumResponse.message.toLowerCase();
+      
+      if (message.includes('onaylandı') || message.includes('onaylandi')) {
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      } else if (message.includes('onay bekliyor') || message.includes('bekleniyor')) {
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      }
+    }
+    
+    // Eski boolean kontrol (geriye uyumluluk)
+    if (durumResponse !== undefined && durumResponse !== null) {
+      if (typeof durumResponse === 'boolean') {
+        if (durumResponse === true) {
+          return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+        } else if (durumResponse === false) {
+          return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+        }
+      } else if (typeof durumResponse === 'object') {
+        if (durumResponse.onaylandiMi === true) {
+          return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+        } else if (durumResponse.onaylandiMi === false) {
+          return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+        }
+      }
+    }
+    
+    // Ödeme isteği yoksa geleneksel durum kontrolü
     if (odendiMi) {
       return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
     }
@@ -163,10 +292,37 @@ const DaireBorcDetay = () => {
       return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
     }
     
-    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+    return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
   };
 
-  const getOdemeDurumuText = (odendiMi, sonOdemeTarihi) => {
+  const getOdemeDurumuText = (odendiMi, sonOdemeTarihi, daireBorcId) => {
+    const durumResponse = odemeDurumlari[daireBorcId];
+    
+    // Backend'den message varsa direkt onu kullan
+    if (durumResponse && durumResponse.message) {
+      return durumResponse.message;
+    }
+    
+    // Eski boolean kontrol (geriye uyumluluk)
+    if (durumResponse !== undefined && durumResponse !== null) {
+      if (typeof durumResponse === 'boolean') {
+        if (durumResponse === true) {
+          return 'Onaylandı';
+        } else if (durumResponse === false) {
+          return 'Onay Bekliyor';
+        }
+      } else if (typeof durumResponse === 'object') {
+        if (durumResponse.onaylandiMi === true) {
+          return 'Onaylandı';
+        } else if (durumResponse.onaylandiMi === false && durumResponse.message === null) {
+          return 'Bekliyor'; // İstek yok
+        } else if (durumResponse.onaylandiMi === false) {
+          return 'Onay Bekliyor'; // İstek var ama onaylanmamış
+        }
+      }
+    }
+    
+    // Ödeme isteği yoksa geleneksel durum kontrolü
     if (odendiMi) {
       return 'Ödendi';
     }
@@ -461,8 +617,8 @@ const DaireBorcDetay = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getOdemeDurumuBadge(borc.odendiMi, borc.sonOdemeTarihi)}`}>
-                          {getOdemeDurumuText(borc.odendiMi, borc.sonOdemeTarihi)}
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getOdemeDurumuBadge(borc.odendiMi, borc.sonOdemeTarihi, borc.id)}`}>
+                          {getOdemeDurumuText(borc.odendiMi, borc.sonOdemeTarihi, borc.id)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -473,14 +629,51 @@ const DaireBorcDetay = () => {
                           >
                             <Eye className="h-4 w-4" />
                           </button>
-                          {!borc.odendiMi && (
-                            <button 
-                              title="Ödendi Olarak İşaretle"
-                              className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                            >
-                              <Check className="h-4 w-4" />
-                            </button>
-                          )}
+                          
+                          {/* Onay Bekliyor durumunda onaylama butonu göster */}
+                          {(() => {
+                            const durumResponse = odemeDurumlari[borc.id];
+                            // Message'da "onay bekliyor" varsa veya eski sistemde false ise buton göster
+                            const onayBekliyor = (durumResponse?.message && durumResponse.message.toLowerCase().includes('onay bekliyor')) ||
+                                               (durumResponse === false) ||
+                                               (durumResponse?.onaylandiMi === false && durumResponse?.message !== null);
+                            
+                            return onayBekliyor && (
+                              <button 
+                                title="Ödeme İsteğini Onayla"
+                                onClick={() => onaylaOdemeIstegi(borc.id)}
+                                disabled={islemYapiliyor && selectedBorc === borc.id}
+                                className="px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 disabled:bg-gray-400 transition-colors flex items-center"
+                              >
+                                {islemYapiliyor && selectedBorc === borc.id ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent mr-1"></div>
+                                    Onaylanıyor...
+                                  </>
+                                ) : (
+                                  'Onayla'
+                                )}
+                              </button>
+                            );
+                          })()}
+                          
+                          {/* Geleneksel ödendi olarak işaretleme (sadece ödenmediyse ve ödeme isteği yoksa) */}
+                          {(() => {
+                            const durumResponse = odemeDurumlari[borc.id];
+                            // Ödeme isteği hiç yoksa (message null veya response null)
+                            const istekYok = !durumResponse || 
+                                           durumResponse === null || 
+                                           (durumResponse?.message === null);
+                            
+                            return !borc.odendiMi && istekYok && (
+                              <button 
+                                title="Ödendi Olarak İşaretle"
+                                className="px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors"
+                              >
+                                İşaretle
+                              </button>
+                            );
+                          })()}
                         </div>
                       </td>
                     </tr>

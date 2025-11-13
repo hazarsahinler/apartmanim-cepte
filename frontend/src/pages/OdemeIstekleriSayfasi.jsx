@@ -88,7 +88,7 @@ const OdemeIstekleriSayfasi = () => {
   }, [istekler, aramaMetni, durumuFilter]);
 
   // Borç detaylarını yükle
-  const loadBorcDetaylari = async (daireBorcId) => {
+  const loadBorcDetaylari = async (daireBorcId, daireId = null) => {
     if (borcDetaylari[daireBorcId] || detayYukleniyor[daireBorcId]) {
       return; // Zaten yüklenmişse veya yükleniyorsa tekrar yükleme
     }
@@ -96,12 +96,35 @@ const OdemeIstekleriSayfasi = () => {
     try {
       setDetayYukleniyor(prev => ({ ...prev, [daireBorcId]: true }));
       
-      const borcData = await odemeIstekService.getDaireBorcByBorcId(daireBorcId);
+      // Önce daireId ile borç detaylarını çekmeyi dene
+      let borcData = null;
+      
+      if (daireId) {
+        try {
+          console.log('OdemeIstekleriSayfasi - DaireId ile borç detayları çekiliyor:', daireId);
+          borcData = await odemeIstekService.getDaireBorcByDaireId(daireId);
+          
+          // daireBorcId ile eşleşen borcu bul
+          if (borcData && Array.isArray(borcData)) {
+            const matchingBorc = borcData.find(borc => borc.id === daireBorcId);
+            borcData = matchingBorc || (borcData.length > 0 ? borcData[0] : null);
+          }
+        } catch (daireIdError) {
+          console.warn('DaireId ile borç detayları alınamadı, borcId ile denenecek:', daireIdError.message);
+        }
+      }
+      
+      // Eğer daireId ile çekilemezse eski yöntemi kullan
+      if (!borcData) {
+        console.log('OdemeIstekleriSayfasi - BorcId ile borç detayları çekiliyor:', daireBorcId);
+        const fallbackData = await odemeIstekService.getDaireBorcByBorcId(daireBorcId);
+        borcData = fallbackData && fallbackData.length > 0 ? fallbackData[0] : null;
+      }
       
       // Borç verilerini state'e kaydet
       setBorcDetaylari(prev => ({ 
         ...prev, 
-        [daireBorcId]: borcData && borcData.length > 0 ? borcData[0] : null 
+        [daireBorcId]: borcData 
       }));
       
     } catch (error) {
@@ -116,7 +139,9 @@ const OdemeIstekleriSayfasi = () => {
   useEffect(() => {
     if (filtreliIstekler.length > 0) {
       filtreliIstekler.forEach(istek => {
-        loadBorcDetaylari(istek.daireBorcId);
+        // Eğer istek objesinde daireId varsa onu kullan
+        const daireId = istek.daireId || null;
+        loadBorcDetaylari(istek.daireBorcId, daireId);
       });
     }
   }, [filtreliIstekler]);
@@ -447,18 +472,15 @@ const OdemeIstekleriSayfasi = () => {
                         <button
                           onClick={() => handleOdemeIstegiKabul(istek.borcOdemeIstekId, istek.daireBorcId)}
                           disabled={islemYapiliyor && selectedIstek === istek.borcOdemeIstekId}
-                          className="flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
+                          className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors font-medium"
                         >
                           {islemYapiliyor && selectedIstek === istek.borcOdemeIstekId ? (
                             <>
                               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              İşleniyor...
+                              Onaylanıyor...
                             </>
                           ) : (
-                            <>
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Onayla
-                            </>
+                            'Ödemeyi Onayla'
                           )}
                         </button>
                       </div>

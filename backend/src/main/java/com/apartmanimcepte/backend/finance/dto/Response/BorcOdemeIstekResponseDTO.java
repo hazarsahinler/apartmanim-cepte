@@ -12,6 +12,7 @@ import java.time.LocalDate;
 public class BorcOdemeIstekResponseDTO {
     private Long borcOdemeIstekId;
     private Long daireBorcId;
+    private Long daireId;
     private int katNo;
     private int daireNo;
     private String blokIsmi;
