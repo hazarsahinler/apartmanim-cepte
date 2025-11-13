@@ -957,7 +957,7 @@ export default KullaniciDashboard;
 
                     <p className="text-sm text-gray-600 dark:text-gray-400">{user?.email}</p>
 
-                    <p className="text-xs text-gray-500">{user?.telefonNumarasi}</p>    return (
+                    <p className="text-xs text-gray-500">{user?.kullaniciTelefon || user?.telefonNumarasi || user?.telefon}</p>    return (
 
                   </div>
 

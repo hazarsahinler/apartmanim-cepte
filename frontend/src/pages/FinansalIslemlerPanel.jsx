@@ -366,14 +366,22 @@ const FinansalIslemlerPanel = () => {
 
                 <div className="flex space-x-3">
                   <button
-                    onClick={() => navigate(`/finansal-alacak-yonetimi/${siteId}`)}
+                    onClick={() => {
+                      console.log('Alacak Yönetimi butonu tıklandı, siteId:', siteId);
+                      console.log('Gidilecek route:', `/finansal-alacak-yonetimi/${siteId}`);
+                      navigate(`/finansal-alacak-yonetimi/${siteId}`);
+                    }}
                     className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
                   >
                     <PlusCircle className="h-4 w-4" />
                     <span>Yeni Alacak</span>
                   </button>
                   <button
-                    onClick={() => navigate(`/finansal-alacak-yonetimi/${siteId}`)}
+                    onClick={() => {
+                      console.log('Alacakları Görüntüle butonu tıklandı, siteId:', siteId);
+                      console.log('Gidilecek route:', `/finansal-alacak-yonetimi/${siteId}`);
+                      navigate(`/finansal-alacak-yonetimi/${siteId}`);
+                    }}
                     className="flex items-center justify-center px-4 py-2 border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                   >
                     <Eye className="h-4 w-4" />
@@ -417,14 +425,22 @@ const FinansalIslemlerPanel = () => {
 
                 <div className="flex space-x-3">
                   <button
-                    onClick={() => navigate(`/finansal-gider-yonetimi/${siteId}`)}
+                    onClick={() => {
+                      console.log('Gider Yönetimi butonu tıklandı, siteId:', siteId);
+                      console.log('Gidilecek route:', `/finansal-gider-yonetimi/${siteId}`);
+                      navigate(`/finansal-gider-yonetimi/${siteId}`);
+                    }}
                     className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
                   >
                     <PlusCircle className="h-4 w-4" />
                     <span>Yeni Gider</span>
                   </button>
                   <button
-                    onClick={() => navigate(`/finansal-gider-yonetimi/${siteId}`)}
+                    onClick={() => {
+                      console.log('Giderleri Görüntüle butonu tıklandı, siteId:', siteId);
+                      console.log('Gidilecek route:', `/finansal-gider-yonetimi/${siteId}`);
+                      navigate(`/finansal-gider-yonetimi/${siteId}`);
+                    }}
                     className="flex items-center justify-center px-4 py-2 border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                   >
                     <Eye className="h-4 w-4" />

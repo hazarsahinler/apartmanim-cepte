@@ -22,9 +22,9 @@ public class FinansController {
 
     /**
      *dairelere borc eklemek için kullanıyoruz. Testleri başarılı.
-     * @param borcTanimiCreateRequestDto
+    * @param borcTanimiCreateRequestDto
      * @return
-     */
+     *///     * @param borcTanimiCreateRequestDto
     @PostMapping("/finance/borc/ekle")
     public ResponseDTO borcEkle(@RequestBody BorcTanimiCreateRequestDTO borcTanimiCreateRequestDto) {
         return finansService.borcTanim(borcTanimiCreateRequestDto);

@@ -6,6 +6,7 @@ import Login from './pages/auth/Login';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import KullaniciSayfasi from './pages/KullaniciSayfasi';
+import KullaniciDaireSecimi from './pages/KullaniciDaireSecimi';
 import YoneticiDashboard from './pages/YoneticiDashboard';
 import DaireBorcDetay from './pages/DaireBorcDetay';
 import FinansalIslemlerSiteSecimi from './pages/FinansalIslemlerSiteSecimi';
@@ -69,6 +70,7 @@ function App() {
             <Route path="/yonetici-dashboard" element={<YoneticiDashboard />} />
             <Route path="/kullanici-dashboard" element={<KullaniciSayfasi />} />
             <Route path="/kullanici-sayfasi" element={<KullaniciSayfasi />} />
+            <Route path="/kullanici-daire-secimi" element={<KullaniciDaireSecimi />} />
             <Route path="/site-panel/:siteId" element={<SitePanelSayfasi />} />
             <Route path="/daire-borc-detay/:siteId/:borcId" element={<DaireBorcDetay />} />
             

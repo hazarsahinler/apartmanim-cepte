@@ -2,7 +2,7 @@ import api from './api';
 import { ENDPOINTS } from '../constants/endpoints';
 
 export const userDaireService = {
-  // Kullanıcının telefon numarası ile daire bilgilerini getir
+  // Kullanıcının telefon numarası ile daire bilgilerini getir (tüm daireler)
   getKullaniciDaireBilgileri: async (telefonNo) => {
     try {
       console.log('UserDaireService - Kullanıcı daire bilgileri getiriliyor:', telefonNo);
@@ -16,11 +16,11 @@ export const userDaireService = {
       
       console.log('UserDaireService - Daire bilgileri yanıtı:', response.data);
       
-      // Backend array döndürüyor, ilk elemanı al
-      const daireData = Array.isArray(response.data) ? response.data[0] : response.data;
-      console.log('UserDaireService - İşlenmiş daire datası:', daireData);
+      // Backend array döndürüyor, tümünü return et
+      const daireData = Array.isArray(response.data) ? response.data : [response.data];
+      console.log('UserDaireService - İşlenmiş daire dizisi:', daireData);
       
-      // DaireResponseByKullaniciDTO response
+      // DaireResponseByKullaniciDTO[] response
       return daireData;
     } catch (error) {
       console.error('UserDaireService - Daire bilgileri getirme hatası:', error);
@@ -276,6 +276,36 @@ export const userDaireService = {
       // Hata durumunda sıfır döner
       console.warn('UserDaireService - Total gelir getirilemedi, sıfır döndürülüyor');
       return { tutar: 0 };
+    }
+  },
+
+  // Seçilen daire bilgisini localStorage'a kaydet
+  setSelectedDaire: (daireInfo) => {
+    try {
+      localStorage.setItem('selectedDaire', JSON.stringify(daireInfo));
+      console.log('UserDaireService - Seçilen daire kaydedildi:', daireInfo);
+    } catch (error) {
+      console.error('UserDaireService - Seçilen daire kaydetme hatası:', error);
+    }
+  },
+
+  // Seçilen daire bilgisini localStorage'dan getir
+  getSelectedDaire: () => {
+    try {
+      const savedDaire = localStorage.getItem('selectedDaire');
+      return savedDaire ? JSON.parse(savedDaire) : null;
+    } catch (error) {
+      console.error('UserDaireService - Seçilen daire getirme hatası:', error);
+      return null;
+    }
+  },
+
+  // Seçilen daire bilgisini temizle
+  clearSelectedDaire: () => {
+    try {
+      localStorage.removeItem('selectedDaire');
+    } catch (error) {
+      console.error('UserDaireService - Seçilen daire temizleme hatası:', error);
     }
   },
 

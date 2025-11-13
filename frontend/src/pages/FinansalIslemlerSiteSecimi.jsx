@@ -208,7 +208,7 @@ const FinansalIslemlerSiteSecimi = () => {
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleSiteSecimi(site.id);
+                          handleSiteSecimi(site);
                         }}
                         className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white rounded-lg transition-all duration-300 group"
                       >

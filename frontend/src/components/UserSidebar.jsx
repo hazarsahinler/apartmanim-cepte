@@ -57,6 +57,13 @@ const UserSidebar = ({ isOpen = true, onClose }) => {
       description: 'Apartman duyurularını görüntüle'
     },
     {
+      id: 'daire-secimi',
+      label: 'Daire Değiştir',
+      icon: Settings,
+      path: '/kullanici-daire-secimi',
+      description: 'Farklı bir daire seç'
+    },
+    {
       id: 'profile',
       label: 'Profil',
       icon: User,

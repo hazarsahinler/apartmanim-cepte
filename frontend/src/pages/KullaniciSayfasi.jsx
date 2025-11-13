@@ -57,37 +57,39 @@ const KullaniciSayfasi = () => {
         // Daire bilgilerini al
         try {
           const telefonNo = userInfo.kullaniciTelefon || userInfo.telefonNumarasi || userInfo.telefon;
+          console.log('KullaniciSayfasi - Kullanılan telefon:', telefonNo);
+          console.log('KullaniciSayfasi - Kullanıcı bilgileri:', userInfo);
           
-          const daireBilgileri = await userDaireService.getKullaniciDaireBilgileri(telefonNo);
-          const formattedDaire = userDaireService.formatDaireBilgileri(daireBilgileri);
-          setDaireInfo(formattedDaire);
-
-          // Daire bilgisi varsa finansal özeti de al
-          if (formattedDaire && formattedDaire.daireId) {
-            try {
-              // Finansal özeti hesapla (daire borçları üzerinden)
-              const finansalData = await userDaireService.getKullaniciFinansalOzet(formattedDaire.daireId);
-              setFinansalOzet(finansalData);
-              
-              // Daire borçlarını da çek
-              const borclar = await userDaireService.getKullaniciDaireBorclari(formattedDaire.daireId);
-              setDaireBorclari(borclar);
-              
-              // Ödeme isteği durumlarını yükle
-              await loadOdemeIstekDurumlari(borclar);
-              
-              // Total apartman gelirini yükle
-              try {
-                const gelirData = await userDaireService.getTotalApartmanGelir(formattedDaire.siteId);
-                setTotalApartmanGeliri(gelirData);
-                console.log('KullaniciSayfasi - Total apartman geliri yüklendi:', gelirData);
-              } catch (gelirErr) {
-                console.warn('Total apartman geliri alınamadı:', gelirErr.message);
-                setTotalApartmanGeliri({ tutar: 0 });
+          // Önce seçilen daire var mı kontrol et
+          const selectedDaire = userDaireService.getSelectedDaire();
+          
+          if (selectedDaire) {
+            console.log('KullaniciSayfasi - Seçilen daire kullanılıyor:', selectedDaire);
+            setDaireInfo(selectedDaire);
+            
+            // Finansal verilerini yükle
+            await loadFinancialData(selectedDaire);
+          } else {
+            // Seçilen daire yoksa API'den çek
+            const daireBilgileri = await userDaireService.getKullaniciDaireBilgileri(telefonNo);
+            console.log('KullaniciSayfasi - API\'den gelen daire bilgileri:', daireBilgileri);
+            
+            if (daireBilgileri && daireBilgileri.length > 0) {
+              // Eğer birden fazla daire varsa seçim sayfasına yönlendir
+              if (daireBilgileri.length > 1) {
+                navigate('/kullanici-daire-secimi');
+                return;
               }
               
-            } catch (finErr) {
-              console.warn('Finansal özet alınamadı:', finErr.message);
+              // Tek daire varsa onu kullan
+              const formattedDaire = userDaireService.formatDaireBilgileri(daireBilgileri[0]);
+              setDaireInfo(formattedDaire);
+              userDaireService.setSelectedDaire(formattedDaire);
+              
+              // Finansal verilerini yükle
+              await loadFinancialData(formattedDaire);
+            } else {
+              throw new Error('Kayıtlı daire bulunamadı.');
             }
           }
 
@@ -103,6 +105,37 @@ const KullaniciSayfasi = () => {
         toast.error('Sayfa yüklenirken bir hata oluştu.');
       } finally {
         setLoading(false);
+      }
+    };
+
+    // Finansal verileri yükle
+    const loadFinancialData = async (daireData) => {
+      if (!daireData || !daireData.daireId) return;
+      
+      try {
+        // Finansal özeti hesapla (daire borçları üzerinden)
+        const finansalData = await userDaireService.getKullaniciFinansalOzet(daireData.daireId);
+        setFinansalOzet(finansalData);
+        
+        // Daire borçlarını da çek
+        const borclar = await userDaireService.getKullaniciDaireBorclari(daireData.daireId);
+        setDaireBorclari(borclar);
+        
+        // Ödeme isteği durumlarını yükle
+        await loadOdemeIstekDurumlari(borclar);
+        
+        // Total apartman gelirini yükle
+        try {
+          const gelirData = await userDaireService.getTotalApartmanGelir(daireData.siteId);
+          setTotalApartmanGeliri(gelirData);
+          console.log('KullaniciSayfasi - Total apartman geliri yüklendi:', gelirData);
+        } catch (gelirErr) {
+          console.warn('Total apartman geliri alınamadı:', gelirErr.message);
+          setTotalApartmanGeliri({ tutar: 0 });
+        }
+        
+      } catch (finErr) {
+        console.warn('Finansal özet alınamadı:', finErr.message);
       }
     };
 
@@ -363,7 +396,7 @@ const KullaniciSayfasi = () => {
                   <div className="space-y-3">
                     <div>
                       <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                      <p className="font-medium text-gray-900 dark:text-white">{user?.email}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{user?.kullaniciEposta || user?.email}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500 dark:text-gray-400">Telefon</p>
