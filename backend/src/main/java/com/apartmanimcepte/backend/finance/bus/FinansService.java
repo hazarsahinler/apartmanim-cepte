@@ -1,11 +1,13 @@
 package com.apartmanimcepte.backend.finance.bus;
 
 import com.apartmanimcepte.backend.finance.dto.Request.BorcTanimiCreateRequestDTO;
+import com.apartmanimcepte.backend.finance.dto.Request.GiderCreateRequestDTO;
 import com.apartmanimcepte.backend.finance.dto.Request.TanimlanmisBorcFiltreDTO;
 import com.apartmanimcepte.backend.finance.dto.Response.*;
 import com.apartmanimcepte.backend.identity.dto.ResponseDTO;
 import com.apartmanimcepte.backend.structure.entity.Daire;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,6 +21,10 @@ public interface FinansService {
     List<BorcOdemeIstekResponseDTO> borcOdemeIstekler(Long siteId);
     BorcOdemeIstekDurumResponseDTO borcOdemeIstekDurum (Long daireBorcId);
     TotalApartmanGelirResponseDTO totalApartmanGelir(Long siteId);
+    ResponseDTO giderEkle(GiderCreateRequestDTO giderCreateRequestDTO, MultipartFile[] dosyalar);
+    List<GiderResponseDTO> giderGetir(Long siteId);
+    TotalApartmanGiderResponseDTO totalApartmanGider(Long siteId);
+
 
 
 

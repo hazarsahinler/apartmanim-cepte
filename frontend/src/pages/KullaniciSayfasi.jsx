@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Bell, User, Home, AlertCircle, Loader2, CreditCard, Building, 
   MapPin, DollarSign, Calendar, Clock, LogOut, Menu, Sun, Moon,
-  CheckCircle, XCircle 
+  CheckCircle, XCircle, TrendingDown, FileText
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { authService } from '../services/authService';
 import { userDaireService } from '../services/userDaireService';
+import { giderService } from '../services/giderService';
 import NetworkStatusMonitor from '../components/NetworkStatusMonitor';
 import UserSidebar from '../components/UserSidebar';
 import { useTheme } from '../contexts/ThemeContext';
@@ -23,6 +24,8 @@ const KullaniciSayfasi = () => {
   const [daireBorclari, setDaireBorclari] = useState([]);
   const [odemeIstekDurumlari, setOdemeIstekDurumlari] = useState({});
   const [totalApartmanGeliri, setTotalApartmanGeliri] = useState(null);
+  const [totalApartmanGideri, setTotalApartmanGideri] = useState(null);
+  const [siteGiderleri, setSiteGiderleri] = useState([]);
   const [odemeYukleniyor, setOdemeYukleniyor] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -134,6 +137,26 @@ const KullaniciSayfasi = () => {
           setTotalApartmanGeliri({ tutar: 0 });
         }
         
+        // Total apartman giderini yükle
+        try {
+          const giderData = await giderService.getTotalSiteGider(daireData.siteId);
+          setTotalApartmanGideri(giderData);
+          console.log('KullaniciSayfasi - Total apartman gideri yüklendi:', giderData);
+        } catch (giderErr) {
+          console.warn('Total apartman gideri alınamadı:', giderErr.message);
+          setTotalApartmanGideri({ tutar: 0 });
+        }
+        
+        // Son 5 gideri yükle (kullanıcı için özet)
+        try {
+          const giderListesi = await giderService.getSiteGiderleri(daireData.siteId);
+          setSiteGiderleri(giderListesi.slice(0, 5)); // Sadece son 5'i göster
+          console.log('KullaniciSayfasi - Site giderleri yüklendi:', giderListesi);
+        } catch (giderErr) {
+          console.warn('Site giderleri alınamadı:', giderErr.message);
+          setSiteGiderleri([]);
+        }
+        
       } catch (finErr) {
         console.warn('Finansal özet alınamadı:', finErr.message);
       }
@@ -174,6 +197,14 @@ const KullaniciSayfasi = () => {
           console.log('KullaniciSayfasi - Total apartman geliri güncellendi:', guncelGelir);
         } catch (gelirErr) {
           console.warn('Total apartman geliri güncellenemedi:', gelirErr.message);
+        }
+        
+        // Total apartman giderini de güncelle
+        try {
+          const guncelGider = await giderService.getTotalSiteGider(daireInfo.siteId);
+          setTotalApartmanGideri(guncelGider);
+        } catch (giderErr) {
+          console.warn('Total apartman gideri güncellenemedi:', giderErr.message);
         }
       }
       
@@ -457,25 +488,18 @@ const KullaniciSayfasi = () => {
                     
                     {finansalOzet ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                        <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
                           <div className="flex items-center">
-                            <DollarSign className="w-6 h-6 text-green-600 mr-2" />
+                            <Building className="w-6 h-6 text-purple-600 mr-2" />
                             <div>
-                              <p className="text-sm text-green-600 dark:text-green-400">Toplam Ödenen</p>
-                              <p className="text-lg font-bold text-green-700 dark:text-green-300">
-                                ₺{finansalOzet.toplamOdenen?.toLocaleString() || '0'}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
-                          <div className="flex items-center">
-                            <AlertCircle className="w-6 h-6 text-red-600 mr-2" />
-                            <div>
-                              <p className="text-sm text-red-600 dark:text-red-400">Bekleyen Ödemeler</p>
-                              <p className="text-lg font-bold text-red-700 dark:text-red-300">
-                                ₺{finansalOzet.bekleyenOdemeler?.toLocaleString() || '0'}
+                              <p className="text-sm text-purple-600 dark:text-purple-400">Apartman Kasası</p>
+                              <p className="text-lg font-bold text-purple-700 dark:text-purple-300">
+                                ₺{(() => {
+                                  const gelir = totalApartmanGeliri?.tutar ? parseFloat(totalApartmanGeliri.tutar) : 0;
+                                  const gider = totalApartmanGideri?.tutar ? parseFloat(totalApartmanGideri.tutar) : 0;
+                                  const netKasa = gelir - gider;
+                                  return netKasa.toLocaleString();
+                                })()}
                               </p>
                             </div>
                           </div>
@@ -483,23 +507,35 @@ const KullaniciSayfasi = () => {
                         
                         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
                           <div className="flex items-center">
-                            <Calendar className="w-6 h-6 text-blue-600 mr-2" />
+                            <DollarSign className="w-6 h-6 text-blue-600 mr-2" />
                             <div>
-                              <p className="text-sm text-blue-600 dark:text-blue-400">Bu Ay</p>
+                              <p className="text-sm text-blue-600 dark:text-blue-400">Total Gelirler</p>
                               <p className="text-lg font-bold text-blue-700 dark:text-blue-300">
-                                ₺{finansalOzet.buAyTutari?.toLocaleString() || '0'}
+                                ₺{totalApartmanGeliri?.tutar ? parseFloat(totalApartmanGeliri.tutar).toLocaleString() : '0'}
                               </p>
                             </div>
                           </div>
                         </div>
                         
-                        <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                        <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4">
                           <div className="flex items-center">
-                            <Building className="w-6 h-6 text-purple-600 mr-2" />
+                            <TrendingDown className="w-6 h-6 text-orange-600 mr-2" />
                             <div>
-                              <p className="text-sm text-purple-600 dark:text-purple-400">Apartman Geliri</p>
-                              <p className="text-lg font-bold text-purple-700 dark:text-purple-300">
-                                ₺{totalApartmanGeliri?.tutar ? parseFloat(totalApartmanGeliri.tutar).toLocaleString() : '0'}
+                              <p className="text-sm text-orange-600 dark:text-orange-400">Total Giderler</p>
+                              <p className="text-lg font-bold text-orange-700 dark:text-orange-300">
+                                ₺{totalApartmanGideri?.tutar ? parseFloat(totalApartmanGideri.tutar).toLocaleString() : '0'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                          <div className="flex items-center">
+                            <CheckCircle className="w-6 h-6 text-green-600 mr-2" />
+                            <div>
+                              <p className="text-sm text-green-600 dark:text-green-400">Toplam Ödediğim</p>
+                              <p className="text-lg font-bold text-green-700 dark:text-green-300">
+                                ₺{finansalOzet.toplamOdenen?.toLocaleString() || '0'}
                               </p>
                             </div>
                           </div>
@@ -592,6 +628,108 @@ const KullaniciSayfasi = () => {
                         </div>
                       )}
                     </div>
+                  </div>
+                )}
+
+                {/* Site Giderleri Listesi */}
+                {daireInfo && (
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center">
+                        <TrendingDown className="w-8 h-8 text-orange-600 mr-3" />
+                        <h3 className="font-semibold text-gray-900 dark:text-white">Son Apartman Giderleri</h3>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Toplam Gider</p>
+                        <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                          ₺{totalApartmanGideri?.tutar ? parseFloat(totalApartmanGideri.tutar).toLocaleString() : '0'}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {siteGiderleri.length > 0 ? (
+                      <div className="space-y-4">
+                        {siteGiderleri.slice(0, 3).map((gider, index) => (
+                          <div key={gider.giderId || index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:border-orange-300 dark:hover:border-orange-600 transition-colors">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-gray-900 dark:text-white">
+                                  {gider.giderAciklama || 'Gider açıklaması'}
+                                </h4>
+                                <div className="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                  <Calendar className="w-4 h-4 mr-1" />
+                                  {new Date(gider.giderOlusturulmaTarihi).toLocaleDateString('tr-TR')}
+                                  {gider.giderTur && (
+                                    <>
+                                      <span className="mx-2">•</span>
+                                      <span className="capitalize">
+                                        {gider.giderTur === 'ELEKTRIK' ? 'Elektrik' :
+                                         gider.giderTur === 'SU' ? 'Su' :
+                                         gider.giderTur === 'DOGALGAZ' ? 'Doğalgaz' :
+                                         gider.giderTur === 'TEMIZLIK' ? 'Temizlik' :
+                                         gider.giderTur === 'GUVENLIK' ? 'Güvenlik' :
+                                         gider.giderTur === 'ASANSOR' ? 'Asansör' :
+                                         gider.giderTur === 'TAMIRAT' ? 'Tamirat' :
+                                         gider.giderTur === 'DIGER' ? 'Diğer' :
+                                         gider.giderTur.toLowerCase()}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="text-right ml-4">
+                                <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                                  ₺{parseFloat(gider.giderTutari || 0).toLocaleString()}
+                                </p>
+                                {gider.belgeler && gider.belgeler.length > 0 && (
+                                  <div className="flex items-center justify-end mt-1">
+                                    <FileText className="w-4 h-4 text-gray-400 mr-1" />
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                      {gider.belgeler.length} belge
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                          </div>
+                        ))}
+                        
+                        {siteGiderleri.length > 3 && (
+                          <div className="mt-4 text-center">
+                            <button
+                              onClick={() => navigate(`/kullanici-giderler/${daireInfo.siteId}`)}
+                              className="px-4 py-2 text-orange-600 border border-orange-600 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                            >
+                              Tüm Giderleri Görüntüle ({siteGiderleri.length})
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <TrendingDown className="w-8 h-8 text-orange-600" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                          Henüz gider kaydı yok
+                        </h3>
+                        <p className="text-gray-500 dark:text-gray-400">
+                          Site giderleri yönetici tarafından eklendiğinde burada görünecek
+                        </p>
+                      </div>
+                    )}
+                    
+                    {siteGiderleri.length > 0 && (
+                      <div className="mt-4 text-center">
+                        <button
+                          onClick={() => navigate(`/kullanici-giderler/${daireInfo.siteId}`)}
+                          className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                        >
+                          Tüm Giderleri Görüntüle
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 

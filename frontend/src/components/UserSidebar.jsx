@@ -3,9 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Home, Bell, User, CreditCard, FileText, 
   MessageSquare, Calendar, Settings, LogOut,
-  ChevronRight
+  ChevronRight, TrendingDown
 } from 'lucide-react';
 import { authService } from '../services/authService';
+import { userDaireService } from '../services/userDaireService';
 
 const UserSidebar = ({ isOpen = true, onClose }) => {
   const navigate = useNavigate();
@@ -69,6 +70,14 @@ const UserSidebar = ({ isOpen = true, onClose }) => {
       icon: User,
       path: '/profil',
       description: 'Kişisel bilgilerimi düzenle'
+    },
+    {
+      id: 'giderler',
+      label: 'Apartman Giderleri',
+      icon: TrendingDown,
+      path: '#', // Dynamic olarak setlenecek
+      description: 'Apartman giderlerini görüntüle',
+      requiresSite: true
     },
     {
       id: 'payments',
@@ -145,12 +154,25 @@ const UserSidebar = ({ isOpen = true, onClose }) => {
       <nav className="flex-1 p-3 lg:p-4 space-y-1 lg:space-y-2 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = isActivePath(item.path);
+          let itemPath = item.path;
+          
+          // Giderler için dinamik path oluştur
+          if (item.id === 'giderler') {
+            const selectedDaire = userDaireService.getSelectedDaire();
+            if (selectedDaire?.siteId) {
+              itemPath = `/kullanici-giderler/${selectedDaire.siteId}`;
+            } else {
+              // Daire seçili değilse item'ı gösterme
+              return null;
+            }
+          }
+          
+          const isActive = isActivePath(itemPath);
           
           return (
             <button
               key={item.id}
-              onClick={() => navigate(item.path)}
+              onClick={() => navigate(itemPath)}
               className={`w-full flex items-center justify-between px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-left transition-all duration-200 group ${
                 isActive
                   ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700'

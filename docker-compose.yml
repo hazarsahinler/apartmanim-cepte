@@ -18,11 +18,14 @@ services:
     container_name: apartman-backend
     ports:
       - "8080:8080"
+    volumes:
+      - ./uploads:/apartmanim-cepte/uploads  # Senin istediğin path
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/apartman_db
       - SPRING_DATASOURCE_USERNAME=admin
       - SPRING_DATASOURCE_PASSWORD=admin
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - UPLOAD_PATH=/apartmanim-cepte/uploads
     depends_on:
       - db
 

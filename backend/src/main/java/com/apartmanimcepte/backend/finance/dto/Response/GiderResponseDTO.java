@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -19,4 +21,18 @@ public class GiderResponseDTO {
     private LocalDate giderOlusturulmaTarihi;
     private Boolean aktif;
     private Long siteId;
+    private String siteIsmi;
+    private List<GiderBelgeDTO> belgeler; // Gider belgeleri
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GiderBelgeDTO {
+        private Long giderBelgeId;
+        private String dosyaAdi;
+        private String dosyaTuru; // "PDF", "IMAGE", "OTHER"
+        private Long dosyaBoyutu;
+        private LocalDateTime yuklemeTarihi;
+        private String dosyaUrl; // Download URL
+    }
 }

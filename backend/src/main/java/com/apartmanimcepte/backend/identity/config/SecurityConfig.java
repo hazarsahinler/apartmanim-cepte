@@ -76,6 +76,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/structure/kullanici/daire/bul/{telefonNo}").hasAnyRole("YONETICI","APARTMANSAKIN")
                         .requestMatchers("/api/finance/odeme/istek/onay/{daireBorcId}").hasAnyRole("YONETICI","APARTMANSAKIN")
                         .requestMatchers("/api/finance/total/gelir/{siteId}").hasAnyRole("YONETICI","APARTMANSAKIN")
+                        .requestMatchers("/api/finance/gider/ekle").hasRole("YONETICI")
+                        .requestMatchers("/api/finance/gider/getir/{steId}").hasAnyRole("YONETICI","APARTMANSAKIN")
+                        .requestMatchers("/api/finance/gider/belge/goster/{belgeId}").hasAnyRole("YONETICI","APARTMANSAKIN")
+                        .requestMatchers("/api/finance/total/gider/{siteId}").hasAnyRole("YONETICI","APARTMANSAKIN")
 
 
                         // Geriye kalan TÜM istekler için kimlik doğrulaması (login) zorunlu olsun
