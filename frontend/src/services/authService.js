@@ -43,11 +43,11 @@ export const authService = {
     }
   },
 
-  // Kullanıcı (sakin) kaydı
+  // Kullanıcı (genel) kaydı - KullaniciKayitDTO
   registerUser: async (userData) => {
     try {
-      // ENDPOINTS kullanarak
-      const response = await api.post(ENDPOINTS.IDENTITY.SAKIN_KAYIT, userData);
+      // ENDPOINTS kullanarak - KullaniciKayitDTO için ayrı endpoint
+      const response = await api.post(ENDPOINTS.IDENTITY.KULLANICI_KAYIT, userData);
       return response.data;
     } catch (error) {
       throw new Error(
@@ -60,6 +60,12 @@ export const authService = {
   // Giriş - KullaniciGirisBilgiDTO'ya göre field mapping
   login: async (credentials) => {
     try {
+      console.log('Giriş işlemi başlatılıyor...');
+      
+      // Önce localStorage'ı tamamen temizle (eski verilerin kalmasını önle)
+      console.log('Eski veriler temizleniyor...');
+      localStorage.clear();
+      
       console.log('Giriş isteği gönderiliyor:', {
         kullaniciTelefon: credentials.kullaniciTelefon,
         kullaniciSifre: credentials.kullaniciSifre,
@@ -224,35 +230,28 @@ export const authService = {
 
   // Çıkış
   logout: () => {
-    // Kullanıcı bilgilerini al (eğer varsa)
-    try {
-      const userData = JSON.parse(localStorage.getItem('user'));
-      if (userData && userData.id) {
-        // siteStorageService'i direkt import etmek yerine, localStorage'dan
-        // kullanıcıya ait tüm verileri temizleyelim
-        const userIdStr = userData.id.toString();
-        
-        // localStorage'da userSitesMapping anahtarını kontrol et ve güncelle
-        const mappingJson = localStorage.getItem('userSitesMapping');
-        if (mappingJson) {
-          try {
-            const mapping = JSON.parse(mappingJson);
-            if (mapping[userIdStr]) {
-              delete mapping[userIdStr];
-              localStorage.setItem('userSitesMapping', JSON.stringify(mapping));
-            }
-          } catch (e) {
-            console.error('Kullanıcı-site eşleştirme verisi temizlenirken hata:', e);
-          }
-        }
-      }
-    } catch (e) {
-      console.error('Çıkış yaparken site verilerini temizlerken hata:', e);
-    }
+    console.log('Çıkış işlemi başlatılıyor...');
     
-    // Kimlik doğrulama verilerini temizle
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    // LocalStorage'ı TAMAMEN temizle
+    try {
+      console.log('LocalStorage temizleniyor...');
+      localStorage.clear();
+      console.log('LocalStorage başarıyla temizlendi.');
+    } catch (e) {
+      console.error('LocalStorage temizlenirken hata:', e);
+      // Fallback: önemli anahtarları tek tek sil
+      try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userSitesMapping');
+        localStorage.removeItem('selectedSite');
+        localStorage.removeItem('kullaniciDaireBilgileri');
+        localStorage.removeItem('cachedSites');
+        localStorage.removeItem('lastUserId');
+      } catch (fallbackError) {
+        console.error('Fallback temizleme hatası:', fallbackError);
+      }
+    }
     
     // Sayfanın yeniden yüklenerek state'in sıfırlanmasını sağlamak için
     window.location.href = '/giris';

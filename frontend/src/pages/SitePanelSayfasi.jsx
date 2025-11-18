@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Building2, Users, Home, PlusCircle, Loader2, AlertCircle, Layers, ArrowLeft, Eye, Trash2 } from 'lucide-react';
+import { Building2, Users, Home, PlusCircle, Loader2, AlertCircle, Layers, ArrowLeft, Eye, Trash2, Menu } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { duyuruService } from '../services/duyuruService';
 import { blokService } from '../services/blokService';
 import DuyuruList from '../components/DuyuruList';
 import MainNavbar from '../components/MainNavbar';
 import Sidebar from '../components/Sidebar';
+import { useTheme } from '../contexts/ThemeContext';
 import { clearAllCache, debugLocalStorage } from '../utils/clearCache';
 
 const SitePanelSayfasi = () => {
   const { siteId } = useParams();
   const navigate = useNavigate();
+  const { darkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [siteData, setSiteData] = useState(null);
   const [error, setError] = useState(null);
@@ -20,6 +22,7 @@ const SitePanelSayfasi = () => {
   const [bloklar, setBloklar] = useState([]);
   const [blokYukleniyor, setBlokYukleniyor] = useState(true);
   const [blokEkleModalAcik, setBlokEkleModalAcik] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleBlokEkleModal = () => {
     setBlokEkleModalAcik(!blokEkleModalAcik);
@@ -199,15 +202,32 @@ const SitePanelSayfasi = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
         <MainNavbar />
-        <Sidebar />
         
-        <div className="pt-16 ml-64">
+        {/* Mobile Hamburger Menu */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
+        >
+          <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+        </button>
+        
+        <Sidebar isOpen={sidebarOpen} />
+        
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+        )}
+        
+        <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
           <div className="flex justify-center items-center h-screen">
             <div className="flex flex-col items-center">
               <Loader2 className="h-12 w-12 text-green-500 animate-spin" />
-              <span className="mt-4 text-gray-600 dark:text-gray-300">Site bilgileri yükleniyor...</span>
+              <span className="mt-4 text-gray-600 dark:text-gray-300">Site bilgileri yüklüyor...</span>
             </div>
           </div>
         </div>
@@ -276,15 +296,31 @@ const SitePanelSayfasi = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
       {/* Navbar */}
       <MainNavbar />
       
+      {/* Mobile Hamburger Menu */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
+      >
+        <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+      </button>
+      
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} />
+      
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
       
       {/* Main Content */}
-      <div className="pt-16 ml-64"> {/* Sidebar her zaman açık olduğu için sabit margin */}
+      <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300"> {/* Responsive margin */}
         <div className="container mx-auto px-4 py-8">
           {/* Site Header */}
           <div className="mb-8">

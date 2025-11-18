@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, TrendingDown, Calendar, FileText, Building, 
-  AlertCircle, Loader2, DollarSign, Eye, Download, X
+  AlertCircle, Loader2, DollarSign, Eye, Download, X,
+  Menu, Sun, Moon, Home, LogOut, User
 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import Navbar from '../components/MainNavbar';
 import UserSidebar from '../components/UserSidebar';
 import { authService } from '../services/authService';
 import { giderService } from '../services/giderService';
@@ -15,8 +15,10 @@ import { useTheme } from '../contexts/ThemeContext';
 const KullaniciGiderler = () => {
   const { siteId } = useParams();
   const navigate = useNavigate();
-  const { darkMode } = useTheme();
+  const { darkMode, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [giderler, setGiderler] = useState([]);
   const [totalGider, setTotalGider] = useState(null);
   const [siteInfo, setSiteInfo] = useState(null);
@@ -73,6 +75,7 @@ const KullaniciGiderler = () => {
 
         // Kullanıcının bu siteye erişim hakkı var mı kontrol et
         const userInfo = await authService.getUserInfo();
+        setUser(userInfo);
         const telefonNo = userInfo.kullaniciTelefon || userInfo.telefonNumarasi || userInfo.telefon;
         
         try {
@@ -116,6 +119,12 @@ const KullaniciGiderler = () => {
 
     loadGiderler();
   }, [siteId, navigate]);
+
+  const handleLogout = () => {
+    if (window.confirm('Çıkış yapmak istediğinize emin misiniz?')) {
+      authService.logout();
+    }
+  };
 
   // Filtreleme fonksiyonu
   useEffect(() => {
@@ -187,16 +196,25 @@ const KullaniciGiderler = () => {
 
   if (loading) {
     return (
-      <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
-        <Navbar />
-        <UserSidebar />
-        
-        <div className="pt-16 lg:pl-64">
-          <div className="flex justify-center items-center h-96">
-            <div className="text-center">
-              <Loader2 className="h-16 w-16 text-orange-500 animate-spin mx-auto" />
-              <p className="mt-4 text-gray-600 dark:text-gray-300 text-lg">Giderler yükleniyor...</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+        {/* Loading Header */}
+        <nav className="bg-white dark:bg-gray-800 shadow-md fixed w-full top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
+                  <TrendingDown className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-xl font-bold text-gray-900 dark:text-white">Apartman Giderleri</span>
+              </div>
             </div>
+          </div>
+        </nav>
+        
+        <div className="pt-16 flex justify-center items-center h-screen">
+          <div className="text-center">
+            <Loader2 className="h-16 w-16 text-orange-500 animate-spin mx-auto" />
+            <p className="mt-4 text-gray-600 dark:text-gray-300 text-lg">Giderler yükleniyor...</p>
           </div>
         </div>
       </div>
@@ -204,12 +222,69 @@ const KullaniciGiderler = () => {
   }
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Top Navigation */}
-      <Navbar />
+      <nav className="bg-white dark:bg-gray-800 shadow-md fixed w-full top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+              
+              <div className="flex items-center ml-2 lg:ml-0">
+                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
+                  <TrendingDown className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <span className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">
+                    Apartman Giderleri
+                  </span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
+                    {siteInfo?.siteIsmi || 'Site'} - Gider kayıtları
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title={darkMode ? 'Açık tema' : 'Karanlık tema'}
+              >
+                {darkMode ? (
+                  <Sun className="h-5 w-5 text-yellow-500" />
+                ) : (
+                  <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                )}
+              </button>
+
+              <div className="hidden md:flex items-center space-x-3">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {user?.kullaniciAdi} {user?.kullaniciSoyadi}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Sakin</p>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-50 dark:bg-red-900 text-red-600 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-800 transition-colors"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="hidden sm:inline">Çıkış</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
       
       {/* Sidebar */}
-      <UserSidebar />
+      <UserSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       {/* Main Content */}
       <div className="pt-16 lg:pl-64">

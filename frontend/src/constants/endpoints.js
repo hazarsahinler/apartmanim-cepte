@@ -2,6 +2,7 @@
 export const ENDPOINTS = {
   IDENTITY: {
     YONETICI_KAYIT: '/identity/yonetici/kayit',
+    KULLANICI_KAYIT: '/identity/kullanici/kayit', // KullaniciKayitDTO için
     SAKIN_KAYIT: '/identity/apartman/sakin/kayit',
     LOGIN: '/identity/giris', // Backend'de /giris endpoint'i var
     KULLANICI_BILGI: '/identity/kullanici/bilgi', // Kullanıcı bilgisi endpoint'i

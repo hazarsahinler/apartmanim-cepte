@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { User, Phone, Mail, Calendar, Edit3, Save, X, Loader2 } from 'lucide-react';
+import { User, Phone, Mail, Calendar, Edit3, Save, X, Loader2, Menu, Sun, Moon, LogOut, ArrowLeft } from 'lucide-react';
 import { authService } from '../services/authService';
-import MainNavbar from '../components/MainNavbar';
 import Sidebar from '../components/Sidebar';
 import UserSidebar from '../components/UserSidebar';
+import { useTheme } from '../contexts/ThemeContext';
+import { useNavigate } from 'react-router-dom';
 
 const ProfilSayfasi = () => {
+  const { darkMode, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -16,14 +19,10 @@ const ProfilSayfasi = () => {
   
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
   // Kullanıcının rolüne göre uygun sidebar'ı belirle
   const isApartmentResident = () => {
-    return userRole === 'ROLE_APARTMANSAKIN' || userRole === 'ApartmanSakin' || userRole === 'Sakin';
+    const residentRoles = ['ROLE_APARTMANSAKIN', 'ApartmanSakin', 'Sakin', 'APARTMANSAKIN'];
+    return residentRoles.includes(userRole);
   };
 
   const renderSidebar = () => {
@@ -34,6 +33,26 @@ const ProfilSayfasi = () => {
     }
   };
 
+  const handleLogout = () => {
+    if (window.confirm('Çıkış yapmak istediğinize emin misiniz?')) {
+      authService.logout();
+    }
+  };
+
+  const getHomePath = () => {
+    if (isApartmentResident()) {
+      return '/kullanici-sayfasi';
+    }
+    return '/site-yonetimi';
+  };
+
+  const getUserRoleDisplay = () => {
+    if (isApartmentResident()) {
+      return 'Apartman Sakin';
+    }
+    return 'Site Yöneticisi';
+  };
+
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
@@ -41,9 +60,19 @@ const ProfilSayfasi = () => {
         const user = await authService.getUserInfo();
         setUserInfo(user);
         
-        // Kullanıcı rolünü belirle
+        // Kullanıcı rolünü belirle - daha detaylı kontrol
         const decodedToken = authService.decodeToken();
-        const role = user.apartmanRol || decodedToken?.roles?.[0] || decodedToken?.apartmanRol;
+        let role = user.apartmanRol || decodedToken?.apartmanRol;
+        
+        // Token'daki roles array'ini de kontrol et
+        if (!role && decodedToken.roles && decodedToken.roles.length > 0) {
+          role = decodedToken.roles[0];
+        }
+        
+        console.log('ProfilSayfasi - Belirlenen rol:', role);
+        console.log('ProfilSayfasi - User apartmanRol:', user.apartmanRol);
+        console.log('ProfilSayfasi - Token roles:', decodedToken.roles);
+        
         setUserRole(role);
         
         setEditForm({
@@ -116,15 +145,24 @@ const ProfilSayfasi = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-        {renderSidebar()}
-        
-        <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
-          <div className="flex justify-center items-center h-screen">
-            <div className="flex flex-col items-center">
-              <Loader2 className="h-12 w-12 text-green-500 animate-spin" />
-              <span className="mt-4 text-gray-600 dark:text-gray-300">Profil bilgileri yükleniyor...</span>
+        {/* Loading Header */}
+        <nav className="bg-white dark:bg-gray-800 shadow-md fixed w-full top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg flex items-center justify-center mr-3">
+                  <User className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-xl font-bold text-gray-900 dark:text-white">Profilim</span>
+              </div>
             </div>
+          </div>
+        </nav>
+        
+        <div className="pt-16 flex justify-center items-center h-screen">
+          <div className="flex flex-col items-center">
+            <Loader2 className="h-12 w-12 text-green-500 animate-spin" />
+            <span className="mt-4 text-gray-600 dark:text-gray-300">Profil bilgileri yükleniyor...</span>
           </div>
         </div>
       </div>
@@ -134,10 +172,21 @@ const ProfilSayfasi = () => {
   if (error && !userInfo) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-        <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
-        {renderSidebar()}
+        {/* Error Header */}
+        <nav className="bg-white dark:bg-gray-800 shadow-md fixed w-full top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg flex items-center justify-center mr-3">
+                  <User className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-xl font-bold text-gray-900 dark:text-white">Profilim</span>
+              </div>
+            </div>
+          </div>
+        </nav>
         
-        <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
+        <div className="pt-16">
           <div className="container mx-auto px-4 py-8">
             <div className="max-w-2xl mx-auto">
               <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg relative" role="alert">
@@ -153,14 +202,81 @@ const ProfilSayfasi = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      {/* Navbar */}
-      <MainNavbar toggleSidebar={toggleSidebar} isSidebarOpen={sidebarOpen} />
+      {/* Top Navigation */}
+      <nav className="bg-white dark:bg-gray-800 shadow-md fixed w-full top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+              
+              <button
+                onClick={() => navigate(getHomePath())}
+                className="hidden lg:block p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mr-2"
+                title="Ana Sayfaya Dön"
+              >
+                <ArrowLeft className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+              </button>
+              
+              <div className="flex items-center ml-2 lg:ml-0">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg flex items-center justify-center mr-3">
+                  <User className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <span className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">
+                    Profilim
+                  </span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
+                    Hesap bilgilerinizi düzenleyin
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title={darkMode ? 'Açık tema' : 'Karanlık tema'}
+              >
+                {darkMode ? (
+                  <Sun className="h-5 w-5 text-yellow-500" />
+                ) : (
+                  <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                )}
+              </button>
+
+              <div className="hidden md:flex items-center space-x-3">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {userInfo?.kullaniciAdi} {userInfo?.kullaniciSoyadi}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {isApartmentResident() ? 'Sakin' : 'Yönetici'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-50 dark:bg-red-900 text-red-600 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-800 transition-colors"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="hidden sm:inline">Çıkış</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
       
       {/* Sidebar - Kullanıcı rolüne göre dinamik */}
       {renderSidebar()}
       
       {/* Main Content */}
-      <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64 sm:ml-16' : ''}`}>
+      <div className="pt-16 lg:pl-64">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto">
             {/* Header */}
@@ -191,7 +307,7 @@ const ProfilSayfasi = () => {
                       <h2 className="text-2xl font-bold text-white">
                         {userInfo?.kullaniciAdi} {userInfo?.kullaniciSoyadi}
                       </h2>
-                      <p className="text-blue-100">Yönetici</p>
+                      <p className="text-blue-100">{getUserRoleDisplay()}</p>
                     </div>
                   </div>
                   

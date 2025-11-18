@@ -107,12 +107,12 @@ const KullaniciKayit = () => {
       };
 
       await authService.registerUser(dataToSend);
-      setSuccess('Apartman sakin kaydı başarıyla oluşturuldu! Giriş sayfasına yönlendiriliyorsunuz...');
+      setSuccess('Kayıt başarıyla oluşturuldu! Yönetici onayından sonra sisteme giriş yapabileceksiniz.');
       
-      // 2 saniye sonra giriş sayfasına yönlendir
+      // 3 saniye sonra giriş sayfasına yönlendir
       setTimeout(() => {
         navigate('/giris');
-      }, 2000);
+      }, 3000);
       
     } catch (err) {
       setError(err.message || 'Kayıt sırasında bir hata oluştu.');

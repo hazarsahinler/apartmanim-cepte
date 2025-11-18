@@ -121,17 +121,19 @@ const UserSidebar = ({ isOpen = true, onClose }) => {
   };
 
   return (
-    <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-30 flex flex-col shadow-lg transform transition-transform duration-300 lg:translate-x-0 ${
-      isOpen ? 'translate-x-0' : '-translate-x-full'
-    } lg:block`}
-         id="user-sidebar">
+    <>
       {/* Mobile Overlay */}
       {isOpen && onClose && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
           onClick={onClose}
         />
       )}
+      
+      <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40 flex flex-col shadow-lg transform transition-transform duration-300 lg:translate-x-0 ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      } lg:block`}
+           id="user-sidebar">
       
       {/* Sidebar Header */}
       <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
@@ -210,7 +212,8 @@ const UserSidebar = ({ isOpen = true, onClose }) => {
           <span className="font-medium text-xs lg:text-sm">Çıkış Yap</span>
         </button>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

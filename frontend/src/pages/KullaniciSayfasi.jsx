@@ -380,6 +380,7 @@ const KullaniciSayfasi = () => {
         {/* Sidebar */}
         <UserSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
+        {/* Main Content */}
         <div className="pt-16 lg:pl-64">
           <div className="container mx-auto px-4 py-8">
             {/* Hoşgeldin Mesajı */}

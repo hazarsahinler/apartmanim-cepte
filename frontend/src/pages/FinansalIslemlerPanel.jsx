@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, TrendingUp, TrendingDown, CreditCard, DollarSign,
-  PlusCircle, Eye, Building, Calendar, CheckCircle, AlertCircle
+  PlusCircle, Eye, Building, Calendar, CheckCircle, AlertCircle, Menu
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
@@ -23,6 +23,7 @@ const FinansalIslemlerPanel = () => {
     bekleyenAlacak: 0,
     giderKayitSayisi: 0
   });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Sayfa yüklendiğinde verileri çek
   useEffect(() => {
@@ -246,9 +247,26 @@ const FinansalIslemlerPanel = () => {
     return (
       <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
         <Navbar />
-        <Sidebar />
         
-        <div className="pt-16 ml-64">
+        <Sidebar isOpen={sidebarOpen} />
+        
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
+        >
+          <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+        </button>
+        
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+        )}
+        
+        <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
           <div className="flex justify-center items-center h-96">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
           </div>
@@ -263,10 +281,26 @@ const FinansalIslemlerPanel = () => {
       <Navbar />
       
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} />
+      
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
+      >
+        <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+      </button>
+      
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
       
       {/* Main Content */}
-      <div className="pt-16 ml-64">
+      <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
           {/* Header */}

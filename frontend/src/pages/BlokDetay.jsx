@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, Home, Building, Layers } from 'lucide-react';
+import { ArrowLeft, Users, Home, Building, Layers, Menu } from 'lucide-react';
 import { daireService } from '../services/daireService';
 import { toast } from 'react-toastify';
 import MainNavbar from '../components/MainNavbar';
@@ -11,6 +11,7 @@ const BlokDetay = () => {
   const navigate = useNavigate();
   const [daireler, setDaireler] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (blokId) {
@@ -76,13 +77,30 @@ const BlokDetay = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <MainNavbar />
-        <Sidebar />
         
-        <div className="pt-16 ml-64">
+        <Sidebar isOpen={sidebarOpen} />
+        
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
+        >
+          <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+        </button>
+        
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+        )}
+        
+        <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
           <div className="flex justify-center items-center h-screen">
             <div className="flex flex-col items-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-              <span className="mt-4 text-gray-600 dark:text-gray-300">Blok detayları yükleniyor...</span>
+              <span className="mt-4 text-gray-600 dark:text-gray-300">Blok detayları yüklüyor...</span>
             </div>
           </div>
         </div>
@@ -93,9 +111,26 @@ const BlokDetay = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <MainNavbar />
-      <Sidebar />
       
-      <div className="pt-16 ml-64">
+      <Sidebar isOpen={sidebarOpen} />
+      
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
+      >
+        <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+      </button>
+      
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+      
+      <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
         <div className="container mx-auto px-4 py-8">
           {/* Blok Header */}
           <div className="mb-8">

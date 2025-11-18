@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Home, User, Phone, Mail, Building, UserCheck, MapPin, Users, UserPlus, Plus } from 'lucide-react';
+import { ArrowLeft, Home, User, Phone, Mail, Building, UserCheck, MapPin, Users, UserPlus, Plus, Menu } from 'lucide-react';
 import { daireService } from '../services/daireService';
 import { siteService } from '../services/siteService';
 import { toast } from 'react-toastify';
@@ -15,6 +15,7 @@ const DaireDetay = () => {
   const [blok, setBlok] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sakinEkleModalAcik, setSakinEkleModalAcik] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (daireId) {
@@ -83,9 +84,26 @@ const DaireDetay = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <MainNavbar />
-        <Sidebar />
         
-        <div className="pt-16 ml-64">
+        <Sidebar isOpen={sidebarOpen} />
+        
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
+        >
+          <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+        </button>
+        
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+        )}
+        
+        <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
           <div className="container mx-auto px-4 py-8">
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -100,9 +118,26 @@ const DaireDetay = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <MainNavbar />
-        <Sidebar />
         
-        <div className="pt-16 ml-64">
+        <Sidebar isOpen={sidebarOpen} />
+        
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
+        >
+          <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+        </button>
+        
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+        )}
+        
+        <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center py-12">
               <Home className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
@@ -130,9 +165,26 @@ const DaireDetay = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <MainNavbar />
-      <Sidebar />
       
-      <div className="pt-16 ml-64">
+      <Sidebar isOpen={sidebarOpen} />
+      
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
+      >
+        <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+      </button>
+      
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+      
+      <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">

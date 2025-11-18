@@ -4,19 +4,22 @@ import {
   Bell, User, CheckCircle, Clock, AlertTriangle,
   Home, Calendar, MapPin, Loader2, RefreshCw,
   CreditCard, Building, ChevronLeft, FileText,
-  DollarSign, AlertCircle as AlertIcon
+  DollarSign, AlertCircle as AlertIcon, Menu,
+  Sun, Moon, LogOut, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import MainNavbar from '../components/MainNavbar';
 import Sidebar from '../components/Sidebar';
 import { odemeIstekService } from '../services/odemeIstekService';
 import { authService } from '../services/authService';
+import { useTheme } from '../contexts/ThemeContext';
 
 const OdemeIstekleriSayfasi = () => {
   const { siteId } = useParams();
   const navigate = useNavigate();
+  const { darkMode, toggleTheme } = useTheme();
   
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
   const [istekler, setIstekler] = useState([]);
   const [filtreliIstekler, setFiltreliIstekler] = useState([]);
   const [error, setError] = useState(null);
@@ -26,6 +29,7 @@ const OdemeIstekleriSayfasi = () => {
   const [durumuFilter, setDurumuFilter] = useState('hepsi');
   const [borcDetaylari, setBorcDetaylari] = useState({});
   const [detayYukleniyor, setDetayYukleniyor] = useState({});
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const fetchOdemeIstekleri = async () => {
@@ -38,6 +42,10 @@ const OdemeIstekleriSayfasi = () => {
           navigate('/giris');
           return;
         }
+
+        // Kullanıcı bilgilerini al
+        const userInfo = await authService.getUserInfo();
+        setUser(userInfo);
 
         // Cache'den önce dene
         const cachedData = odemeIstekService.getSavedOdemeIstekleri(siteId);
@@ -70,6 +78,12 @@ const OdemeIstekleriSayfasi = () => {
       fetchOdemeIstekleri();
     }
   }, [siteId, navigate]);
+
+  const handleLogout = () => {
+    if (window.confirm('Çıkış yapmak istediğinize emin misiniz?')) {
+      authService.logout();
+    }
+  };
 
   // Filtreleme ve arama
   useEffect(() => {
@@ -200,15 +214,24 @@ const OdemeIstekleriSayfasi = () => {
   if (loading && istekler.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <MainNavbar />
-        <Sidebar />
-        
-        <div className="pt-16 ml-64">
-          <div className="flex justify-center items-center h-[calc(100vh-4rem)]">
-            <div className="text-center">
-              <Loader2 className="h-16 w-16 text-green-500 animate-spin mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-300 text-lg">Ödeme istekleri yükleniyor...</p>
+        {/* Loading Header */}
+        <nav className="bg-white dark:bg-gray-800 shadow-md fixed w-full top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
+                  <Bell className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-xl font-bold text-gray-900 dark:text-white">Ödeme İstekleri</span>
+              </div>
             </div>
+          </div>
+        </nav>
+        
+        <div className="pt-16 flex justify-center items-center h-[calc(100vh-4rem)]">
+          <div className="text-center">
+            <Loader2 className="h-16 w-16 text-green-500 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600 dark:text-gray-300 text-lg">Ödeme istekleri yükleniyor...</p>
           </div>
         </div>
       </div>
@@ -218,10 +241,21 @@ const OdemeIstekleriSayfasi = () => {
   if (error && istekler.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <MainNavbar />
-        <Sidebar />
+        {/* Error Header */}
+        <nav className="bg-white dark:bg-gray-800 shadow-md fixed w-full top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
+                  <Bell className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-xl font-bold text-gray-900 dark:text-white">Ödeme İstekleri</span>
+              </div>
+            </div>
+          </div>
+        </nav>
         
-        <div className="pt-16 ml-64">
+        <div className="pt-16">
           <div className="container mx-auto px-4 py-8">
             <div className="max-w-2xl mx-auto text-center">
               <AlertTriangle className="w-20 h-20 text-red-500 mx-auto mb-6" />
@@ -250,10 +284,79 @@ const OdemeIstekleriSayfasi = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <MainNavbar />
-      <Sidebar />
+      {/* Top Navigation */}
+      <nav className="bg-white dark:bg-gray-800 shadow-md fixed w-full top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+              
+              <button
+                onClick={() => navigate(-1)}
+                className="hidden lg:block p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mr-2"
+                title="Geri Dön"
+              >
+                <ArrowLeft className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+              </button>
+              
+              <div className="flex items-center ml-2 lg:ml-0">
+                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
+                  <Bell className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <span className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">
+                    Ödeme İstekleri
+                  </span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
+                    Site sakinlerinden gelen ödeme onay istekleri
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title={darkMode ? 'Açık tema' : 'Karanlık tema'}
+              >
+                {darkMode ? (
+                  <Sun className="h-5 w-5 text-yellow-500" />
+                ) : (
+                  <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                )}
+              </button>
+
+              <div className="hidden md:flex items-center space-x-3">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {user?.kullaniciAdi} {user?.kullaniciSoyadi}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Yönetici</p>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-50 dark:bg-red-900 text-red-600 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-800 transition-colors"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="hidden sm:inline">Çıkış</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
       
-      <div className="pt-16 ml-64">
+      {/* Sidebar */}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      {/* Main Content */}
+      <div className="pt-16 lg:pl-64">
         <div className="container mx-auto px-4 py-8">
           
           {/* Header */}
@@ -366,7 +469,9 @@ const OdemeIstekleriSayfasi = () => {
               </p>
             </div>
           ) : (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+            <>
+              {/* İstek Listesi - Desktop */}
+              <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                   Ödeme İsteği Listesi ({filtreliIstekler.length})
@@ -489,6 +594,133 @@ const OdemeIstekleriSayfasi = () => {
                 ))}
               </div>
             </div>
+
+            {/* İstek Listesi - Mobile Cards */}
+            <div className="lg:hidden space-y-4">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Ödeme İstekleri ({filtreliIstekler.length})
+                </h3>
+              </div>
+              
+              {filtreliIstekler.map((istek) => (
+                <div key={istek.borcOdemeIstekId} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+                  {/* Header */}
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center space-x-2">
+                      <Building className="w-5 h-5 text-gray-400" />
+                      <h4 className="text-lg font-medium text-gray-900 dark:text-white">
+                        {istek.daireAdresi}
+                      </h4>
+                    </div>
+                    
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      istek.gecenGunSayisi <= 1 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+                        : istek.gecenGunSayisi <= 3
+                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+                    }`}>
+                      {istek.gecenGunSayisi <= 1 ? 'Yeni' : `${istek.gecenGunSayisi} gün önce`}
+                    </span>
+                  </div>
+
+                  {/* Borç Detayları */}
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4">
+                    {detayYukleniyor[istek.daireBorcId] ? (
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Borç detayları yükleniyor...
+                      </div>
+                    ) : borcDetaylari[istek.daireBorcId] ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <FileText className="w-4 h-4 mr-2 text-blue-600" />
+                            <span className="font-medium text-sm text-gray-900 dark:text-white">
+                              {odemeIstekService.formatBorcTuru(borcDetaylari[istek.daireBorcId].borcAciklamasi)}
+                            </span>
+                          </div>
+                          <div className="flex items-center">
+                            <DollarSign className="w-4 h-4 mr-1 text-green-600" />
+                            <span className="font-bold text-green-700 dark:text-green-400">
+                              ₺{parseFloat(borcDetaylari[istek.daireBorcId].tutar || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-xs text-gray-600 dark:text-gray-400">
+                          <div>
+                            <span className="font-medium">Son Ödeme:</span>
+                            <div className="text-gray-900 dark:text-white">
+                              {borcDetaylari[istek.daireBorcId].sonOdemeTarihi 
+                                ? new Date(borcDetaylari[istek.daireBorcId].sonOdemeTarihi).toLocaleDateString('tr-TR')
+                                : 'Belirtilmemiş'
+                              }
+                            </div>
+                          </div>
+                          <div>
+                            <span className="font-medium">Durum:</span>
+                            <div className={`${
+                              borcDetaylari[istek.daireBorcId].odendiMi 
+                                ? 'text-green-600 dark:text-green-400' 
+                                : 'text-red-600 dark:text-red-400'
+                            }`}>
+                              {borcDetaylari[istek.daireBorcId].odendiMi ? 'Ödendi' : 'Ödenmedi'}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {borcDetaylari[istek.daireBorcId].borcAciklamasi && (
+                          <div className="text-xs text-gray-600 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-600">
+                            <span className="font-medium">Açıklama:</span>
+                            <div className="text-gray-900 dark:text-white mt-1">
+                              {borcDetaylari[istek.daireBorcId].borcAciklamasi}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center text-sm text-red-500">
+                        <AlertIcon className="w-4 h-4 mr-2" />
+                        Borç detayları yüklenemedi
+                      </div>
+                    )}
+                  </div>
+
+                  {/* İstek Bilgileri */}
+                  <div className="grid grid-cols-2 gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    <div className="flex items-center">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      <span>{istek.istekTarihiFormatli}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <CreditCard className="w-4 h-4 mr-1" />
+                      <span>ID: {istek.daireBorcId}</span>
+                    </div>
+                  </div>
+
+                  {/* Action Button */}
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => handleOdemeIstegiKabul(istek.borcOdemeIstekId, istek.daireBorcId)}
+                      disabled={islemYapiliyor && selectedIstek === istek.borcOdemeIstekId}
+                      className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors font-medium"
+                    >
+                      {islemYapiliyor && selectedIstek === istek.borcOdemeIstekId ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Onaylanıyor...
+                        </>
+                      ) : (
+                        'Ödemeyi Onayla'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            </>
           )}
 
         </div>

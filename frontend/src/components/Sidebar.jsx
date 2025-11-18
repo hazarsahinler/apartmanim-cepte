@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { authService } from '../services/authService';
 
-const Sidebar = () => { // isOpen prop'unu kaldırdık - artık her zaman açık
+const Sidebar = ({ isOpen = false }) => { // Mobile için varsayılan kapalı
   const [activeMenu, setActiveMenu] = useState('');
   const [user, setUser] = useState(null);
   const [siteler, setSiteler] = useState([]);
@@ -142,10 +142,10 @@ const Sidebar = () => { // isOpen prop'unu kaldırdık - artık her zaman açık
 
   return (
     <aside 
-      className="fixed left-0 top-16 h-full w-64 bg-white dark:bg-gray-800 shadow-lg z-40"
+      className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white dark:bg-gray-800 shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
     >
       <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
-        <div className="py-4">
+        <div className="pt-4 pb-4">
           {/* Kullanıcı bilgileri */}
           <div className="px-4 py-2 mb-3">
             <div className="flex items-center space-x-3">

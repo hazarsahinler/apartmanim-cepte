@@ -164,6 +164,21 @@ const clearUserSiteData = (userId) => {
   }
 };
 
+// Tüm cache'i temizle
+const clearAllCache = () => {
+  try {
+    console.log('Tüm site cache verileri temizleniyor...');
+    localStorage.removeItem(STORAGE_KEYS.CACHED_SITES);
+    localStorage.removeItem(STORAGE_KEYS.USER_SITES_MAPPING);
+    localStorage.removeItem(STORAGE_KEYS.LAST_FETCH);
+    localStorage.removeItem('selectedSite');
+    localStorage.removeItem('kullaniciDaireBilgileri');
+    console.log('Site cache verileri başarıyla temizlendi.');
+  } catch (e) {
+    console.error('Cache temizlenirken hata:', e);
+  }
+};
+
 // Son fetch zamanını getir
 const getLastFetchTime = (userId = null) => {
   try {
@@ -183,5 +198,6 @@ export const siteStorageService = {
   getSiteDetail,
   isCacheStale,
   clearUserSiteData,
+  clearAllCache,
   getLastFetchTime
 };

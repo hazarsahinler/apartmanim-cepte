@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import YoneticiKayit from './pages/auth/YoneticiKayit';
 import KullaniciKayit from './pages/auth/KullaniciKayit';
@@ -30,8 +30,21 @@ import NetworkStatusMonitor from './components/NetworkStatusMonitor';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { siteStorageService } from './services/siteStorageService';
 
 function App() {
+  // Uygulama başlangıcında cache temizliği
+  useEffect(() => {
+    console.log('App başlatılıyor, cache kontrol ediliyor...');
+    
+    // Eğer token yoksa cache'i temizle
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.log('Token bulunamadı, cache temizleniyor...');
+      siteStorageService.clearAllCache();
+    }
+  }, []);
+
   return (
     <ThemeProvider>
       <Router>

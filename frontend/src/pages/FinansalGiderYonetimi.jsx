@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   ArrowLeft, TrendingDown, Plus, Save, Eye, DollarSign,
   Building, Trash2, Upload, X, FileText, Image, Download,
-  Calendar, Loader2, AlertCircle, CheckCircle
+  Calendar, Loader2, AlertCircle, CheckCircle, Menu
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
@@ -23,6 +23,7 @@ const FinansalGiderYonetimi = () => {
   const [giderler, setGiderler] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const fileInputRef = useRef(null);
   
   // Form state
@@ -272,9 +273,26 @@ const FinansalGiderYonetimi = () => {
     return (
       <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
         <Navbar />
-        <Sidebar />
         
-        <div className="pt-16 ml-64">
+        <Sidebar isOpen={sidebarOpen} />
+        
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
+        >
+          <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+        </button>
+        
+        {/* Mobile Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+        )}
+        
+        <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
           <div className="flex justify-center items-center h-96">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent"></div>
           </div>
@@ -289,13 +307,29 @@ const FinansalGiderYonetimi = () => {
       <Navbar />
       
       {/* Sidebar */}
-      <Sidebar />
-
+      <Sidebar isOpen={sidebarOpen} />
+      
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
+      >
+        <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+      </button>
+      
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+      
       {/* Main Content */}
-      <div className="pt-16 ml-64">
+      <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 space-y-4 sm:space-y-0">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate(`/finansal-islemler/${siteId}`)}
@@ -309,17 +343,18 @@ const FinansalGiderYonetimi = () => {
                   <TrendingDown className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gider Yönetimi</h1>
-                  <p className="text-gray-600 dark:text-gray-400">{siteData?.siteIsmi}</p>
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Gider Yönetimi</h1>
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{siteData?.siteIsmi}</p>
                 </div>
               </div>
             </div>
             <button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm sm:text-base"
             >
-              <Plus className="h-5 w-5" />
-              <span>Yeni Gider</span>
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="hidden sm:inline">Yeni Gider</span>
+              <span className="sm:hidden">Ekle</span>
             </button>
           </div>
 
@@ -533,8 +568,79 @@ const FinansalGiderYonetimi = () => {
                 Gider Listesi ({giderler.length})
               </h3>
             </div>
-            
-            <div className="overflow-x-auto">
+            {/* Mobile Card View */}
+            <div className="lg:hidden space-y-4">
+              {giderler.map((gider) => (
+                <div key={gider.giderId || gider.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getKategoriColor(gider.giderTur || gider.kategori)}`}>
+                      {getKategoriLabel(gider.giderTur || gider.kategori)}
+                    </span>
+                    <span className="text-lg font-semibold text-red-600 dark:text-red-400">
+                      -{(gider.giderTutari || gider.tutar).toLocaleString('tr-TR')}₺
+                    </span>
+                  </div>
+                  
+                  <p className="text-sm text-gray-900 dark:text-white mb-2">
+                    {gider.giderAciklama || gider.aciklama}
+                  </p>
+                  
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                    {new Date(gider.giderOlusturulmaTarihi || gider.giderTarihi || gider.tarih).toLocaleDateString('tr-TR')}
+                  </p>
+                  
+                  {/* Belgeler */}
+                  {gider.belgeler && gider.belgeler.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {gider.belgeler.slice(0, 3).map((belge, index) => (
+                        <button
+                          key={index}
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(giderService.getBelgeUrl(belge.giderBelgeId || belge.id), {
+                                headers: {
+                                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                }
+                              });
+                              if (!response.ok) throw new Error('Belge yüklenemedi');
+                              
+                              const blob = await response.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              window.open(url, '_blank');
+                              setTimeout(() => window.URL.revokeObjectURL(url), 100);
+                            } catch (error) {
+                              console.error('Belge görüntüleme hatası:', error);
+                              toast.error('Belge görüntülenemiyor');
+                            }
+                          }}
+                          className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
+                          title={`Belge ${index + 1}: ${belge.belgeAdi || 'Belge'}`}
+                        >
+                          <FileText className="h-4 w-4" />
+                        </button>
+                      ))}
+                      {gider.belgeler.length > 3 && (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">+{gider.belgeler.length - 3} daha</span>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* İşlemler */}
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleGiderSil(gider.giderId || gider.id)}
+                      className="flex items-center space-x-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 py-1 rounded text-sm"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>Sil</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>

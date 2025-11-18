@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Building2, PlusCircle, MapPin, ChevronRight, Loader2, 
-  AlertCircle, WifiOff
+  AlertCircle, WifiOff, Menu
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { authService } from '../services/authService';
@@ -13,69 +13,25 @@ import { ENDPOINTS } from '../constants/endpoints';
 import NetworkStatusMonitor from '../components/NetworkStatusMonitor';
 import MainNavbar from '../components/MainNavbar';
 import Sidebar from '../components/Sidebar';
+import { useTheme } from '../contexts/ThemeContext';
 import api from '../services/api';
 import axios from 'axios';
 
 const SiteYonetimSayfasi = () => {
   const navigate = useNavigate();
+  const { darkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [siteler, setSiteler] = useState([]);
   const [siteEkleModalAcik, setSiteEkleModalAcik] = useState(false);
   const [user, setUser] = useState(null);
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [filterQuery, setFilterQuery] = useState('');
-  const [filteredSiteler, setFilteredSiteler] = useState([]);
-  const [sortBy, setSortBy] = useState('name');
-  const [sortOrder, setSortOrder] = useState('asc');
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // Infinite loop önlemek için flag kullanıyoruz
   const [isDataFetched, setIsDataFetched] = useState(false);
 
-  // Filtreleme panelini aç/kapat
-  const toggleFilter = () => {
-    setFilterOpen(!filterOpen);
-  };
 
-  // Siteleri filtrele ve sırala
-  useEffect(() => {
-    if (!siteler.length) {
-      setFilteredSiteler([]);
-      return;
-    }
-    
-    let filtered = [...siteler];
-    
-    // Arama filtresi uygula
-    if (filterQuery.trim() !== '') {
-      const query = filterQuery.toLowerCase();
-      filtered = filtered.filter(site => 
-        (site.siteIsmi || '').toLowerCase().includes(query) ||
-        (site.siteIl || '').toLowerCase().includes(query) ||
-        (site.siteIlce || '').toLowerCase().includes(query) ||
-        (site.siteMahalle || '').toLowerCase().includes(query)
-      );
-    }
-    
-    // Sıralama uygula
-    filtered.sort((a, b) => {
-      let comparison = 0;
-      
-      if (sortBy === 'name') {
-        comparison = (a.siteIsmi || '').localeCompare(b.siteIsmi || '');
-      } else if (sortBy === 'location') {
-        comparison = `${a.siteIl || ''} ${a.siteIlce || ''}`.localeCompare(`${b.siteIl || ''} ${b.siteIlce || ''}`);
-      } else if (sortBy === 'date') {
-        const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-        const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
-        comparison = dateB - dateA;
-      }
-      
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
-    
-    setFilteredSiteler(filtered);
-  }, [siteler, filterQuery, sortBy, sortOrder]);
 
   // Sitelerim verilerini çek - sadece bir kez çalışacak
   useEffect(() => {
@@ -327,19 +283,35 @@ const SiteYonetimSayfasi = () => {
 
   // İstatistikler
   const activeUserCount = Math.floor(Math.random() * 40) + 10;
-  const totalApartments = filteredSiteler.reduce((sum, site) => sum + (site.daireCount || 0), 0);
-  const totalBlocks = filteredSiteler.reduce((sum, site) => sum + (site.bloklarCount || 0), 0);
+  const totalApartments = siteler.reduce((sum, site) => sum + (site.daireCount || 0), 0);
+  const totalBlocks = siteler.reduce((sum, site) => sum + (site.bloklarCount || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
       {/* Navbar */}
       <MainNavbar />
       
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} />
+      
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
+      >
+        <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+      </button>
+      
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
       
       {/* Main Content */}
-      <div className="pt-16 ml-64"> {/* Sidebar her zaman açık olduğu için sabit 256px margin */}
+      <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
         <div className="container mx-auto px-4 py-8">
           {/* Başlık ve Özetler */}
           <div className="mb-8">
@@ -348,25 +320,13 @@ const SiteYonetimSayfasi = () => {
                 Site Yönetimi
               </h1>
               
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={toggleFilter}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                  </svg>
-                  Filtrele
-                </button>
-                
-                <button
-                  onClick={toggleSiteEkleModal}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md bg-green-600 text-white shadow-md hover:bg-green-700 transition-colors"
-                >
-                  <PlusCircle size={16} className="mr-2" />
-                  Yeni Site
-                </button>
-              </div>
+              <button
+                onClick={toggleSiteEkleModal}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md bg-green-600 text-white shadow-md hover:bg-green-700 transition-colors"
+              >
+                <PlusCircle size={16} className="mr-2" />
+                Yeni Site
+              </button>
             </div>
             
             {/* İstatistikler */}
@@ -377,7 +337,7 @@ const SiteYonetimSayfasi = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Toplam Site</p>
-                  <p className="text-2xl font-bold text-gray-800 dark:text-white">{filteredSiteler.length}</p>
+                  <p className="text-2xl font-bold text-gray-800 dark:text-white">{siteler.length}</p>
                 </div>
               </div>
               
@@ -418,61 +378,7 @@ const SiteYonetimSayfasi = () => {
               </div>
             </div>
             
-            {/* Filtreleme Paneli */}
-            {filterOpen && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6 animate-fadeIn">
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex-1 min-w-[200px]">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ara</label>
-                    <input
-                      type="text"
-                      value={filterQuery}
-                      onChange={(e) => setFilterQuery(e.target.value)}
-                      placeholder="Site adı, il veya ilçe..."
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sırala</label>
-                    <select 
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
-                    >
-                      <option value="name">İsme göre</option>
-                      <option value="location">Konuma göre</option>
-                      <option value="date">Tarihe göre</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Yön</label>
-                    <select 
-                      value={sortOrder}
-                      onChange={(e) => setSortOrder(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:text-white"
-                    >
-                      <option value="asc">Artan</option>
-                      <option value="desc">Azalan</option>
-                    </select>
-                  </div>
-                  
-                  <div className="flex items-end">
-                    <button 
-                      onClick={() => {
-                        setFilterQuery('');
-                        setSortBy('name');
-                        setSortOrder('asc');
-                      }}
-                      className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-                    >
-                      Filtreleri Temizle
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+
           </div>
           
           {error && (
@@ -486,32 +392,28 @@ const SiteYonetimSayfasi = () => {
           )}
           
           {/* Site Listesi veya Boş Durum */}
-          {filteredSiteler.length === 0 ? (
+          {siteler.length === 0 ? (
             <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 text-center transform transition duration-500 hover:scale-[1.02] animate-fadeIn">
               <div className="mx-auto w-24 h-24 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-6">
                 <Building2 className="h-12 w-12 text-blue-500 dark:text-blue-400" />
               </div>
               <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-4">
-                {filterQuery ? 'Aramanıza uygun site bulunamadı' : 'Henüz Siteniz Bulunmuyor'}
+                Henüz Siteniz Bulunmuyor
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-8">
-                {filterQuery 
-                  ? 'Lütfen farklı anahtar kelimelerle tekrar arayın veya filtreleri temizleyin.' 
-                  : 'Site oluşturarak apartman yönetimine hemen başlayabilirsiniz. Site oluşturduktan sonra bloklar, daireler ve sakinleri ekleyebilirsiniz.'}
+                Site oluşturarak apartman yönetimine hemen başlayabilirsiniz. Site oluşturduktan sonra bloklar, daireler ve sakinleri ekleyebilirsiniz.
               </p>
-              {!filterQuery && (
-                <button
-                  onClick={toggleSiteEkleModal}
-                  className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 transform hover:scale-105"
-                >
-                  <PlusCircle className="mr-2 h-5 w-5" />
-                  Hemen Site Ekle
-                </button>
-              )}
+              <button
+                onClick={toggleSiteEkleModal}
+                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 transform hover:scale-105"
+              >
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Hemen Site Ekle
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredSiteler.map((site, index) => (
+              {siteler.map((site, index) => (
                 <div
                   key={site.siteId || site.id || index}
                   onClick={() => handleSiteClick(site.siteId || site.id)}
