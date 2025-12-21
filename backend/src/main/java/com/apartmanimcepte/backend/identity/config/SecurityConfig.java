@@ -62,6 +62,8 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // Site, blok, daire ekleme/silme/güncelleme gibi işlemleri SADECE YONETICI yapabilsin
+                        .requestMatchers("/api/duyuru/ekle/").hasRole("YONETICI")
+                        .requestMatchers("/api/duyuru/duyurular/").hasAnyRole("YONETICI","APARTMANSAKIN")
                         .requestMatchers("/api/structure/site/ekle").hasRole("YONETICI")
                         .requestMatchers("/api/structure/blok/ekle").hasRole("YONETICI")
                         .requestMatchers("/api/structure/bloklar/**").hasRole("YONETICI")
@@ -80,6 +82,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/finance/gider/getir/{steId}").hasAnyRole("YONETICI","APARTMANSAKIN")
                         .requestMatchers("/api/finance/gider/belge/goster/{belgeId}").hasAnyRole("YONETICI","APARTMANSAKIN")
                         .requestMatchers("/api/finance/total/gider/{siteId}").hasAnyRole("YONETICI","APARTMANSAKIN")
+
 
 
                         // Geriye kalan TÜM istekler için kimlik doğrulaması (login) zorunlu olsun
