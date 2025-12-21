@@ -61,8 +61,8 @@ const Navbar = () => {
 
             {/* Ana Navigasyon Linkleri */}
             <div className="hidden md:flex ml-10 space-x-8">
-              <Link to="/duyurular" className="text-gray-600 hover:text-green-600 px-3 py-2 text-sm font-medium">
-                Duyurular
+              <Link to="/site-yonetimi" className="text-gray-600 hover:text-green-600 px-3 py-2 text-sm font-medium">
+                Duyuru Yönetimi
               </Link>
               {user && (
                 <Link to="/site-yonetimi" className="text-gray-600 hover:text-green-600 px-3 py-2 text-sm font-medium">
@@ -110,13 +110,13 @@ const Navbar = () => {
                         </Link>
                         {user.rol === 'YONETICI' && (
                           <Link
-                            to="/duyuru-olustur"
+                            to="/site-yonetimi"
                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                             onClick={() => setIsMenuOpen(false)}
                           >
                             <div className="flex items-center">
                               <Bell className="h-4 w-4 mr-2" />
-                              <span>Yeni Duyuru</span>
+                              <span>Duyuru Yönetimi</span>
                             </div>
                           </Link>
                         )}

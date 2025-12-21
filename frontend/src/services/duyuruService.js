@@ -1,178 +1,137 @@
-import api from './api';
-import { ENDPOINTS } from '../constants/endpoints';
+import axios from 'axios';
 
-const DUYURU_API_URL = ENDPOINTS.DUYURU.BASE;
+const API_BASE_URL = 'http://localhost:8080/api';
 
-// Mock veri
-const mockDuyurular = [
-  {
-    id: 1,
-    baslik: 'Apartman Toplantısı',
-    icerik: 'Bu hafta Cumartesi saat 14:00\'te apartman sakinleri toplantısı yapılacaktır. Tüm sakinlerin katılımı önemle rica olunur.',
-    tip: 'onemli',
-    tarih: new Date(2025, 9, 5),
-    yayinlayan: 'Site Yöneticisi',
-    siteId: 1,
-    siteAdi: 'Örnek Sitesi'
-  },
-  {
-    id: 2,
-    baslik: 'Su Kesintisi',
-    icerik: 'Yarın 09:00-14:00 saatleri arasında bakım çalışması nedeniyle su kesintisi olacaktır.',
-    tip: 'genel',
-    tarih: new Date(2025, 9, 2),
-    yayinlayan: 'Site Yönetimi',
-    siteId: 1,
-    siteAdi: 'Örnek Sitesi'
-  },
-  {
-    id: 3,
-    baslik: 'Bahçe Temizliği Etkinliği',
-    icerik: 'Önümüzdeki Pazar günü gönüllü sakinlerle bahçe temizliği etkinliği düzenlenecektir. Katılmak isteyenler yönetimle iletişime geçebilir.',
-    tip: 'etkinlik',
-    tarih: new Date(2025, 9, 10),
-    yayinlayan: 'Etkinlik Komitesi',
-    siteId: 1,
-    siteAdi: 'Örnek Sitesi'
-  }
-];
+// Önem seviyeleri enum'u
+export const ONEM_SEVIYELERI = {
+  DUSUK: 'DUSUK',
+  ORTA: 'ORTA',
+  YUKSEK: 'YUKSEK'
+};
 
-export const duyuruService = {
-  // Tüm duyuruları getir
-  getAllDuyurular: async () => {
-    try {
-      // Gerçek API isteği 
-      const response = await api.get(DUYURU_API_URL).catch(() => {
-        // API bağlantısı başarısız olursa mock veri döndür
-        console.log('Mock duyuru verileri kullanılıyor');
-        return { data: mockDuyurular };
-      });
-      return response;
-    } catch (error) {
-      console.error('Duyuru getirme hatası:', error);
-      // Hata durumunda da mock veri döndür
-      return { data: mockDuyurular };
-    }
-  },
+const duyuruService = {
+  // Axios instance oluştur
+  axiosInstance: axios.create({
+    baseURL: API_BASE_URL,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }),
 
-  // Site/bina ID'sine göre duyuruları getir
-  getDuyurularBySiteId: async (siteId) => {
-    try {
-      const response = await api.get(`${ENDPOINTS.DUYURU.BY_SITE}/${siteId}`).catch(() => {
-        // API bağlantısı başarısız olursa mock veri döndür
-        console.log('Mock site duyuru verileri kullanılıyor');
-        return { data: mockDuyurular.filter(d => d.siteId === parseInt(siteId)) };
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Site duyuruları getirme hatası:', error);
-      // Hata durumunda da mock veri döndür
-      return mockDuyurular.filter(d => d.siteId === parseInt(siteId));
-    }
-  },
-
-  // Belirli bir duyuruyu getir
-  getDuyuruById: async (id) => {
-    try {
-      const response = await api.get(`${ENDPOINTS.DUYURU.BY_ID}/${id}`).catch(() => {
-        // API bağlantısı başarısız olursa mock veri döndür
-        console.log('Mock duyuru detay verisi kullanılıyor');
-        const bulunanDuyuru = mockDuyurular.find(d => d.id === parseInt(id));
-        return { data: bulunanDuyuru || null };
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Duyuru detayları getirme hatası:', error);
-      // Hata durumunda da mock veri döndür
-      return mockDuyurular.find(d => d.id === parseInt(id)) || null;
-    }
-  },
-  
-  // Yeni duyuru oluştur
-  createDuyuru: async (duyuruData) => {
-    try {
-      const response = await api.post(DUYURU_API_URL, duyuruData).catch(() => {
-        // API bağlantısı başarısız olursa mock işlem
-        console.log('Mock duyuru oluşturma kullanılıyor');
-        const yeniDuyuru = {
-          id: mockDuyurular.length + 1,
-          baslik: duyuruData.get('baslik') || 'Yeni Duyuru',
-          icerik: duyuruData.get('icerik') || 'Duyuru içeriği',
-          tip: duyuruData.get('tip') || 'genel',
-          tarih: new Date(),
-          yayinlayan: 'Test Kullanıcı',
-          siteId: parseInt(duyuruData.get('siteId')) || 1,
-          siteAdi: 'Örnek Sitesi',
-          ekDosyaUrl: duyuruData.get('ekDosya') ? 'mockFile.pdf' : null,
-        };
-        
-        // Mock verilere ekle
-        mockDuyurular.push(yeniDuyuru);
-        return { data: yeniDuyuru };
-      });
-      
-      return response.data;
-    } catch (error) {
-      console.error('Duyuru oluşturma hatası:', error);
-      return { success: false, message: 'Duyuru oluşturulurken bir hata oluştu.' };
-    }
-  },
-  
-  // Duyuruyu güncelle
-  updateDuyuru: async (id, duyuruData) => {
-    try {
-      const response = await api.put(`${DUYURU_API_URL}/${id}`, duyuruData).catch(() => {
-        // API bağlantısı başarısız olursa mock işlem
-        console.log('Mock duyuru güncelleme kullanılıyor');
-        
-        // Duyuruyu bul ve güncelle
-        const index = mockDuyurular.findIndex(d => d.id === parseInt(id));
-        if (index !== -1) {
-          const guncelDuyuru = {
-            ...mockDuyurular[index],
-            baslik: duyuruData.get('baslik') || mockDuyurular[index].baslik,
-            icerik: duyuruData.get('icerik') || mockDuyurular[index].icerik,
-            tip: duyuruData.get('tip') || mockDuyurular[index].tip,
-            // Diğer alanları da benzer şekilde güncelleyebilirsiniz
-          };
-          
-          mockDuyurular[index] = guncelDuyuru;
-          return { data: guncelDuyuru };
+  // Request interceptor to add auth token
+  setupInterceptors() {
+    this.axiosInstance.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
         }
-        
-        throw new Error('Duyuru bulunamadı');
-      });
-      
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+  },
+
+  // Duyuru oluştur
+  async createDuyuru(duyuruData) {
+    try {
+      this.setupInterceptors();
+      const response = await this.axiosInstance.post('/duyuru/ekle', duyuruData);
       return response.data;
     } catch (error) {
-      console.error('Duyuru güncelleme hatası:', error);
-      return { success: false, message: 'Duyuru güncellenirken bir hata oluştu.' };
+      throw this.handleError(error);
     }
   },
-  
-  // Duyuruyu sil
-  deleteDuyuru: async (id) => {
+
+  // Duyuruları getir (filtrelenmiş veya hepsi)
+  async getDuyurular(siteId = null, onemSeviyesi = null) {
     try {
-      const response = await api.delete(`${DUYURU_API_URL}/${id}`).catch(() => {
-        // API bağlantısı başarısız olursa mock işlem
-        console.log('Mock duyuru silme kullanılıyor');
-        
-        // Duyuruyu bul ve sil
-        const index = mockDuyurular.findIndex(d => d.id === parseInt(id));
-        if (index !== -1) {
-          const silinenDuyuru = mockDuyurular[index];
-          mockDuyurular.splice(index, 1);
-          return { data: { success: true, message: 'Duyuru başarıyla silindi' } };
-        }
-        
-        throw new Error('Duyuru bulunamadı');
-      });
-      
+      this.setupInterceptors();
+      const params = {};
+      if (siteId) params.siteId = siteId;
+      if (onemSeviyesi) params.onemSeviyesi = onemSeviyesi;
+
+      const response = await this.axiosInstance.get('/duyuru/duyurular', { params });
       return response.data;
     } catch (error) {
-      console.error('Duyuru silme hatası:', error);
-      return { success: false, message: 'Duyuru silinirken bir hata oluştu.' };
+      throw this.handleError(error);
     }
+  },
+
+  // Site bazlı duyurular
+  async getDuyurularBySite(siteId) {
+    return this.getDuyurular(siteId);
+  },
+
+  // Önem seviyesine göre duyurular
+  async getDuyurularByOnem(onemSeviyesi) {
+    return this.getDuyurular(null, onemSeviyesi);
+  },
+
+  // Hem site hem önem filtresi
+  async getDuyurularFiltered(siteId, onemSeviyesi) {
+    return this.getDuyurular(siteId, onemSeviyesi);
+  },
+
+  // Error handling
+  handleError(error) {
+    if (error.response) {
+      const status = error.response.status;
+      const message = error.response.data?.message || 'Bir hata oluştu';
+      
+      if (status === 403) {
+        console.error('403 Forbidden: Duyuru endpoint\'ine erişim yetkisi yok. Backend SecurityConfig kontrol edilmeli.');
+        return new Error('Erişim yetkisi yok (403)');
+      } else if (status === 401) {
+        return new Error('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.');
+      }
+      
+      return new Error(message);
+    } else if (error.request) {
+      return new Error('Sunucuya ulaşılamıyor');
+    } else {
+      return new Error('Beklenmeyen bir hata oluştu');
+    }
+  },
+
+  // Önem seviyesi helper'ları
+  getOnemSeviyesiColor(seviye) {
+    switch (seviye) {
+      case 'DUSUK':
+        return '#10B981'; // Yeşil
+      case 'ORTA':
+        return '#F59E0B'; // Turuncu
+      case 'YUKSEK':
+        return '#EF4444'; // Kırmızı
+      default:
+        return '#6B7280'; // Gri
+    }
+  },
+
+  getOnemSeviyesiLabel(seviye) {
+    switch (seviye) {
+      case 'DUSUK':
+        return 'Düşük';
+      case 'ORTA':
+        return 'Orta';
+      case 'YUKSEK':
+        return 'Yüksek';
+      default:
+        return 'Bilinmiyor';
+    }
+  },
+
+  formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('tr-TR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 };
 

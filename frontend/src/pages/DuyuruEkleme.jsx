@@ -1,29 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeft, Bell, Plus, AlertCircle, Info, CheckCircle
+} from 'lucide-react';
 import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
 import MainNavbar from '../components/MainNavbar';
 import { authService } from '../services/authService';
-import duyuruService from '../services/duyuruService';
 import { useTheme } from '../contexts/ThemeContext';
-import { 
-  ArrowLeft, Plus, Bell, AlertCircle, Info, CheckCircle
-} from 'lucide-react';
+import duyuruService from '../services/duyuruService';
 
-const DuyuruOlustur = () => {
+const DuyuruEkleme = () => {
   const { siteId } = useParams();
   const navigate = useNavigate();
   const { darkMode } = useTheme();
   const [loading, setLoading] = useState(false);
   const [siteData, setSiteData] = useState(null);
   
-  const [formData, setFormData] = useState({
-    duyuruMesaji: '',
+  // Form state
+  const [duyuruForm, setDuyuruForm] = useState({
     duyuruBaslik: '',
-    onemSeviyesi: 'ORTA',
-    siteId: siteId
+    duyuruMesaji: '',
+    onemSeviyesi: 'ORTA'
   });
 
+  // Önem seviyeleri
+  const onemSeviyeleri = [
+    { value: 'DUSUK', label: 'Düşük', color: '#10B981', icon: CheckCircle },
+    { value: 'ORTA', label: 'Orta', color: '#F59E0B', icon: Info },
+    { value: 'YUKSEK', label: 'Yüksek', color: '#EF4444', icon: AlertCircle }
+  ];
+
+  // Sayfa yüklendiğinde
   useEffect(() => {
     const initializePage = async () => {
       try {
@@ -32,87 +40,89 @@ const DuyuruOlustur = () => {
           return;
         }
 
-        const userData = await authService.getUserInfo();
-        
-        // Yönetici kontrolü
-        const userRole = userData?.apartmanRol || userData?.rol;
-        if (!userData || (userRole !== 'YONETICI' && userRole !== 'Yonetici' && userRole !== 'ROLE_YONETICI')) {
-          toast.error('Bu sayfaya erişim yetkiniz bulunmamaktadır.');
-          navigate(`/site-panel/${siteId}`);
-          return;
-        }
-        
-        // Site bilgilerini API'den çek
-        const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:8080/api/structure/site/${userData.id}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const sites = await response.json();
-          const foundSite = sites.find(site => site.id === parseInt(siteId) || site.siteId === parseInt(siteId));
+        // Site bilgilerini yükle
+        const userSitesJson = localStorage.getItem('userSites');
+        if (userSitesJson) {
+          const userSites = JSON.parse(userSitesJson);
+          const foundSite = userSites.find(site => 
+            site.id === parseInt(siteId) || site.id === siteId
+          );
           
           if (foundSite) {
             setSiteData(foundSite);
-            setFormData(prev => ({
-              ...prev,
-              siteId: foundSite.id || foundSite.siteId
-            }));
-          } else {
-            toast.error('Site bulunamadı.');
-            navigate('/site-yonetimi');
           }
         }
-      } catch (error) {
-        console.error('Sayfa yüklenirken hata:', error);
+        
+      } catch (err) {
+        console.error('Sayfa yüklenirken hata:', err);
         toast.error('Sayfa yüklenirken bir hata oluştu.');
       }
     };
-    
-    initializePage();
-  }, [navigate, siteId]);
 
+    if (siteId) {
+      initializePage();
+    }
+  }, [siteId, navigate]);
+
+  // Form input değişikliği
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setDuyuruForm(prev => ({
+      ...prev,
       [name]: value
-    });
+    }));
   };
 
+  // Önem seviyesi seçimi
+  const handleOnemSeviyesiChange = (seviye) => {
+    setDuyuruForm(prev => ({
+      ...prev,
+      onemSeviyesi: seviye
+    }));
+  };
+
+  // Form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.duyuruMesaji.trim()) {
-      toast.error('Duyuru mesajı boş olamaz');
+    // Validasyon
+    if (!duyuruForm.duyuruMesaji.trim()) {
+      toast.error('Duyuru mesajı boş olamaz!');
       return;
     }
 
-    if (formData.duyuruMesaji.length < 10) {
-      toast.error('Duyuru mesajı en az 10 karakter olmalıdır');
+    if (duyuruForm.duyuruMesaji.length < 10) {
+      toast.error('Duyuru mesajı en az 10 karakter olmalıdır!');
       return;
     }
 
     try {
       setLoading(true);
-      
+
       const duyuruData = {
-        duyuruMesaji: formData.duyuruMesaji,
-        duyuruBaslik: formData.duyuruBaslik || null,
-        siteId: parseInt(formData.siteId),
-        onemSeviyesi: formData.onemSeviyesi
+        duyuruMesaji: duyuruForm.duyuruMesaji,
+        duyuruBaslik: duyuruForm.duyuruBaslik || null,
+        siteId: parseInt(siteId),
+        onemSeviyesi: duyuruForm.onemSeviyesi
       };
+
+      console.log('Gönderilen duyuru verisi:', duyuruData);
 
       await duyuruService.createDuyuru(duyuruData);
       
       toast.success('Duyuru başarıyla oluşturuldu!');
       
-      // Site paneline dön
-      navigate(`/site-panel/${formData.siteId}`);
+      // Formu temizle
+      setDuyuruForm({
+        duyuruBaslik: '',
+        duyuruMesaji: '',
+        onemSeviyesi: 'ORTA'
+      });
+      
+      // Duyuru yönetimine dön
+      setTimeout(() => {
+        navigate(`/duyuru-yonetimi/${siteId}`);
+      }, 1500);
       
     } catch (error) {
       console.error('Duyuru oluşturma hatası:', error);
@@ -123,27 +133,16 @@ const DuyuruOlustur = () => {
   };
 
   const getOnemIcon = (seviye) => {
-    switch (seviye) {
-      case 'YUKSEK':
-        return <AlertCircle className="h-4 w-4" />;
-      case 'ORTA':
-        return <Info className="h-4 w-4" />;
-      case 'DUSUK':
-        return <CheckCircle className="h-4 w-4" />;
-      default:
-        return <Bell className="h-4 w-4" />;
-    }
+    const onem = onemSeviyeleri.find(o => o.value === seviye);
+    const IconComponent = onem?.icon || Bell;
+    return <IconComponent className="h-5 w-5" />;
   };
 
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
-      {/* Top Navigation */}
       <MainNavbar />
-      
-      {/* Sidebar */}
       <Sidebar />
       
-      {/* Main Content - Finansal İşlemler gibi aynı padding */}
       <div className="pt-20 pl-64">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
@@ -151,7 +150,7 @@ const DuyuruOlustur = () => {
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(`/duyuru-yonetimi/${siteId}`)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 title="Geri Dön"
               >
@@ -177,7 +176,7 @@ const DuyuruOlustur = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               
-              {/* Site Bilgisi (Read-only) */}
+              {/* Site Bilgisi */}
               {siteData && (
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <p className="text-sm text-blue-800 dark:text-blue-300">
@@ -194,46 +193,53 @@ const DuyuruOlustur = () => {
                 <input
                   type="text"
                   name="duyuruBaslik"
-                  value={formData.duyuruBaslik}
+                  value={duyuruForm.duyuruBaslik}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="Örn: Aidat Hatırlatması"
                   maxLength={100}
+                  className="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {duyuruForm.duyuruBaslik.length}/100 karakter
+                </p>
               </div>
 
               {/* Önem Seviyesi */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   Önem Seviyesi *
                 </label>
                 <div className="grid grid-cols-3 gap-4">
-                  {['DUSUK', 'ORTA', 'YUKSEK'].map((seviye) => (
+                  {onemSeviyeleri.map((seviye) => (
                     <label
-                      key={seviye}
-                      className={`relative flex items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                        formData.onemSeviyesi === seviye
-                          ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                          : 'border-gray-300 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-500'
+                      key={seviye.value}
+                      className={`relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                        duyuruForm.onemSeviyesi === seviye.value
+                          ? 'border-current shadow-lg transform scale-105'
+                          : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
                       }`}
+                      style={{ 
+                        borderColor: duyuruForm.onemSeviyesi === seviye.value ? seviye.color : undefined,
+                        backgroundColor: duyuruForm.onemSeviyesi === seviye.value ? `${seviye.color}10` : undefined
+                      }}
                     >
                       <input
                         type="radio"
                         name="onemSeviyesi"
-                        value={seviye}
-                        checked={formData.onemSeviyesi === seviye}
-                        onChange={handleInputChange}
-                        className="absolute opacity-0"
+                        value={seviye.value}
+                        checked={duyuruForm.onemSeviyesi === seviye.value}
+                        onChange={() => handleOnemSeviyesiChange(seviye.value)}
+                        className="sr-only"
                       />
-                      <div className="flex items-center space-x-2">
+                      <div className="flex flex-col items-center space-y-2">
                         <div 
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
-                          style={{ backgroundColor: duyuruService.getOnemSeviyesiColor(seviye) }}
+                          className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+                          style={{ backgroundColor: seviye.color }}
                         >
-                          {getOnemIcon(seviye)}
+                          {getOnemIcon(seviye.value)}
                         </div>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {duyuruService.getOnemSeviyesiLabel(seviye)}
+                          {seviye.label}
                         </span>
                       </div>
                     </label>
@@ -248,7 +254,7 @@ const DuyuruOlustur = () => {
                 </label>
                 <textarea
                   name="duyuruMesaji"
-                  value={formData.duyuruMesaji}
+                  value={duyuruForm.duyuruMesaji}
                   onChange={handleInputChange}
                   className="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   rows={6}
@@ -262,7 +268,7 @@ const DuyuruOlustur = () => {
                     Minimum 10 karakter gerekli
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {formData.duyuruMesaji.length}/2000 karakter
+                    {duyuruForm.duyuruMesaji.length}/2000 karakter
                   </p>
                 </div>
               </div>
@@ -271,8 +277,9 @@ const DuyuruOlustur = () => {
               <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-600">
                 <button
                   type="button"
-                  onClick={() => navigate(-1)}
+                  onClick={() => navigate(`/duyuru-yonetimi/${siteId}`)}
                   className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  disabled={loading}
                 >
                   İptal
                 </button>
@@ -302,4 +309,4 @@ const DuyuruOlustur = () => {
   );
 };
 
-export default DuyuruOlustur;
+export default DuyuruEkleme;

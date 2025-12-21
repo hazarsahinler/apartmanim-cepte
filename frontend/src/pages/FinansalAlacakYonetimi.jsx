@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, TrendingUp, Plus, Save, Eye, CreditCard,
-  Building, Calendar, CheckCircle, AlertCircle, Menu
+  Building, Calendar, CheckCircle, AlertCircle
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
@@ -19,7 +19,6 @@ const FinansalAlacakYonetimi = () => {
   const [loading, setLoading] = useState(true);
   const [siteData, setSiteData] = useState(null);
   const [alacaklar, setAlacaklar] = useState([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   
   // Form state
@@ -335,26 +334,9 @@ const FinansalAlacakYonetimi = () => {
     return (
       <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
         <Navbar />
+        <Sidebar />
         
-        <Sidebar isOpen={sidebarOpen} />
-        
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
-        >
-          <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-        </button>
-        
-        {/* Mobile Overlay */}
-        {sidebarOpen && (
-          <div 
-            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-            onClick={() => setSidebarOpen(false)}
-          ></div>
-        )}
-        
-        <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
+        <div className="pt-16 ml-64">
           <div className="flex justify-center items-center h-96">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent"></div>
           </div>
@@ -369,26 +351,10 @@ const FinansalAlacakYonetimi = () => {
       <Navbar />
       
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} />
-      
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
-      >
-        <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-      </button>
-      
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
-      )}
+      <Sidebar />
       
       {/* Main Content */}
-      <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
+      <div className="pt-16 ml-64">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -538,8 +504,8 @@ const FinansalAlacakYonetimi = () => {
             </div>
           )}
 
-          {/* Alacak Listesi - Desktop Table */}
-          <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-lg shadow-md">
+          {/* Alacak Listesi */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Alacak Listesi ({alacaklar.length})
@@ -637,99 +603,6 @@ const FinansalAlacakYonetimi = () => {
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Alacak Listesi - Mobile Cards */}
-          <div className="lg:hidden space-y-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Alacak Listesi ({alacaklar.length})
-              </h3>
-            </div>
-            
-            {alacaklar.map((alacak) => (
-              <div key={alacak.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-                {/* Header */}
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {getTurLabel(alacak.tur)}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      {alacak.aciklama}
-                    </p>
-                  </div>
-                  <button 
-                    onClick={() => navigate(`/daire-borc-detay/${siteId}/${alacak.id}`)}
-                    className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1"
-                    title="Daire Detaylarını Görüntüle"
-                  >
-                    <Eye className="h-5 w-5" />
-                  </button>
-                </div>
-
-                {/* Amount Info */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Daire Başına</p>
-                    <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                      {(alacak.alacakTutari || 0).toLocaleString('tr-TR')}₺
-                    </p>
-                    {alacak.tur === 'OZEL_MASRAF' && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        (Toplam: {alacak.tutar.toLocaleString('tr-TR')}₺)
-                      </p>
-                    )}
-                  </div>
-                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Toplam Gelir</p>
-                    <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                      {(alacak.toplamGelir || 0).toLocaleString('tr-TR')}₺
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Potansiyel</p>
-                  </div>
-                </div>
-
-                {/* Payment Status */}
-                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 mb-4">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">Ödeme Durumu</p>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-1">
-                      <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
-                      <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                        {alacak.odemeYapanDaireSay || 0}
-                      </span>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        / {alacak.toplamDaireSayisi} daire
-                      </span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="text-green-600 dark:text-green-400">
-                      <span className="font-medium">Gelen:</span> {(alacak.gelenGelir || 0).toLocaleString('tr-TR')}₺
-                    </div>
-                    <div className="text-red-600 dark:text-red-400">
-                      <span className="font-medium">Bekleyen:</span> {(alacak.bekleyenGelir || 0).toLocaleString('tr-TR')}₺
-                    </div>
-                  </div>
-                </div>
-
-                {/* Due Date */}
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Son Ödeme Tarihi:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {new Date(alacak.sonTarih).toLocaleDateString('tr-TR')}
-                  </span>
-                </div>
-              </div>
-            ))}
-            
-            {alacaklar.length === 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
-                <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">Henüz alacak kaydı bulunmuyor.</p>
-              </div>
-            )}
           </div>
         </div>
       </div>

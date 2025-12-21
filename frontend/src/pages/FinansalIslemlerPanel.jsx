@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, TrendingUp, TrendingDown, CreditCard, DollarSign,
-  PlusCircle, Eye, Building, Calendar, CheckCircle, AlertCircle, Menu
+  PlusCircle, Eye, Building, Calendar, CheckCircle, AlertCircle
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
@@ -20,10 +20,8 @@ const FinansalIslemlerPanel = () => {
     toplamGelir: 0,
     toplamGider: 0,
     netKazanc: 0,
-    bekleyenAlacak: 0,
-    giderKayitSayisi: 0
+    bekleyenAlacak: 0
   });
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Sayfa yüklendiğinde verileri çek
   useEffect(() => {
@@ -97,30 +95,15 @@ const FinansalIslemlerPanel = () => {
     try {
       const token = localStorage.getItem('token');
       
-      // Paralel olarak hem gelir hem gider API'lerini çağır
-      const [alacakResponse, giderResponse] = await Promise.all([
-        fetch(`http://localhost:8080/api/finance/eklenen/borclar?siteId=${currentSiteId}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }),
-        fetch(`http://localhost:8080/api/finance/total/gider/${currentSiteId}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        })
-      ]);
+      // Alacaklar API'sinden özet verileri çek
+      const alacakResponse = await fetch(`http://localhost:8080/api/finance/eklenen/borclar?siteId=${currentSiteId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-      let toplamGelir = 0;
-      let bekleyenAlacak = 0;
-      let toplamGider = 0;
-      let giderKayitSayisi = 0;
-
-      // Gelir verilerini işle
       if (alacakResponse.ok) {
         const alacakData = await alacakResponse.json();
         
@@ -143,7 +126,7 @@ const FinansalIslemlerPanel = () => {
         }
         
         // Toplam gelir hesapla (gelen gelir - ödenen kısım)
-        toplamGelir = alacakData.reduce((toplam, borc) => {
+        const toplamGelir = alacakData.reduce((toplam, borc) => {
           const tutar = parseFloat(borc.tutar);
           const odeyenDaireSay = borc.odemeYapanDaireSay || 0;
           const odenmeyen = borc.odemeYapmayanDaireSay || 0;
@@ -167,7 +150,7 @@ const FinansalIslemlerPanel = () => {
         }, 0);
         
         // Bekleyen alacak hesapla (backend'den gelen ödenmeyen daire sayısı kullan)
-        bekleyenAlacak = alacakData.reduce((toplam, borc) => {
+        const bekleyenAlacak = alacakData.reduce((toplam, borc) => {
           const tutar = parseFloat(borc.tutar);
           const odeyenDaireSay = borc.odemeYapanDaireSay || 0;
           const odenmeyen = borc.odemeYapmayanDaireSay || 0;
@@ -189,53 +172,37 @@ const FinansalIslemlerPanel = () => {
             return toplam + (tutar * odenmeyen);
           }
         }, 0);
+
+        setFinansalOzet({
+          toplamGelir: toplamGelir,
+          toplamGider: 0, // Gider API'si eklenecek
+          netKazanc: toplamGelir, // Gider çıkarılacak
+          bekleyenAlacak: bekleyenAlacak
+        });
         
-        console.log('Gelir verisi başarıyla yüklendi:', { toplamGelir, bekleyenAlacak });
+        console.log('Finansal özet güncellendi:', {
+          toplamGelir,
+          bekleyenAlacak,
+          toplamDaireSayisi,
+          alacakSayisi: alacakData.length,
+          siteData: currentSiteData
+        });
       } else {
-        console.error('Gelir verileri alınamadı');
+        console.error('Finansal veriler alınamadı');
+        setFinansalOzet({
+          toplamGelir: 0,
+          toplamGider: 0,
+          netKazanc: 0,
+          bekleyenAlacak: 0
+        });
       }
-
-      // Gider verilerini işle
-      if (giderResponse.ok) {
-        const giderData = await giderResponse.json();
-        console.log('Gider API yanıtı:', giderData);
-        
-        // API'den gelen toplam gider tutarını al
-        toplamGider = giderData.tutar || giderData.totalAmount || 0;
-        giderKayitSayisi = giderData.kayitSayisi || giderData.totalCount || 0;
-        
-        console.log('Gider verisi başarıyla yüklendi:', { toplamGider, giderKayitSayisi });
-      } else {
-        console.error('Gider verileri alınamadı');
-      }
-
-      // Net kazanç hesapla (Gelir - Gider)
-      const netKazanc = toplamGelir - toplamGider;
-
-      setFinansalOzet({
-        toplamGelir: toplamGelir,
-        toplamGider: toplamGider,
-        netKazanc: netKazanc,
-        bekleyenAlacak: bekleyenAlacak,
-        giderKayitSayisi: giderKayitSayisi
-      });
-      
-      console.log('Finansal özet güncellendi:', {
-        toplamGelir,
-        toplamGider,
-        netKazanc,
-        bekleyenAlacak,
-        giderKayitSayisi
-      });
-      
     } catch (error) {
       console.error('Finansal özet yüklenirken hata:', error);
       setFinansalOzet({
         toplamGelir: 0,
         toplamGider: 0,
         netKazanc: 0,
-        bekleyenAlacak: 0,
-        giderKayitSayisi: 0
+        bekleyenAlacak: 0
       });
     }
   };
@@ -247,26 +214,9 @@ const FinansalIslemlerPanel = () => {
     return (
       <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
         <Navbar />
+        <Sidebar />
         
-        <Sidebar isOpen={sidebarOpen} />
-        
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
-        >
-          <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-        </button>
-        
-        {/* Mobile Overlay */}
-        {sidebarOpen && (
-          <div 
-            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-            onClick={() => setSidebarOpen(false)}
-          ></div>
-        )}
-        
-        <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
+        <div className="pt-16 ml-64">
           <div className="flex justify-center items-center h-96">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
           </div>
@@ -281,26 +231,10 @@ const FinansalIslemlerPanel = () => {
       <Navbar />
       
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} />
-      
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
-      >
-        <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-      </button>
-      
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
-      )}
+      <Sidebar />
       
       {/* Main Content */}
-      <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
+      <div className="pt-16 ml-64">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
           {/* Header */}
@@ -414,28 +348,37 @@ const FinansalIslemlerPanel = () => {
                 <CheckCircle className="h-6 w-6 text-green-500" />
               </div>
 
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => {
-                    console.log('Alacak Yönetimi butonu tıklandı, siteId:', siteId);
-                    console.log('Gidilecek route:', `/finansal-alacak-yonetimi/${siteId}`);
-                    navigate(`/finansal-alacak-yonetimi/${siteId}`);
-                  }}
-                  className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-                >
-                  <PlusCircle className="h-4 w-4" />
-                  <span>Yeni Alacak</span>
-                </button>
-                <button
-                  onClick={() => {
-                    console.log('Alacakları Görüntüle butonu tıklandı, siteId:', siteId);
-                    console.log('Gidilecek route:', `/finansal-alacak-yonetimi/${siteId}`);
-                    navigate(`/finansal-alacak-yonetimi/${siteId}`);
-                  }}
-                  className="flex items-center justify-center px-4 py-3 border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
-                >
-                  <Eye className="h-4 w-4" />
-                </button>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <p className="font-semibold text-green-700 dark:text-green-300">
+                      {finansalOzet.toplamGelir.toLocaleString('tr-TR')}₺
+                    </p>
+                    <p className="text-green-600 dark:text-green-400">Toplam Gelir</p>
+                  </div>
+                  <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                    <p className="font-semibold text-yellow-700 dark:text-yellow-300">
+                      {finansalOzet.bekleyenAlacak.toLocaleString('tr-TR')}₺
+                    </p>
+                    <p className="text-yellow-600 dark:text-yellow-400">Bekleyen</p>
+                  </div>
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => navigate(`/finansal-alacak-yonetimi/${siteId}`)}
+                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                  >
+                    <PlusCircle className="h-4 w-4" />
+                    <span>Yeni Alacak</span>
+                  </button>
+                  <button
+                    onClick={() => navigate(`/finansal-alacak-yonetimi/${siteId}`)}
+                    className="flex items-center justify-center px-4 py-2 border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -458,38 +401,45 @@ const FinansalIslemlerPanel = () => {
                 <AlertCircle className="h-6 w-6 text-red-500" />
               </div>
 
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => {
-                    console.log('Gider Yönetimi butonu tıklandı, siteId:', siteId);
-                    console.log('Gidilecek route:', `/finansal-gider-yonetimi/${siteId}`);
-                    navigate(`/finansal-gider-yonetimi/${siteId}`);
-                  }}
-                  className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                >
-                  <PlusCircle className="h-4 w-4" />
-                  <span>Yeni Gider</span>
-                </button>
-                <button
-                  onClick={() => {
-                    console.log('Giderleri Görüntüle butonu tıklandı, siteId:', siteId);
-                    console.log('Gidilecek route:', `/finansal-gider-yonetimi/${siteId}`);
-                    navigate(`/finansal-gider-yonetimi/${siteId}`);
-                  }}
-                  className="flex items-center justify-center px-4 py-3 border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                >
-                  <Eye className="h-4 w-4" />
-                </button>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                    <p className="font-semibold text-red-700 dark:text-red-300">
+                      {finansalOzet.toplamGider.toLocaleString('tr-TR')}₺
+                    </p>
+                    <p className="text-red-600 dark:text-red-400">Toplam Gider</p>
+                  </div>
+                  <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <p className="font-semibold text-blue-700 dark:text-blue-300">12</p>
+                    <p className="text-blue-600 dark:text-blue-400">Kayıt</p>
+                  </div>
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => navigate(`/finansal-gider-yonetimi/${siteId}`)}
+                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                  >
+                    <PlusCircle className="h-4 w-4" />
+                    <span>Yeni Gider</span>
+                  </button>
+                  <button
+                    onClick={() => navigate(`/finansal-gider-yonetimi/${siteId}`)}
+                    className="flex items-center justify-center px-4 py-2 border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Finansal İstatistikler */}
+          {/* Ek Bilgiler */}
           <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <div className="flex items-center space-x-3 mb-4">
               <Building className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Finansal İstatistikler
+                Site Bilgileri
               </h3>
             </div>
             
@@ -508,16 +458,13 @@ const FinansalIslemlerPanel = () => {
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                  {finansalOzet.giderKayitSayisi || 0}
+                  {new Date().toLocaleDateString('tr-TR', { month: 'long' })}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Gider Kaydı</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Aktif Dönem</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                  {finansalOzet.toplamGider > 0 
-                    ? Math.round((finansalOzet.netKazanc / finansalOzet.toplamGelir) * 100)
-                    : finansalOzet.toplamGelir > 0 ? 100 : 0
-                  }%
+                  {Math.round((finansalOzet.toplamGelir / (finansalOzet.toplamGider + 1)) * 100)}%
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Karlılık Oranı</p>
               </div>

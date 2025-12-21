@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { duyuruService } from '../services/duyuruService';
+import duyuruService from '../services/duyuruService';
 import { authService } from '../services/authService';
 
 const DuyuruDuzenle = () => {

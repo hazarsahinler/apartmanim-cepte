@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Building2, Users, Home, PlusCircle, Loader2, AlertCircle, Layers, ArrowLeft, Eye, Trash2, Menu } from 'lucide-react';
+import { Building2, Users, Home, PlusCircle, Loader2, AlertCircle, Layers, ArrowLeft, Eye, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { duyuruService } from '../services/duyuruService';
+import duyuruService from '../services/duyuruService';
 import { blokService } from '../services/blokService';
 import DuyuruList from '../components/DuyuruList';
 import MainNavbar from '../components/MainNavbar';
 import Sidebar from '../components/Sidebar';
-import { useTheme } from '../contexts/ThemeContext';
 import { clearAllCache, debugLocalStorage } from '../utils/clearCache';
 
 const SitePanelSayfasi = () => {
   const { siteId } = useParams();
   const navigate = useNavigate();
-  const { darkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [siteData, setSiteData] = useState(null);
   const [error, setError] = useState(null);
@@ -22,7 +20,6 @@ const SitePanelSayfasi = () => {
   const [bloklar, setBloklar] = useState([]);
   const [blokYukleniyor, setBlokYukleniyor] = useState(true);
   const [blokEkleModalAcik, setBlokEkleModalAcik] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleBlokEkleModal = () => {
     setBlokEkleModalAcik(!blokEkleModalAcik);
@@ -142,11 +139,16 @@ const SitePanelSayfasi = () => {
       try {
         setDuyuruYukleniyor(true);
         // Site ID'ye göre duyuruları çek
-        const duyuruData = await duyuruService.getDuyurularBySiteId(siteId);
+        const duyuruData = await duyuruService.getDuyurularBySite(parseInt(siteId));
         setDuyurular(Array.isArray(duyuruData) ? duyuruData : []);
       } catch (err) {
         console.error("Duyurular yüklenirken hata:", err);
+        // 403 hatası için özel mesaj
+        if (err.message && err.message.includes('403')) {
+          console.warn('Duyuru erişimi için yetki gerekiyor. Backend SecurityConfig kontrol edilmeli.');
+        }
         setDuyurular([]);
+        // Hata mesajı göstermiyoruz, sessizce boş liste gösteriyoruz
       } finally {
         setDuyuruYukleniyor(false);
       }
@@ -173,14 +175,9 @@ const SitePanelSayfasi = () => {
     }
   }, [bloklar, siteData?.id]); // siteData?.id dependency'si döngüyü önler
 
-  // Duyuru detay sayfasına git
-  const handleDuyuruClick = (duyuru) => {
-    navigate(`/duyuru/${duyuru.id}`);
-  };
-
   // Yeni duyuru oluştur sayfasına git
   const handleYeniDuyuruClick = () => {
-    navigate('/duyuru-olustur');
+    navigate(`/duyuru-ekleme/${siteId}`);
   };
 
   // Blok ekleme modalını aç
@@ -202,32 +199,15 @@ const SitePanelSayfasi = () => {
 
   if (loading) {
     return (
-      <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <MainNavbar />
+        <Sidebar />
         
-        {/* Mobile Hamburger Menu */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
-        >
-          <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-        </button>
-        
-        <Sidebar isOpen={sidebarOpen} />
-        
-        {/* Mobile Overlay */}
-        {sidebarOpen && (
-          <div 
-            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-            onClick={() => setSidebarOpen(false)}
-          ></div>
-        )}
-        
-        <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
+        <div className="pt-16 ml-64">
           <div className="flex justify-center items-center h-screen">
             <div className="flex flex-col items-center">
               <Loader2 className="h-12 w-12 text-green-500 animate-spin" />
-              <span className="mt-4 text-gray-600 dark:text-gray-300">Site bilgileri yüklüyor...</span>
+              <span className="mt-4 text-gray-600 dark:text-gray-300">Site bilgileri yükleniyor...</span>
             </div>
           </div>
         </div>
@@ -296,31 +276,15 @@ const SitePanelSayfasi = () => {
   }
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Navbar */}
       <MainNavbar />
       
-      {/* Mobile Hamburger Menu */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
-      >
-        <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-      </button>
-      
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} />
-      
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
-      )}
+      <Sidebar />
       
       {/* Main Content */}
-      <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300"> {/* Responsive margin */}
+      <div className="pt-16 ml-64"> {/* Sidebar her zaman açık olduğu için sabit margin */}
         <div className="container mx-auto px-4 py-8">
           {/* Site Header */}
           <div className="mb-8">
@@ -390,7 +354,10 @@ const SitePanelSayfasi = () => {
               </div>
             </div>
             
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex items-center transition-transform duration-300 hover:shadow-lg transform hover:-translate-y-1">
+            <div 
+              onClick={() => navigate(`/duyuru-yonetimi/${siteId}`)}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex items-center transition-transform duration-300 hover:shadow-lg transform hover:-translate-y-1 cursor-pointer"
+            >
               <div className="rounded-full bg-amber-100 dark:bg-amber-900 p-3 mr-4">
                 <Building2 className="h-6 w-6 text-amber-600 dark:text-amber-300" />
               </div>
@@ -513,11 +480,23 @@ const SitePanelSayfasi = () => {
                     <Loader2 className="h-8 w-8 text-green-500 animate-spin" />
                   </div>
                 ) : (
-                  <DuyuruList 
-                    duyurular={duyurular} 
-                    limit={5} 
-                    onDuyuruClick={handleDuyuruClick} 
-                  />
+                  <>
+                    <DuyuruList 
+                      duyurular={duyurular} 
+                      limit={5}
+                      onDuyuruClick={() => navigate(`/duyuru-yonetimi/${siteId}`)}
+                    />
+                    {duyurular.length > 0 && (
+                      <div className="px-6 pb-4">
+                        <button
+                          onClick={() => navigate(`/duyuru-yonetimi/${siteId}`)}
+                          className="w-full py-2 text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium transition-colors border-t border-gray-200 dark:border-gray-700 pt-3"
+                        >
+                          Tüm Duyuruları Gör →
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

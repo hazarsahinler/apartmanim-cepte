@@ -2,20 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Menu, X, User, Bell, Settings, LogOut, ChevronDown, 
-  Building2, Moon, Sun, HelpCircle
+  Building2, Moon, Sun, HelpCircle, Search
 } from 'lucide-react';
 import { authService } from '../services/authService';
-import { odemeIstekService } from '../services/odemeIstekService';
-import { siteStorageService } from '../services/siteStorageService';
-import { useTheme } from '../contexts/ThemeContext';
 import { toast } from 'react-toastify';
 
 const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
   const [user, setUser] = useState(null);
-  const { darkMode, toggleTheme } = useTheme();
+  const [darkMode, setDarkMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [odemeIstekSayisi, setOdemeIstekSayisi] = useState(0);
-  const [currentSiteId, setCurrentSiteId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,59 +32,26 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
       }
     };
 
-    const getSiteId = () => {
-      // URL'den siteId'yi çıkarmaya çalış
-      const pathMatch = location.pathname.match(/\/site\/(\d+)/);
-      if (pathMatch) {
-        return pathMatch[1];
-      }
-
-      // Site panelinden siteId çıkarmaya çalış
-      const sitePanelMatch = location.pathname.match(/\/site-panel\/(\d+)/);
-      if (sitePanelMatch) {
-        return sitePanelMatch[1];
-      }
-
-      // Finansal işlemlerden siteId çıkarmaya çalış
-      const financialMatch = location.pathname.match(/\/finansal-.*\/(\d+)/);
-      if (financialMatch) {
-        return financialMatch[1];
-      }
-
-      // LocalStorage'dan kullanıcının sitelerini al
-      const userData = authService.getCurrentUser();
-      if (userData && userData.id) {
-        const { sites } = siteStorageService.getSites(userData.id);
-        if (sites && sites.length > 0) {
-          return sites[0].id; // İlk site'yi varsayılan olarak al
-        }
-      }
-
-      return null;
-    };
-
-    const loadOdemeIstekleri = async () => {
-      try {
-        const siteId = getSiteId();
-        setCurrentSiteId(siteId);
-        
-        if (siteId) {
-          const istekler = await odemeIstekService.getSiteOdemeIstekleri(siteId);
-          setOdemeIstekSayisi(istekler.length);
-        }
-      } catch (error) {
-        console.error('Ödeme istekleri yüklenemedi:', error);
-      }
-    };
-
     loadUser();
-    loadOdemeIstekleri();
-
-    // Her 30 saniyede bir ödeme isteklerini güncelle
-    const interval = setInterval(loadOdemeIstekleri, 30000);
     
-    return () => clearInterval(interval);
-  }, [location.pathname]);
+    // Dark mode tercihi kontrol et
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setDarkMode(savedDarkMode);
+    if (savedDarkMode) {
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode);
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
 
   const handleLogout = () => {
     authService.logout();
@@ -98,17 +61,18 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
   const closeDropdown = () => setDropdownOpen(false);
 
-  const handleBildirimClick = () => {
-    if (currentSiteId) {
-      navigate(`/site/${currentSiteId}/odeme-istekleri`);
-    } else {
-      // Site ID bulunamadıysa kullanıcıyı site seçim sayfasına yönlendir
-      toast.error('Önce bir site seçiniz.');
-      navigate('/site-yonetimi');
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // Arama fonksiyonu
+    if (searchQuery.trim()) {
+      toast.info(`"${searchQuery}" için arama başlatıldı`, {
+        position: "top-right",
+        autoClose: 2000
+      });
+      setSearchQuery('');
+      // Burada arama sayfasına yönlendirme yapılabilir
     }
   };
-
-
 
   const isDashboard = location.pathname.includes('/dashboard') || 
                     location.pathname.includes('/site-yonetimi') || 
@@ -118,13 +82,16 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
                     location.pathname.includes('/finansal-islemler') ||
                     location.pathname.includes('/finansal-alacak-yonetimi') ||
                     location.pathname.includes('/finansal-gider-yonetimi') ||
-                    location.pathname.includes('/odeme-istekleri');
+                    location.pathname.includes('/duyurular') ||
+                    location.pathname.includes('/duyuru-yonetimi') ||
+                    location.pathname.includes('/duyuru-ekleme') ||
+                    location.pathname.includes('/duyuru-listesi');
 
   // Sadece dashboard sayfalarında nav ve sidebar göster
   if (!isDashboard) return null;
 
   return (
-    <nav className="bg-white dark:bg-gray-800 shadow-md fixed w-full top-0 z-50 transition-all duration-300 border-b border-gray-200 dark:border-gray-700">
+    <nav className="bg-white dark:bg-gray-800 shadow-md fixed w-full top-0 z-50 transition-all duration-300">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -147,14 +114,39 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
               <Building2 className="h-8 w-8 text-green-600 dark:text-green-400" />
               <span className="ml-2 text-lg font-semibold text-gray-800 dark:text-white">Apartmanım<span className="text-green-600 dark:text-green-400">Cepte</span></span>
             </Link>
+            
+            {/* Arama kutusu - Sadece büyük ekranlarda göster */}
+            <div className="hidden md:ml-6 md:flex md:items-center">
+              <form onSubmit={handleSearch} className="relative">
+                <input
+                  type="text"
+                  placeholder="Site veya daire ara..."
+                  className="pl-10 pr-4 py-2 w-64 rounded-full text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-300" />
+              </form>
+            </div>
           </div>
           
           {/* Sağ taraf menüsü */}
           <div className="flex items-center">
+            {/* Arama ikonu - Sadece mobilde göster */}
+            <form onSubmit={handleSearch} className="md:hidden relative mr-2">
+              <input
+                type="text"
+                placeholder="Ara..."
+                className="pl-9 pr-3 py-1.5 w-32 rounded-full text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Search className="absolute left-2.5 top-2 h-4 w-4 text-gray-400" />
+            </form>
             
             {/* Tema değiştirme butonu */}
             <button
-              onClick={toggleTheme}
+              onClick={toggleDarkMode}
               className="p-2 rounded-md text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
               aria-label={darkMode ? "Açık temaya geç" : "Koyu temaya geç"}
             >
@@ -163,16 +155,11 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
             
             {/* Bildirimler */}
             <button 
-              onClick={handleBildirimClick}
               className="ml-2 p-2 rounded-md text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none relative"
               aria-label="Bildirimler"
             >
               <Bell size={20} />
-              {odemeIstekSayisi > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                  {odemeIstekSayisi > 9 ? '9+' : odemeIstekSayisi}
-                </span>
-              )}
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
             
             {/* Profil dropdown */}
@@ -251,7 +238,19 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
         </div>
       </div>
       
-
+      {/* Arama kutusu - mobilde menünün altında */}
+      <div className="md:hidden border-t border-gray-200 dark:border-gray-700 px-4 py-3">
+        <form onSubmit={handleSearch} className="relative">
+          <input
+            type="text"
+            placeholder="Site veya daire ara..."
+            className="w-full pl-10 pr-4 py-2 rounded-full text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+        </form>
+      </div>
     </nav>
   );
 };
