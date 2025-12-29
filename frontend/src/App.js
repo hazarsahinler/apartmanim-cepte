@@ -23,6 +23,7 @@ import SitePanelSayfasi from './pages/SitePanelSayfasi';
 import BlokDetay from './pages/BlokDetay';
 import DaireDetay from './pages/DaireDetay';
 import ProfilSayfasi from './pages/ProfilSayfasi';
+import OdemeIstekleriSayfasi from './pages/OdemeIstekleriSayfasi';
 import NetworkStatusMonitor from './components/NetworkStatusMonitor';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -71,6 +72,9 @@ function App() {
             
             <Route path="/blok-detay/:blokId" element={<BlokDetay />} />
             <Route path="/daire-detay/:daireId" element={<DaireDetay />} />
+            
+            <Route path="/odeme-istekleri" element={<OdemeIstekleriSayfasi />} />
+            <Route path="/odeme-istekleri/:siteId" element={<OdemeIstekleriSayfasi />} />
             
             <Route path="/profil" element={<ProfilSayfasi />} />
             

@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/MainNavbar';
 import { authService } from '../services/authService';
+import { giderService } from '../services/giderService';
 import { useTheme } from '../contexts/ThemeContext';
 
 const FinansalGiderYonetimi = () => {
@@ -18,6 +19,8 @@ const FinansalGiderYonetimi = () => {
   const [siteData, setSiteData] = useState(null);
   const [giderler, setGiderler] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [toplamGiderTutar, setToplamGiderTutar] = useState(0);
   
   // Form state
   const [giderForm, setGiderForm] = useState({
@@ -55,7 +58,11 @@ const FinansalGiderYonetimi = () => {
         }
 
         const userInfo = await authService.getUserInfo();
-        console.log('Kullanıcı bilgileri:', userInfo); // Auth kontrolü için
+        console.log('=== AUTH DEBUG ===');
+        console.log('Kullanıcı bilgileri:', userInfo);
+        console.log('Token:', localStorage.getItem('token')?.substring(0, 30) + '...');
+        console.log('User Role:', userInfo?.role);
+        console.log('==================');
         
         // Site bilgilerini yükle
         const userSitesJson = localStorage.getItem('userSites');
@@ -70,25 +77,26 @@ const FinansalGiderYonetimi = () => {
           }
         }
         
-        // Demo gider verileri (API'den gelecek)
-        setGiderler([
-          {
-            id: 1,
-            kategori: 'ELEKTRIK',
-            tutar: 2500,
-            aciklama: 'Kasım 2025 Elektrik Faturası',
-            tarih: '2025-11-05',
-            olusturmaTarihi: '2025-11-05'
-          },
-          {
-            id: 2,
-            kategori: 'SU',
-            tutar: 1200,
-            aciklama: 'Kasım 2025 Su Faturası',
-            tarih: '2025-11-03',
-            olusturmaTarihi: '2025-11-03'
-          }
-        ]);
+        // API'den gerçek gider verilerini çek
+        try {
+          const giderData = await giderService.getSiteGiderleri(siteId);
+          setGiderler(giderData || []);
+          console.log('Giderler yüklendi:', giderData);
+        } catch (error) {
+          console.error('Giderler yüklenirken hata:', error);
+          toast.warning('Gider verileri yüklenemedi.');
+          setGiderler([]);
+        }
+
+        // Toplam gider tutarını çek
+        try {
+          const totalData = await giderService.getTotalSiteGider(siteId);
+          setToplamGiderTutar(totalData.tutar || 0);
+          console.log('Toplam gider:', totalData);
+        } catch (error) {
+          console.error('Toplam gider yüklenirken hata:', error);
+          setToplamGiderTutar(0);
+        }
         
       } catch (err) {
         console.error('Sayfa yüklenirken hata:', err);
@@ -105,34 +113,61 @@ const FinansalGiderYonetimi = () => {
   const handleGiderEkle = async (e) => {
     e.preventDefault();
     
-    if (!giderForm.kategori || !giderForm.tutar || !giderForm.aciklama || !giderForm.tarih) {
-      toast.error('Lütfen tüm alanları doldurun.');
+    if (!giderForm.kategori || !giderForm.tutar || !giderForm.aciklama) {
+      toast.error('Lütfen zorunlu alanları doldurun.');
       return;
     }
 
     try {
-      const yeniGider = {
-        id: Date.now(),
-        ...giderForm,
-        tutar: parseFloat(giderForm.tutar),
-        olusturmaTarihi: new Date().toISOString().split('T')[0],
+      // API'ye gider ekle
+      const giderData = {
+        giderTutari: parseFloat(giderForm.tutar),
+        giderTur: giderForm.kategori,
+        giderAciklama: giderForm.aciklama,
         siteId: parseInt(siteId)
       };
+
+      console.log('Gider ekleniyor:', giderData);
+      console.log('Dosyalar:', selectedFiles);
+
+      const response = await giderService.giderEkle(giderData, selectedFiles);
+      console.log('Gider eklendi:', response);
       
-      setGiderler(prev => [yeniGider, ...prev]);
       toast.success('Gider başarıyla eklendi!');
+      
+      // Giderleri yeniden yükle
+      const giderData2 = await giderService.getSiteGiderleri(siteId);
+      setGiderler(giderData2 || []);
+      
+      // Toplam gideri güncelle
+      const totalData = await giderService.getTotalSiteGider(siteId);
+      setToplamGiderTutar(totalData.tutar || 0);
+      
+      // Formu temizle
       setGiderForm({
         kategori: '',
         tutar: '',
         aciklama: '',
         tarih: ''
       });
+      setSelectedFiles([]);
       setShowAddForm(false);
       
     } catch (error) {
       console.error('Gider eklenirken hata:', error);
-      toast.error('Gider eklenirken bir hata oluştu.');
+      toast.error(error.message || 'Gider eklenirken bir hata oluştu.');
     }
+  };
+
+  // Dosya seçimi
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedFiles(prev => [...prev, ...files]);
+  };
+
+  // Dosya kaldır
+  const handleFileRemove = (index) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   // Gider silme
@@ -140,6 +175,25 @@ const FinansalGiderYonetimi = () => {
     if (window.confirm('Bu gideri silmek istediğinize emin misiniz?')) {
       setGiderler(prev => prev.filter(g => g.id !== giderId));
       toast.success('Gider başarıyla silindi!');
+    }
+  };
+
+  // Belge görüntüle
+  const handleBelgeGoruntule = async (gider) => {
+    try {
+      // Giderin belgesi var mı kontrol et
+      if (!gider.belgeler || gider.belgeler.length === 0) {
+        toast.warning('Bu gider için henüz belge eklenmemiş.');
+        return;
+      }
+
+      // İlk belgeyi göster (birden fazla belge varsa modal açılabilir)
+      const belge = gider.belgeler[0];
+      await giderService.downloadBelge(belge.giderBelgeId);
+      
+    } catch (error) {
+      console.error('Belge görüntüleme hatası:', error);
+      toast.error('Belge açılırken bir hata oluştu.');
     }
   };
 
@@ -154,10 +208,14 @@ const FinansalGiderYonetimi = () => {
   };
 
   // Toplam gideri hesapla
-  const toplamGider = giderler.reduce((sum, gider) => sum + gider.tutar, 0);
+  const toplamGider = toplamGiderTutar; // API'den gelen toplam
   const buAyGider = giderler
-    .filter(g => new Date(g.tarih).getMonth() === new Date().getMonth())
-    .reduce((sum, gider) => sum + gider.tutar, 0);
+    .filter(g => {
+      if (!g.giderOlusturulmaTarihi) return false;
+      const giderDate = new Date(g.giderOlusturulmaTarihi);
+      return giderDate.getMonth() === new Date().getMonth();
+    })
+    .reduce((sum, gider) => sum + Number(gider.giderTutari || 0), 0);
 
   if (loading) {
     return (
@@ -183,7 +241,7 @@ const FinansalGiderYonetimi = () => {
       <Sidebar />
       
       {/* Main Content */}
-      <div className="pt-16 ml-64">
+      <div className="pt-16 ml-0 lg:ml-64">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -302,15 +360,15 @@ const FinansalGiderYonetimi = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Gider Tarihi *
+                    Gider Tarihi
                   </label>
                   <input
                     type="date"
                     value={giderForm.tarih}
                     onChange={(e) => setGiderForm(prev => ({ ...prev, tarih: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    required
                   />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Boş bırakılırsa bugünün tarihi kullanılır</p>
                 </div>
 
                 <div className="md:col-span-2">
@@ -327,7 +385,39 @@ const FinansalGiderYonetimi = () => {
                   />
                 </div>
 
-                <div className="md:col-span-2 flex gap-4">
+                {/* Dosya Yükleme */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Fatura/Belge Ekle (PNG, JPG, PDF)
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/png,image/jpeg,image/jpg,application/pdf"
+                    onChange={handleFileSelect}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
+                  />
+                  {selectedFiles.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {selectedFiles.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                          <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
+                            📎 {file.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleFileRemove(index)}
+                            className="ml-2 text-red-600 hover:text-red-800 dark:text-red-400"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="md:col-span-2 flex flex-wrap gap-4">
                   <button
                     type="submit"
                     className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
@@ -337,7 +427,10 @@ const FinansalGiderYonetimi = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowAddForm(false)}
+                    onClick={() => {
+                      setShowAddForm(false);
+                      setSelectedFiles([]);
+                    }}
                     className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg transition-colors"
                   >
                     İptal
@@ -368,37 +461,52 @@ const FinansalGiderYonetimi = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {giderler.map((gider) => (
-                    <tr key={gider.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <tr key={gider.giderId} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getKategoriColor(gider.kategori)}`}>
-                          {getKategoriLabel(gider.kategori)}
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getKategoriColor(gider.giderTur)}`}>
+                          {getKategoriLabel(gider.giderTur)}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm text-gray-900 dark:text-white">
-                          {gider.aciklama}
+                          {gider.giderAciklama}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-semibold text-red-600 dark:text-red-400">
-                          -{gider.tutar.toLocaleString('tr-TR')}₺
+                          -{Number(gider.giderTutari || 0).toLocaleString('tr-TR')}₺
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-900 dark:text-white">
-                          {new Date(gider.tarih).toLocaleDateString('tr-TR')}
+                          {gider.giderOlusturulmaTarihi 
+                            ? new Date(gider.giderOlusturulmaTarihi).toLocaleDateString('tr-TR', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit'
+                              })
+                            : '-'
+                          }
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
                           <button 
-                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                            title="Detayları Görüntüle"
+                            onClick={() => handleBelgeGoruntule(gider)}
+                            className={`${
+                              gider.belgeler && gider.belgeler.length > 0
+                                ? 'text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300'
+                                : 'text-gray-400 cursor-not-allowed'
+                            }`}
+                            title={gider.belgeler && gider.belgeler.length > 0 
+                              ? `${gider.belgeler.length} Belge Görüntüle` 
+                              : 'Belge Yok'}
+                            disabled={!gider.belgeler || gider.belgeler.length === 0}
                           >
                             <Eye className="h-4 w-4" />
                           </button>
                           <button 
-                            onClick={() => handleGiderSil(gider.id)}
+                            onClick={() => handleGiderSil(gider.giderId)}
                             className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                             title="Gideri Sil"
                           >

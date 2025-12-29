@@ -5,6 +5,7 @@ import {
   Building2, Moon, Sun, HelpCircle, Search
 } from 'lucide-react';
 import { authService } from '../services/authService';
+import { odemeIstekService } from '../services/odemeIstekService';
 import { toast } from 'react-toastify';
 
 const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
@@ -12,8 +13,15 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
   const [darkMode, setDarkMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [bekleyenOdemeVarMi, setBekleyenOdemeVarMi] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // URL'den siteId'yi çıkar
+  const getSiteIdFromUrl = () => {
+    const match = location.pathname.match(/\/site-panel\/(\d+)|\/duyuru-yonetimi\/(\d+)|\/finansal-islemler\/(\d+)/);
+    return match ? (match[1] || match[2] || match[3]) : null;
+  };
 
   useEffect(() => {
     const loadUser = async () => {
@@ -41,6 +49,31 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
       document.documentElement.classList.add('dark');
     }
   }, []);
+
+  // Ödeme isteklerini kontrol et
+  useEffect(() => {
+    const checkOdemeIstekleri = async () => {
+      const siteId = getSiteIdFromUrl();
+      if (!siteId) {
+        setBekleyenOdemeVarMi(false);
+        return;
+      }
+
+      try {
+        const istekler = await odemeIstekService.getSiteOdemeIstekleri(siteId);
+        // Bekleyen (ONAY_BEKLIYOR) ödeme istekleri var mı kontrol et
+        const bekleyenVar = Array.isArray(istekler) && istekler.some(
+          istek => istek.odemeIstekDurum === 'ONAY_BEKLIYOR' || istek.durumu === 'Beklemede'
+        );
+        setBekleyenOdemeVarMi(bekleyenVar);
+      } catch (error) {
+        console.error('Ödeme istekleri kontrol hatası:', error);
+        setBekleyenOdemeVarMi(false);
+      }
+    };
+
+    checkOdemeIstekleri();
+  }, [location.pathname]);
 
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode;
@@ -153,14 +186,22 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             
-            {/* Bildirimler */}
-            <button 
-              className="ml-2 p-2 rounded-md text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none relative"
-              aria-label="Bildirimler"
-            >
-              <Bell size={20} />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+            {/* Bildirimler - Sadece siteId varsa göster */}
+            {getSiteIdFromUrl() && (
+              <button 
+                onClick={() => {
+                  const siteId = getSiteIdFromUrl();
+                  navigate(`/odeme-istekleri/${siteId}`);
+                }}
+                className="ml-2 p-2 rounded-md text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none relative"
+                aria-label="Bildirimler"
+              >
+                <Bell size={20} />
+                {bekleyenOdemeVarMi && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                )}
+              </button>
+            )}
             
             {/* Profil dropdown */}
             <div className="ml-3 relative">

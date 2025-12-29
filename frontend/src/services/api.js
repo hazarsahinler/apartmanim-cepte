@@ -4,11 +4,10 @@ const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 30000, // Timeout değerini artırıyoruz
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  timeout: 30000,
+  // Content-Type'ı burada set etmeyin, request'te gerekirse set edilecek
 });
+
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -19,9 +18,15 @@ api.interceptors.request.use(
       console.warn('API Request - Token bulunamadı!');
     }
     
+    // FormData değilse default olarak application/json set et
+    if (!(config.data instanceof FormData)) {
+      config.headers['Content-Type'] = 'application/json';
+    }
+    // FormData ise axios otomatik olarak multipart/form-data ekleyecek
+    
     // Basit logging
     console.log('API Request:', config.method?.toUpperCase(), config.url);
-    console.log('API Request - Headers:', config.headers);
+    console.log('API Request - Content-Type:', config.headers['Content-Type']);
     
     return config;
   },

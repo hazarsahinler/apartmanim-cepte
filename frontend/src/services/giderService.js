@@ -39,23 +39,49 @@ export const giderService = {
       }
 
       console.log('GiderService - FormData hazırlandı');
+      
+      // FormData içeriğini debug için yazdır
+      console.log('GiderService - FormData içeriği:');
+      for (let pair of formData.entries()) {
+        console.log(`  ${pair[0]}: ${pair[1]}`);
+      }
+      
+      // Token kontrolü
+      const token = localStorage.getItem('token');
+      console.log('GiderService - Token var mı?', !!token);
+      if (token) {
+        console.log('GiderService - Token:', token.substring(0, 20) + '...');
+      }
 
-      const response = await api.post('/finance/gider/ekle', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      // NOT: Content-Type'ı manuel olarak 'multipart/form-data' set etmeyin!
+      // Axios otomatik olarak boundary ile birlikte ekler
+      const response = await api.post('/finance/gider/ekle', formData);
 
       console.log('GiderService - Gider ekleme yanıtı:', response.data);
       return response.data;
 
     } catch (error) {
       console.error('GiderService - Gider ekleme hatası:', error);
+      console.error('GiderService - Hata response:', error.response);
+      console.error('GiderService - Hata data:', error.response?.data);
+      console.error('GiderService - Hata status:', error.response?.status);
+      console.error('GiderService - Hata statusText:', error.response?.statusText);
+      console.error('GiderService - Request config:', error.config);
+      console.error('GiderService - Request headers:', error.config?.headers);
       
       if (error.response?.status === 400) {
         throw new Error(error.response.data?.message || 'Girilen bilgileri kontrol ediniz.');
       } else if (error.response?.status === 403) {
-        throw new Error('Bu işlem için yetkiniz bulunmamaktadır.');
+        // Backend'den gelen mesaj varsa onu kullan, yoksa generic mesaj
+        const errorMsg = error.response.data?.message 
+          || error.response.data?.error
+          || error.response.statusText
+          || 'Bu işlem için yetkiniz bulunmamaktadır.';
+        console.error('GiderService - 403 Forbidden:', errorMsg);
+        console.error('GiderService - Full response:', JSON.stringify(error.response));
+        throw new Error(errorMsg);
+      } else if (error.response?.status === 401) {
+        throw new Error('Oturumunuz sonlanmış. Lütfen tekrar giriş yapın.');
       } else if (error.response?.status === 500) {
         throw new Error('Sunucu hatası. Lütfen daha sonra tekrar deneyiniz.');
       }
@@ -125,24 +151,52 @@ export const giderService = {
     return `${BASE_URL}/finance/gider/belge/goster/${belgeId}`;
   },
 
-  // Belgeyi indir (token ile)
+  // Belgeyi görüntüle (token ile)
   downloadBelge: async (belgeId) => {
     try {
+      console.log('GiderService - Belge görüntüleniyor:', belgeId);
+      
       const response = await api.get(`/finance/gider/belge/goster/${belgeId}`, {
         responseType: 'blob'
       });
       
-      // Blob'u URL'e çevir ve aç
-      const blob = new Blob([response.data]);
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, '_blank');
+      console.log('GiderService - Belge yanıtı:', response);
       
-      // Memory temizliği
-      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+      // Content-Type'ı al
+      const contentType = response.headers['content-type'] || 'image/png';
+      console.log('GiderService - Content-Type:', contentType);
+      
+      // Blob'u doğru content-type ile oluştur
+      const blob = new Blob([response.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+      
+      console.log('GiderService - Blob URL oluşturuldu:', url);
+      
+      // Yeni sekmede aç
+      const newWindow = window.open(url, '_blank');
+      
+      if (!newWindow) {
+        console.warn('GiderService - Pop-up engellenmiş olabilir');
+        // Pop-up engellenirse URL'i kullanıcıya göster
+        alert('Pop-up engellenmiş olabilir. Lütfen tarayıcı ayarlarınızı kontrol edin.');
+      }
+      
+      // Memory temizliği (1 dakika sonra)
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        console.log('GiderService - Blob URL temizlendi');
+      }, 60000);
       
     } catch (error) {
-      console.error('Belge indirme hatası:', error);
-      throw new Error('Belge açılamadı');
+      console.error('GiderService - Belge görüntüleme hatası:', error);
+      
+      if (error.response?.status === 404) {
+        throw new Error('Belge bulunamadı.');
+      } else if (error.response?.status === 403) {
+        throw new Error('Bu belgeyi görüntüleme yetkiniz bulunmamaktadır.');
+      }
+      
+      throw new Error('Belge açılırken bir hata oluştu.');
     }
   },
 

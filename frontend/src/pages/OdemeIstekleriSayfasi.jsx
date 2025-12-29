@@ -43,6 +43,13 @@ const OdemeIstekleriSayfasi = () => {
           return;
         }
 
+        // SiteId kontrolü - yoksa site yönetimi sayfasına yönlendir
+        if (!siteId) {
+          toast.warning('Lütfen önce bir site seçin');
+          navigate('/site-yonetimi');
+          return;
+        }
+
         // Kullanıcı bilgilerini al
         const userInfo = await authService.getUserInfo();
         setUser(userInfo);
@@ -74,9 +81,7 @@ const OdemeIstekleriSayfasi = () => {
       }
     };
 
-    if (siteId) {
-      fetchOdemeIstekleri();
-    }
+    fetchOdemeIstekleri();
   }, [siteId, navigate]);
 
   const handleLogout = () => {

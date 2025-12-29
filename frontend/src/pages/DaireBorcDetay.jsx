@@ -34,7 +34,7 @@ const DaireBorcDetay = () => {
       }
 
       const response = await axios.get(
-        `http://localhost:8080/api${ENDPOINTS.FINANCE.DAIRE_BORCLAR}/${borcId}`,
+        `http://localhost:8080/api${ENDPOINTS.FINANCE.DAIRELER_BORC_BY_ID}/${borcId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
