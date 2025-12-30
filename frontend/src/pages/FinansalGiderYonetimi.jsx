@@ -117,6 +117,14 @@ const FinansalGiderYonetimi = () => {
       toast.error('Lütfen zorunlu alanları doldurun.');
       return;
     }
+    
+    // Dosya boyutu kontrolü
+    const MAX_TOTAL_SIZE = 10 * 1024 * 1024; // 10MB
+    const totalSize = selectedFiles.reduce((sum, file) => sum + file.size, 0);
+    if (totalSize > MAX_TOTAL_SIZE) {
+      toast.error('Toplam dosya boyutu 10MB\'ı geçemez. Lütfen daha az veya daha küçük dosyalar seçin.');
+      return;
+    }
 
     try {
       // API'ye gider ekle
@@ -124,11 +132,13 @@ const FinansalGiderYonetimi = () => {
         giderTutari: parseFloat(giderForm.tutar),
         giderTur: giderForm.kategori,
         giderAciklama: giderForm.aciklama,
+        giderTarihi: giderForm.tarih || new Date().toISOString().split('T')[0], // YYYY-MM-DD formatında
         siteId: parseInt(siteId)
       };
 
       console.log('Gider ekleniyor:', giderData);
       console.log('Dosyalar:', selectedFiles);
+      console.log('Toplam dosya boyutu:', (totalSize / 1024 / 1024).toFixed(2), 'MB');
 
       const response = await giderService.giderEkle(giderData, selectedFiles);
       console.log('Gider eklendi:', response);
@@ -162,7 +172,27 @@ const FinansalGiderYonetimi = () => {
   // Dosya seçimi
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const MAX_TOTAL_SIZE = 10 * 1024 * 1024; // 10MB toplam
+    
+    // Her dosyayı kontrol et
+    const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE);
+    if (oversizedFiles.length > 0) {
+      toast.error(`Bazı dosyalar çok büyük. Maksimum dosya boyutu: 5MB. Lütfen daha küçük dosyalar seçin.`);
+      return;
+    }
+    
+    // Toplam boyutu kontrol et
+    const currentTotalSize = selectedFiles.reduce((sum, file) => sum + file.size, 0);
+    const newTotalSize = files.reduce((sum, file) => sum + file.size, 0);
+    
+    if (currentTotalSize + newTotalSize > MAX_TOTAL_SIZE) {
+      toast.error('Toplam dosya boyutu 10MB\'ı geçemez.');
+      return;
+    }
+    
     setSelectedFiles(prev => [...prev, ...files]);
+    toast.success(`${files.length} dosya eklendi.`);
   };
 
   // Dosya kaldır

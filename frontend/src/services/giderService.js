@@ -30,12 +30,18 @@ export const giderService = {
       formData.append('giderTur', giderData.giderTur);
       formData.append('giderAciklama', giderData.giderAciklama);
       formData.append('siteId', giderData.siteId.toString());
+      
+      // Gider tarihi ekle (YYYY-MM-DD formatında LocalDate)
+      if (giderData.giderTarihi) {
+        formData.append('giderTarihi', giderData.giderTarihi);
+      }
 
       // Dosyaları ekle
       if (dosyalar && dosyalar.length > 0) {
         dosyalar.forEach((dosya) => {
           formData.append('dosyalar', dosya);
         });
+        console.log('GiderService - Toplam dosya sayısı:', dosyalar.length);
       }
 
       console.log('GiderService - FormData hazırlandı');
@@ -82,8 +88,19 @@ export const giderService = {
         throw new Error(errorMsg);
       } else if (error.response?.status === 401) {
         throw new Error('Oturumunuz sonlanmış. Lütfen tekrar giriş yapın.');
+      } else if (error.response?.status === 413) {
+        throw new Error('Dosya boyutu çok büyük. Maksimum 10MB yükleyebilirsiniz.');
       } else if (error.response?.status === 500) {
+        const errorMsg = error.response.data?.message || error.response.data?.error;
+        if (errorMsg && errorMsg.includes('upload size exceeded')) {
+          throw new Error('Dosya boyutu çok büyük. Maksimum 10MB yükleyebilirsiniz.');
+        }
         throw new Error('Sunucu hatası. Lütfen daha sonra tekrar deneyiniz.');
+      }
+      
+      // Eğer hata mesajında 'upload size' varsa
+      if (error.message && error.message.toLowerCase().includes('upload size')) {
+        throw new Error('Dosya boyutu çok büyük. Maksimum 10MB yükleyebilirsiniz.');
       }
       
       throw new Error('Gider eklenirken beklenmeyen bir hata oluştu.');

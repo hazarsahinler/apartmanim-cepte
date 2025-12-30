@@ -8,6 +8,8 @@ import { toast } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/MainNavbar';
 import { authService } from '../services/authService';
+import { financeService } from '../services/financeService';
+import { blokService } from '../services/blokService';
 import { useTheme } from '../contexts/ThemeContext';
 
 const FinansalIslemlerPanel = () => {
@@ -16,6 +18,7 @@ const FinansalIslemlerPanel = () => {
   const { darkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [siteData, setSiteData] = useState(null);
+  const [bloklar, setBloklar] = useState([]);
   const [finansalOzet, setFinansalOzet] = useState({
     toplamGelir: 0,
     toplamGider: 0,
@@ -173,10 +176,21 @@ const FinansalIslemlerPanel = () => {
           }
         }, 0);
 
+        // Toplam gideri API'den çek
+        let toplamGider = 0;
+        try {
+          const giderData = await financeService.getTotalSiteGider(currentSiteId);
+          toplamGider = parseFloat(giderData.tutar) || 0;
+          console.log('Toplam gider API\'den alındı:', toplamGider);
+        } catch (error) {
+          console.error('Toplam gider alınırken hata:', error);
+          toplamGider = 0;
+        }
+
         setFinansalOzet({
           toplamGelir: toplamGelir,
-          toplamGider: 0, // Gider API'si eklenecek
-          netKazanc: toplamGelir, // Gider çıkarılacak
+          toplamGider: toplamGider,
+          netKazanc: toplamGelir - toplamGider,
           bekleyenAlacak: bekleyenAlacak
         });
         
@@ -209,6 +223,54 @@ const FinansalIslemlerPanel = () => {
 
     fetchSiteAndFinancialData();
   }, [navigate, siteId]);
+
+  // Blokları yükle ve toplam daire sayısını hesapla
+  useEffect(() => {
+    const fetchBloklar = async () => {
+      try {
+        const parsedSiteId = parseInt(siteId, 10);
+        if (isNaN(parsedSiteId)) {
+          console.error('FinansalIslemlerPanel - Geçersiz siteId:', siteId);
+          return;
+        }
+        
+        const blokData = await blokService.getBloksBySiteId(parsedSiteId);
+        console.log('FinansalIslemlerPanel - Bloklar yüklendi:', blokData);
+        
+        const bloklarWithDaireSayisi = (blokData || []).map(blok => ({
+          ...blok,
+          daireSayisi: blok.daireSay || 0,
+        }));
+        
+        setBloklar(bloklarWithDaireSayisi);
+      } catch (err) {
+        console.error('FinansalIslemlerPanel - Blok verisi yüklenirken hata:', err);
+        setBloklar([]);
+      }
+    };
+
+    if (siteId) {
+      fetchBloklar();
+    }
+  }, [siteId]);
+
+  // Bloklar değiştiğinde toplam daire ve blok sayısını hesapla
+  useEffect(() => {
+    if (bloklar && bloklar.length > 0 && siteData) {
+      const toplamDaireSayisi = bloklar.reduce((toplam, blok) => {
+        return toplam + (blok.daireSayisi || 0);
+      }, 0);
+      
+      console.log('FinansalIslemlerPanel - Toplam daire sayısı:', toplamDaireSayisi);
+      console.log('FinansalIslemlerPanel - Toplam blok sayısı:', bloklar.length);
+      
+      setSiteData(prev => ({
+        ...prev,
+        daireAdedi: toplamDaireSayisi,
+        blokAdedi: bloklar.length
+      }));
+    }
+  }, [bloklar, siteData?.id]);
 
   if (loading) {
     return (
@@ -402,16 +464,12 @@ const FinansalIslemlerPanel = () => {
               </div>
 
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 gap-4 text-sm">
                   <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
                     <p className="font-semibold text-red-700 dark:text-red-300">
                       {finansalOzet.toplamGider.toLocaleString('tr-TR')}₺
                     </p>
                     <p className="text-red-600 dark:text-red-400">Toplam Gider</p>
-                  </div>
-                  <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <p className="font-semibold text-blue-700 dark:text-blue-300">12</p>
-                    <p className="text-blue-600 dark:text-blue-400">Kayıt</p>
                   </div>
                 </div>
 

@@ -78,19 +78,11 @@ const KullaniciSayfasi = () => {
             console.log('KullaniciSayfasi - API\'den gelen daire bilgileri:', daireBilgileri);
             
             if (daireBilgileri && daireBilgileri.length > 0) {
-              // Eğer birden fazla daire varsa seçim sayfasına yönlendir
-              if (daireBilgileri.length > 1) {
-                navigate('/kullanici-daire-secimi');
-                return;
-              }
-              
-              // Tek daire varsa onu kullan
-              const formattedDaire = userDaireService.formatDaireBilgileri(daireBilgileri[0]);
-              setDaireInfo(formattedDaire);
-              userDaireService.setSelectedDaire(formattedDaire);
-              
-              // Finansal verilerini yükle
-              await loadFinancialData(formattedDaire);
+              // Her durumda seçim sayfasına yönlendir (tek daire bile olsa)
+              console.log('KullaniciSayfasi - Daire bulundu, seçim sayfasına yönlendiriliyor...');
+              setLoading(false);
+              navigate('/kullanici-daire-secimi');
+              return;
             } else {
               throw new Error('Kayıtlı daire bulunamadı.');
             }
@@ -740,7 +732,7 @@ const KullaniciSayfasi = () => {
                   
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <button 
-                      onClick={() => navigate('/duyurular')}
+                      onClick={() => navigate('/kullanici-duyurular')}
                       className="flex flex-col items-center p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       disabled={!daireInfo}
                     >

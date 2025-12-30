@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
@@ -151,6 +152,7 @@ public class FinansController {
             @RequestParam("giderTur") String giderTur,
             @RequestParam("giderAciklama") String giderAciklama,
             @RequestParam("siteId") Long siteId,
+            @RequestParam(value = "giderTarihi", required = false) LocalDate giderTarihi,
             @RequestParam(value = "dosyalar", required = false) MultipartFile[] dosyalar) throws IOException {
         try {
             GiderCreateRequestDTO request = new GiderCreateRequestDTO();
@@ -158,6 +160,7 @@ public class FinansController {
             request.setGiderTur(GiderTurEnum.valueOf(giderTur));
             request.setGiderAciklama(giderAciklama);
             request.setSiteId(siteId);
+            request.setGiderTarihi(giderTarihi);
 
             if (giderTutari == null || giderTutari.compareTo(BigDecimal.ZERO) <= 0) {
                 return new ResponseDTO("Gider tutarı pozitif bir değer olmalıdır.", null);

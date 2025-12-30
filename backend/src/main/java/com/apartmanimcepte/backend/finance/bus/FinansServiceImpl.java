@@ -223,7 +223,7 @@ public class FinansServiceImpl implements FinansService {
             gider.setGiderTur(giderCreateRequestDTO.getGiderTur());
             gider.setGiderTutari(giderCreateRequestDTO.getGiderTutari());
             gider.setSite(site);
-            gider.setGiderOlusturulmaTarihi(LocalDate.now());
+            gider.setGiderOlusturulmaTarihi(giderCreateRequestDTO.getGiderTarihi());
 
             // Gider'i kaydet
             giderDAO.saveOrUpdate(gider);

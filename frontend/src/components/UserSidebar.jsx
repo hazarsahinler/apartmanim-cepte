@@ -54,7 +54,7 @@ const UserSidebar = ({ isOpen = true, onClose }) => {
       id: 'announcements',
       label: 'Duyurular',
       icon: Bell,
-      path: '/duyurular',
+      path: '/kullanici-duyurular',
       description: 'Apartman duyurularını görüntüle'
     },
     {

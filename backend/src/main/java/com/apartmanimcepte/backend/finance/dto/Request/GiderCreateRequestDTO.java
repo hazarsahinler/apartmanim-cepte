@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -27,4 +28,7 @@ public class GiderCreateRequestDTO {
 
     @NotNull(message = "Site ID boş olamaz.")
     private Long siteId;
+
+    private LocalDate giderTarihi; // Opsiyonel, boş olabilir
+
 }
