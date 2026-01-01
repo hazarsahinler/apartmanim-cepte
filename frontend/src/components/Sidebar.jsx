@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Home, Users, Building, Calendar, CreditCard, Settings,
-  BarChart2, MessageSquare, ChevronDown, ChevronRight, Inbox, User
+  Home, Building, CreditCard, ChevronDown, ChevronRight, Inbox, User
 } from 'lucide-react';
 import { authService } from '../services/authService';
 
-const Sidebar = () => { // isOpen prop'unu kaldırdık - artık her zaman açık
+const Sidebar = ({ isOpen, onClose }) => { // mobil için isOpen ve onClose ekledik
   const [activeMenu, setActiveMenu] = useState('');
   const [user, setUser] = useState(null);
   const [siteler, setSiteler] = useState([]);
@@ -39,47 +38,16 @@ const Sidebar = () => { // isOpen prop'unu kaldırdık - artık her zaman açık
       path: '/duyurular',
     },
     {
-      id: 'residents',
-      label: 'Site Sakinleri',
-      icon: <Users size={20} />,
-      path: '/site-sakinleri',
-    },
-    {
       id: 'financial',
       label: 'Finansal İşlemler',
       icon: <CreditCard size={20} />,
       path: '/finansal-islemler',
     },
     {
-      id: 'calendar',
-      label: 'Takvim',
-      icon: <Calendar size={20} />,
-      path: '/takvim',
-    },
-    {
-      id: 'stats',
-      label: 'İstatistikler',
-      icon: <BarChart2 size={20} />,
-      path: '/istatistikler',
-    },
-    {
-      id: 'messages',
-      label: 'Mesajlar',
-      icon: <MessageSquare size={20} />,
-      path: '/mesajlar',
-      badge: 2 // Yeni mesaj sayısı
-    },
-    {
       id: 'profile',
       label: 'Profilim',
       icon: <User size={20} />,
       path: '/profil',
-    },
-    {
-      id: 'settings',
-      label: 'Ayarlar',
-      icon: <Settings size={20} />,
-      path: '/ayarlar',
     }
   ];
 
@@ -141,10 +109,21 @@ const Sidebar = () => { // isOpen prop'unu kaldırdık - artık her zaman açık
   };
 
   return (
-    <aside 
-      className="fixed left-0 top-16 h-full w-64 bg-white dark:bg-gray-800 shadow-lg z-40"
-    >
-      <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && onClose && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+      
+      <aside 
+        className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white dark:bg-gray-800 shadow-lg z-40 transform transition-transform duration-300 lg:translate-x-0 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
         <div className="py-4">
           {/* Kullanıcı bilgileri */}
           <div className="px-4 py-2 mb-3">
@@ -247,6 +226,7 @@ const Sidebar = () => { // isOpen prop'unu kaldırdık - artık her zaman açık
         </div>
       </div>
     </aside>
+    </>
   );
 };
 

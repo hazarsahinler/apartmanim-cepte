@@ -9,6 +9,7 @@ import KullaniciDashboard from './pages/KullaniciDashboard';
 import KullaniciSayfasi from './pages/KullaniciSayfasi';
 import KullaniciDaireSecimi from './pages/KullaniciDaireSecimi';
 import KullaniciDuyurular from './pages/KullaniciDuyurular';
+import KullaniciGiderler from './pages/KullaniciGiderler';
 import YoneticiDashboard from './pages/YoneticiDashboard';
 import DaireBorcDetay from './pages/DaireBorcDetay';
 import FinansalIslemlerSiteSecimi from './pages/FinansalIslemlerSiteSecimi';
@@ -68,6 +69,7 @@ function App() {
             <Route path="/kullanici-sayfasi" element={<KullaniciSayfasi />} />
             <Route path="/kullanici-daire-secimi" element={<KullaniciDaireSecimi />} />
             <Route path="/kullanici-duyurular" element={<KullaniciDuyurular />} />
+            <Route path="/kullanici-giderler/:siteId" element={<KullaniciGiderler />} />
             <Route path="/site-panel/:siteId" element={<SitePanelSayfasi />} />
             <Route path="/daire-borc-detay/:siteId/:borcId" element={<DaireBorcDetay />} />
             

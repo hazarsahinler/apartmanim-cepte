@@ -20,6 +20,7 @@ const SitePanelSayfasi = () => {
   const [bloklar, setBloklar] = useState([]);
   const [blokYukleniyor, setBlokYukleniyor] = useState(true);
   const [blokEkleModalAcik, setBlokEkleModalAcik] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleBlokEkleModal = () => {
     setBlokEkleModalAcik(!blokEkleModalAcik);
@@ -278,45 +279,46 @@ const SitePanelSayfasi = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       {/* Navbar */}
-      <MainNavbar />
+      <MainNavbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} isUserSidebarOpen={sidebarOpen} />
       
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       {/* Main Content */}
-      <div className="pt-16 ml-64"> {/* Sidebar her zaman açık olduğu için sabit margin */}
-        <div className="container mx-auto px-4 py-8">
+      <div className="pt-16 lg:ml-64 transition-all duration-300">
+        <div className="container mx-auto px-4 py-4 sm:py-6 lg:py-8">
           {/* Site Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
+          <div className="mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-start sm:items-center">
                 <button
                   onClick={() => navigate('/site-yonetimi')}
-                  className="mr-4 p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                  className="mr-3 sm:mr-4 p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{siteData.siteIsmi}</h1>
-                  <p className="text-gray-600 dark:text-gray-400 mt-1">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">{siteData.siteIsmi}</h1>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
                     {siteData.siteIl}, {siteData.siteIlce} • {siteData.siteMahalle}, {siteData.siteSokak}
                   </p>
                 </div>
               </div>
-              <div className="flex space-x-3">
+              <div className="flex space-x-2 sm:space-x-3">
                 <button
                   onClick={handleCacheClear}
-                  className="inline-flex items-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
+                  className="inline-flex items-center px-2 sm:px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
                   title="Cache Temizle (DB reset sonrası kullanın)"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
                 <button
                   onClick={handleYeniDuyuruClick}
-                  className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-blue-500 hover:from-green-700 hover:to-blue-600 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
+                  className="inline-flex items-center px-3 sm:px-4 py-2 bg-gradient-to-r from-green-600 to-blue-500 hover:from-green-700 hover:to-blue-600 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
                 >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Yeni Duyuru
+                  <PlusCircle className="mr-1 sm:mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">Yeni Duyuru</span>
+                  <span className="sm:hidden">Duyuru</span>
                 </button>
               </div>
             </div>
@@ -396,14 +398,15 @@ const SitePanelSayfasi = () => {
             <div className="lg:col-span-2 space-y-8">
               {/* Bloklar Bölümü */}
               <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
-                <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                  <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Bloklar ve Daireler</h2>
+                <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white">Bloklar ve Daireler</h2>
                   <button
                     onClick={handleBlokEkleClick}
-                    className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-500 hover:from-blue-700 hover:to-purple-600 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
+                    className="inline-flex items-center px-2 sm:px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-500 hover:from-blue-700 hover:to-purple-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
                   >
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Blok Ekle
+                    <PlusCircle className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Blok Ekle</span>
+                    <span className="sm:hidden">Ekle</span>
                   </button>
                 </div>
                 
@@ -464,14 +467,15 @@ const SitePanelSayfasi = () => {
             <div className="space-y-8">
               {/* Duyurular */}
               <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
-                <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                  <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Son Duyurular</h2>
+                <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white">Son Duyurular</h2>
                   <button
                     onClick={handleYeniDuyuruClick}
-                    className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-green-600 to-blue-500 hover:from-green-700 hover:to-blue-600 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
+                    className="inline-flex items-center px-2 sm:px-3 py-1.5 bg-gradient-to-r from-green-600 to-blue-500 hover:from-green-700 hover:to-blue-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
                   >
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Duyuru Ekle
+                    <PlusCircle className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Duyuru Ekle</span>
+                    <span className="sm:hidden">Ekle</span>
                   </button>
                 </div>
                 

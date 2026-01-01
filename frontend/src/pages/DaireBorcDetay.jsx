@@ -373,18 +373,19 @@ const DaireBorcDetay = () => {
 
           {/* Daire Borç Listesi */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 Daire Borç Listesi ({daireBorclar.length})
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 Toplam: {ozet.toplamTutar.toLocaleString('tr-TR')}₺ | 
                 Ödenen: {ozet.odenenTutar.toLocaleString('tr-TR')}₺ | 
                 Bekleyen: {ozet.bekleyenTutar.toLocaleString('tr-TR')}₺
               </p>
             </div>
             
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
@@ -487,14 +488,96 @@ const DaireBorcDetay = () => {
                   ))}
                 </tbody>
               </table>
-              
-              {daireBorclar.length === 0 && (
-                <div className="text-center py-8">
-                  <Building className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 dark:text-gray-400">Bu borç için daire kaydı bulunmuyor.</p>
-                </div>
-              )}
             </div>
+
+            {/* Mobile Card View */}
+            <div className="lg:hidden divide-y divide-gray-200 dark:divide-gray-700">
+              {daireBorclar.map((borc) => (
+                <div key={borc.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start space-x-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Home className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                          Daire {borc.daireNo}
+                        </h4>
+                        <div className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400 mt-1">
+                          {borc.daireBlok && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700">
+                              Blok: {borc.daireBlok}
+                            </span>
+                          )}
+                          {borc.daireKat !== undefined && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700">
+                              {borc.daireKat}. Kat
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 text-right ml-3">
+                      <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                        {borc.tutar.toLocaleString('tr-TR')}₺
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 mb-3">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                      {borc.borcAciklamasi}
+                    </p>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-gray-50 dark:bg-gray-700 rounded p-2">
+                        <span className="text-gray-500 dark:text-gray-400 block mb-1">Son Ödeme</span>
+                        <span className="text-gray-900 dark:text-white font-medium">
+                          {new Date(borc.sonOdemeTarihi).toLocaleDateString('tr-TR')}
+                        </span>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-gray-700 rounded p-2">
+                        <span className="text-gray-500 dark:text-gray-400 block mb-1">Ödeme Tarihi</span>
+                        <span className="text-gray-900 dark:text-white font-medium">
+                          {borc.odemeTarihi ? new Date(borc.odemeTarihi).toLocaleDateString('tr-TR') : '-'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-center">
+                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${getOdemeDurumuBadge(borc.odendiMi, borc.sonOdemeTarihi)}`}>
+                        {getOdemeDurumuText(borc.odendiMi, borc.sonOdemeTarihi)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2 pt-3 border-t border-gray-200 dark:border-gray-600">
+                    <button 
+                      title="Detayları Görüntüle"
+                      className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-colors text-sm"
+                    >
+                      <Eye className="h-4 w-4" />
+                      <span>Detaylar</span>
+                    </button>
+                    {!borc.odendiMi && (
+                      <button 
+                        title="Ödendi Olarak İşaretle"
+                        className="flex items-center justify-center px-3 py-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40 rounded-lg transition-colors"
+                      >
+                        <Check className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {daireBorclar.length === 0 && (
+              <div className="text-center py-8">
+                <Building className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400">Bu borç için daire kaydı bulunmuyor.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -19,6 +19,7 @@ const FinansalIslemlerPanel = () => {
   const [loading, setLoading] = useState(true);
   const [siteData, setSiteData] = useState(null);
   const [bloklar, setBloklar] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [finansalOzet, setFinansalOzet] = useState({
     toplamGelir: 0,
     toplamGider: 0,
@@ -275,10 +276,10 @@ const FinansalIslemlerPanel = () => {
   if (loading) {
     return (
       <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
-        <Navbar />
-        <Sidebar />
+        <Navbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} isUserSidebarOpen={sidebarOpen} />
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
-        <div className="pt-16 ml-64">
+        <div className="pt-16 lg:ml-64">
           <div className="flex justify-center items-center h-96">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
           </div>
@@ -290,34 +291,34 @@ const FinansalIslemlerPanel = () => {
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
       {/* Top Navigation */}
-      <Navbar />
+      <Navbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} isUserSidebarOpen={sidebarOpen} />
       
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       {/* Main Content */}
-      <div className="pt-16 ml-64">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="pt-16 lg:ml-64 transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
           
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4">
+            <div className="flex items-start sm:items-center space-x-3 sm:space-x-4">
               <button
                 onClick={() => navigate('/finansal-islemler')}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
                 title="Site Seçimine Dön"
               >
-                <ArrowLeft className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 dark:text-gray-300" />
               </button>
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
-                  <CreditCard className="h-6 w-6 text-white" />
+              <div className="flex items-start sm:items-center space-x-2 sm:space-x-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
                     {siteData?.siteIsmi || siteData?.adi || siteData?.name || 'Site'} Finansal İşlemleri
                   </h1>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     Hoş Geldiniz - Finansal işlemlerinizi buradan yönetin
                   </p>
                 </div>
@@ -326,16 +327,16 @@ const FinansalIslemlerPanel = () => {
           </div>
 
           {/* Finansal Özet Kartları */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
             {/* Toplam Gelir */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6">
               <div className="flex items-center">
-                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-300" />
+                <div className="p-2 sm:p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                  <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-300" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Toplam Gelir</p>
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Toplam Gelir</p>
+                  <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                     {finansalOzet.toplamGelir.toLocaleString('tr-TR')}₺
                   </p>
                 </div>
@@ -343,14 +344,14 @@ const FinansalIslemlerPanel = () => {
             </div>
 
             {/* Toplam Gider */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6">
               <div className="flex items-center">
-                <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
-                  <TrendingDown className="h-6 w-6 text-red-600 dark:text-red-300" />
+                <div className="p-2 sm:p-3 bg-red-100 dark:bg-red-900 rounded-lg">
+                  <TrendingDown className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 dark:text-red-300" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Toplam Gider</p>
-                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Toplam Gider</p>
+                  <p className="text-lg sm:text-2xl font-bold text-red-600 dark:text-red-400">
                     {finansalOzet.toplamGider.toLocaleString('tr-TR')}₺
                   </p>
                 </div>
@@ -358,14 +359,14 @@ const FinansalIslemlerPanel = () => {
             </div>
 
             {/* Net Kazanç */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6">
               <div className="flex items-center">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <DollarSign className="h-6 w-6 text-blue-600 dark:text-blue-300" />
+                <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                  <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-300" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Net Kazanç</p>
-                  <p className={`text-2xl font-bold ${finansalOzet.netKazanc >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Net Kazanç</p>
+                  <p className={`text-lg sm:text-2xl font-bold ${finansalOzet.netKazanc >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>
                     {finansalOzet.netKazanc.toLocaleString('tr-TR')}₺
                   </p>
                 </div>
@@ -373,14 +374,14 @@ const FinansalIslemlerPanel = () => {
             </div>
 
             {/* Bekleyen Alacak */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6">
               <div className="flex items-center">
-                <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
-                  <AlertCircle className="h-6 w-6 text-yellow-600 dark:text-yellow-300" />
+                <div className="p-2 sm:p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+                  <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-300" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Bekleyen Alacak</p>
-                  <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                <div className="ml-3 sm:ml-4">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Bekleyen Alacak</p>
+                  <p className="text-lg sm:text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                     {finansalOzet.bekleyenAlacak.toLocaleString('tr-TR')}₺
                   </p>
                 </div>
@@ -389,36 +390,36 @@ const FinansalIslemlerPanel = () => {
           </div>
 
           {/* Ana İşlemler */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             
             {/* Alacak Yönetimi */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="h-5 w-5 text-white" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    <h3 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white">
                       Alacak Yönetimi
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                       Aidat ve diğer alacakları yönetin
                     </p>
                   </div>
                 </div>
-                <CheckCircle className="h-6 w-6 text-green-500" />
+                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
               </div>
 
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
+                  <div className="text-center p-2 sm:p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                     <p className="font-semibold text-green-700 dark:text-green-300">
                       {finansalOzet.toplamGelir.toLocaleString('tr-TR')}₺
                     </p>
                     <p className="text-green-600 dark:text-green-400">Toplam Gelir</p>
                   </div>
-                  <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                  <div className="text-center p-2 sm:p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                     <p className="font-semibold text-yellow-700 dark:text-yellow-300">
                       {finansalOzet.bekleyenAlacak.toLocaleString('tr-TR')}₺
                     </p>
@@ -426,46 +427,47 @@ const FinansalIslemlerPanel = () => {
                   </div>
                 </div>
 
-                <div className="flex space-x-3">
+                <div className="flex space-x-2 sm:space-x-3">
                   <button
                     onClick={() => navigate(`/finansal-alacak-yonetimi/${siteId}`)}
-                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                    className="flex-1 flex items-center justify-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors"
                   >
-                    <PlusCircle className="h-4 w-4" />
-                    <span>Yeni Alacak</span>
+                    <PlusCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Yeni Alacak</span>
+                    <span className="sm:hidden">Yeni</span>
                   </button>
                   <button
                     onClick={() => navigate(`/finansal-alacak-yonetimi/${siteId}`)}
-                    className="flex items-center justify-center px-4 py-2 border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                    className="flex items-center justify-center px-3 sm:px-4 py-2 border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                   >
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                   </button>
                 </div>
               </div>
             </div>
 
             {/* Gider Yönetimi */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
-                    <TrendingDown className="h-5 w-5 text-white" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
+                    <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    <h3 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white">
                       Gider Yönetimi
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                       Site giderlerini yönetin
                     </p>
                   </div>
                 </div>
-                <AlertCircle className="h-6 w-6 text-red-500" />
+                <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-500" />
               </div>
 
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 text-sm">
-                  <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="grid grid-cols-1 gap-3 sm:gap-4 text-xs sm:text-sm">
+                  <div className="text-center p-2 sm:p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
                     <p className="font-semibold text-red-700 dark:text-red-300">
                       {finansalOzet.toplamGider.toLocaleString('tr-TR')}₺
                     </p>
@@ -473,19 +475,20 @@ const FinansalIslemlerPanel = () => {
                   </div>
                 </div>
 
-                <div className="flex space-x-3">
+                <div className="flex space-x-2 sm:space-x-3">
                   <button
                     onClick={() => navigate(`/finansal-gider-yonetimi/${siteId}`)}
-                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                    className="flex-1 flex items-center justify-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
                   >
-                    <PlusCircle className="h-4 w-4" />
-                    <span>Yeni Gider</span>
+                    <PlusCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Yeni Gider</span>
+                    <span className="sm:hidden">Yeni</span>
                   </button>
                   <button
                     onClick={() => navigate(`/finansal-gider-yonetimi/${siteId}`)}
-                    className="flex items-center justify-center px-4 py-2 border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    className="flex items-center justify-center px-3 sm:px-4 py-2 border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                   >
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                   </button>
                 </div>
               </div>
@@ -493,38 +496,38 @@ const FinansalIslemlerPanel = () => {
           </div>
 
           {/* Ek Bilgiler */}
-          <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <Building className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="mt-6 sm:mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6">
+            <div className="flex items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
+              <Building className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 Site Bilgileri
               </h3>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
               <div className="text-center">
-                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                <p className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                   {siteData?.blokAdedi || 0}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Blok Sayısı</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Blok Sayısı</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
                   {siteData?.daireAdedi || 0}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Daire Sayısı</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Daire Sayısı</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                <p className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
                   {new Date().toLocaleDateString('tr-TR', { month: 'long' })}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Aktif Dönem</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Aktif Dönem</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                <p className="text-xl sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                   {Math.round((finansalOzet.toplamGelir / (finansalOzet.toplamGider + 1)) * 100)}%
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Karlılık Oranı</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Karlılık Oranı</p>
               </div>
             </div>
           </div>

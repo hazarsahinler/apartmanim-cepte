@@ -15,6 +15,7 @@ const DuyuruYonetimi = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [siteData, setSiteData] = useState(null);
   const [duyurular, setDuyurular] = useState([]);
   const [duyuruOzet, setDuyuruOzet] = useState({
@@ -101,9 +102,9 @@ const DuyuruYonetimi = () => {
   if (loading) {
     return (
       <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
-        <MainNavbar />
-        <Sidebar />
-        <div className="pt-20 pl-64">
+        <MainNavbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <div className="pt-16 lg:ml-64">
           <div className="flex justify-center items-center h-96">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
           </div>
@@ -114,31 +115,31 @@ const DuyuruYonetimi = () => {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
-      <MainNavbar />
-      <Sidebar />
+      <MainNavbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <div className="pt-20 pl-64">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="pt-16 lg:ml-64">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-center space-x-3 sm:space-x-4 mb-4">
               <button
                 onClick={() => navigate(`/site-panel/${siteId}`)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 title="Site Paneline Dön"
               >
-                <ArrowLeft className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 dark:text-gray-300" />
               </button>
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-500 rounded-lg flex items-center justify-center">
-                  <Bell className="h-6 w-6 text-white" />
+              <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-600 to-pink-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <div className="min-w-0">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
                     Duyuru Yönetimi
                   </h1>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 truncate">
                     {siteData?.siteIsmi || siteData?.adi || 'Site'} - Duyurular
                   </p>
                 </div>
@@ -147,74 +148,74 @@ const DuyuruYonetimi = () => {
           </div>
 
           {/* Özet Kartlar */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
             {/* Toplam Duyuru */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Toplam Duyuru</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{duyuruOzet.toplamDuyuru}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4 lg:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                <div className="mb-2 sm:mb-0">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1">Toplam Duyuru</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{duyuruOzet.toplamDuyuru}</p>
                 </div>
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                  <Bell className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                <div className="p-2 sm:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
             </div>
 
             {/* Yüksek Önem */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Acil Duyuru</p>
-                  <p className="text-3xl font-bold text-red-600 dark:text-red-400">{duyuruOzet.yuksekOnem}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4 lg:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                <div className="mb-2 sm:mb-0">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1">Acil Duyuru</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400">{duyuruOzet.yuksekOnem}</p>
                 </div>
-                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                  <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                <div className="p-2 sm:p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                  <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 dark:text-red-400" />
                 </div>
               </div>
             </div>
 
             {/* Orta Önem */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Normal Duyuru</p>
-                  <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{duyuruOzet.ortaOnem}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4 lg:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                <div className="mb-2 sm:mb-0">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1">Normal Duyuru</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400">{duyuruOzet.ortaOnem}</p>
                 </div>
-                <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                  <Info className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                <div className="p-2 sm:p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                  <Info className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 dark:text-orange-400" />
                 </div>
               </div>
             </div>
 
             {/* Düşük Önem */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Bilgi Duyurusu</p>
-                  <p className="text-3xl font-bold text-green-600 dark:text-green-400">{duyuruOzet.dusukOnem}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4 lg:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                <div className="mb-2 sm:mb-0">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1">Bilgi Duyurusu</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">{duyuruOzet.dusukOnem}</p>
                 </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                  <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <div className="p-2 sm:p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                  <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>
             </div>
           </div>
 
           {/* İşlem Kartları */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Mevcut Duyuruları Görüntüle */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 hover:shadow-xl transition-all duration-300 border-l-4 border-purple-500">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-4">
-                  <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                    <Eye className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 lg:p-8 hover:shadow-xl transition-all duration-300 border-l-4 border-purple-500">
+              <div className="mb-4 sm:mb-6">
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                  <div className="p-3 sm:p-4 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                    <Eye className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 dark:text-purple-400" />
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  <div className="min-w-0">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
                       Mevcut Duyurular
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
                       Tüm duyuruları görüntüle ve yönet
                     </p>
                   </div>
@@ -247,17 +248,17 @@ const DuyuruYonetimi = () => {
             </div>
 
             {/* Yeni Duyuru Ekle */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 hover:shadow-xl transition-all duration-300 border-l-4 border-green-500">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-4">
-                  <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                    <Plus className="h-8 w-8 text-green-600 dark:text-green-400" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 lg:p-8 hover:shadow-xl transition-all duration-300 border-l-4 border-green-500">
+              <div className="mb-4 sm:mb-6">
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                  <div className="p-3 sm:p-4 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                    <Plus className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 dark:text-green-400" />
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  <div className="min-w-0">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
                       Yeni Duyuru Ekle
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
                       Site sakinlerine yeni duyuru gönder
                     </p>
                   </div>
@@ -290,9 +291,9 @@ const DuyuruYonetimi = () => {
           </div>
 
           {/* Son Duyurular Listesi */}
-          <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Son Duyurular</h3>
+          <div className="mt-6 sm:mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">Son Duyurular</h3>
               <button
                 onClick={() => navigate(`/duyuru-listesi/${siteId}`)}
                 className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 text-sm font-medium"
@@ -302,11 +303,11 @@ const DuyuruYonetimi = () => {
             </div>
 
             {duyurular.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {duyurular.slice(0, 5).map((duyuru) => (
                   <div 
                     key={duyuru.duyuruId}
-                    className="flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                    className="flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                     onClick={() => navigate(`/duyuru-listesi/${siteId}`)}
                   >
                     <div 

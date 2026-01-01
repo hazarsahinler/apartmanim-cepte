@@ -14,6 +14,7 @@ const FinansalIslemlerSiteSecimi = () => {
   const { darkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [siteler, setSiteler] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Kullanıcı bilgilerini ve sitelerini yükle
   useEffect(() => {
@@ -127,10 +128,10 @@ const FinansalIslemlerSiteSecimi = () => {
   if (loading) {
     return (
       <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
-        <MainNavbar />
-        <Sidebar />
+        <MainNavbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} isUserSidebarOpen={sidebarOpen} />
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
-        <div className="pt-16 ml-64">
+        <div className="pt-16 lg:ml-64 transition-all duration-300">
           <div className="flex justify-center items-center h-96">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
           </div>
@@ -142,25 +143,25 @@ const FinansalIslemlerSiteSecimi = () => {
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
       {/* Top Navigation */}
-      <MainNavbar />
+      <MainNavbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} isUserSidebarOpen={sidebarOpen} />
       
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       {/* Main Content */}
-      <div className="pt-16 ml-64">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="pt-16 lg:ml-64 transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
-                <CreditCard className="h-6 w-6 text-white" />
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-center space-x-2 sm:space-x-3 mb-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
                   Finansal İşlemler
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   Site finansal işlemlerini yönetmek için bir site seçin
                 </p>
               </div>
@@ -170,37 +171,37 @@ const FinansalIslemlerSiteSecimi = () => {
           {/* Site Seçimi */}
           {siteler.length > 0 ? (
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">
                 Site Seçimi ({siteler.length})
               </h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {siteler.map((site) => (
                   <div 
                     key={site.id || site.siteId}
                     onClick={() => handleSiteSecimi(site)}
                     className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer border-2 border-transparent hover:border-blue-500"
                   >
-                    <div className="p-6">
+                    <div className="p-4 sm:p-6">
                       {/* Site Header */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                            <Building className="h-5 w-5 text-white" />
+                      <div className="flex items-center justify-between mb-3 sm:mb-4">
+                        <div className="flex items-center space-x-2 sm:space-x-3">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <Building className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                           </div>
                           <div>
-                            <h3 className="font-semibold text-gray-900 dark:text-white">
+                            <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
                               {site.siteIsmi || site.adi || site.name || 'Site Adı'}
                             </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
                               {site.siteAdresi || site.adres || site.address || 'Adres Bilgisi Yok'}
                             </p>
                           </div>
                         </div>
                         {site.aktif ? (
-                          <CheckCircle className="h-5 w-5 text-green-500" />
+                          <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
                         ) : (
-                          <AlertCircle className="h-5 w-5 text-yellow-500" />
+                          <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 flex-shrink-0" />
                         )}
                       </div>
 
@@ -208,12 +209,12 @@ const FinansalIslemlerSiteSecimi = () => {
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleSiteSecimi(site.id);
+                          handleSiteSecimi(site);
                         }}
-                        className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white rounded-lg transition-all duration-300 group"
+                        className="w-full flex items-center justify-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white text-sm rounded-lg transition-all duration-300 group"
                       >
-                        <TrendingUp className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                        <span>Finansal İşlemleri Yönet</span>
+                        <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 group-hover:scale-110 transition-transform" />
+                        <span className="text-xs sm:text-sm">Finansal İşlemleri Yönet</span>
                       </button>
                     </div>
                   </div>
@@ -221,12 +222,12 @@ const FinansalIslemlerSiteSecimi = () => {
               </div>
             </div>
           ) : (
-            <div className="text-center py-12">
-              <Building className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <div className="text-center py-8 sm:py-12">
+              <Building className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
                 Site Bulunamadı
               </h3>
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Henüz yönettiğiniz bir site bulunmuyor.
               </p>
             </div>

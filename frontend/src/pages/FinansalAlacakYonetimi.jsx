@@ -15,11 +15,12 @@ import axios from 'axios';
 const FinansalAlacakYonetimi = () => {
   const { siteId } = useParams();
   const navigate = useNavigate();
-  const { darkMode } = useTheme();
+  const { darkMode, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [siteData, setSiteData] = useState(null);
   const [alacaklar, setAlacaklar] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // Form state
   const [alacakForm, setAlacakForm] = useState({
@@ -333,10 +334,10 @@ const FinansalAlacakYonetimi = () => {
   if (loading) {
     return (
       <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
-        <Navbar />
-        <Sidebar />
+        <Navbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} isUserSidebarOpen={sidebarOpen} />
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
-        <div className="pt-16 ml-64">
+        <div className="pt-16 lg:ml-64">
           <div className="flex justify-center items-center h-96">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent"></div>
           </div>
@@ -348,68 +349,68 @@ const FinansalAlacakYonetimi = () => {
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
       {/* Top Navigation */}
-      <Navbar />
+      <Navbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} isUserSidebarOpen={sidebarOpen} />
       
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       {/* Main Content */}
-      <div className="pt-16 ml-64">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="pt-16 lg:ml-64 transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+            <div className="flex items-start sm:items-center space-x-3 sm:space-x-4">
               <button
                 onClick={() => navigate(`/finansal-islemler/${siteId}`)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
                 title="Finansal İşlemlere Dön"
               >
-                <ArrowLeft className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 dark:text-gray-300" />
               </button>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-white" />
+              <div className="flex items-start sm:items-center space-x-2 sm:space-x-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Alacak Yönetimi</h1>
-                  <p className="text-gray-600 dark:text-gray-400">{siteData?.siteIsmi}</p>
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Alacak Yönetimi</h1>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{siteData?.siteIsmi}</p>
                 </div>
               </div>
             </div>
             <button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+              className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors w-full sm:w-auto"
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Yeni Alacak</span>
             </button>
           </div>
 
           {/* Gelir İstatistikleri */}
           {alacaklar.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6">
                 <div className="flex items-center">
-                  <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                    <CreditCard className="h-6 w-6 text-green-600 dark:text-green-300" />
+                  <div className="p-2 sm:p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                    <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-300" />
                   </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Gelen Gelir</p>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  <div className="ml-3 sm:ml-4">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Gelen Gelir</p>
+                    <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                       {gelenToplamGelir.toLocaleString('tr-TR')}₺
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6">
                 <div className="flex items-center">
-                  <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
-                    <AlertCircle className="h-6 w-6 text-red-600 dark:text-red-300" />
+                  <div className="p-2 sm:p-3 bg-red-100 dark:bg-red-900 rounded-lg">
+                    <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 dark:text-red-300" />
                   </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Bekleyen Gelir</p>
-                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                  <div className="ml-3 sm:ml-4">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Bekleyen Gelir</p>
+                    <p className="text-lg sm:text-2xl font-bold text-red-600 dark:text-red-400">
                       {bekleyenToplamGelir.toLocaleString('tr-TR')}₺
                     </p>
                   </div>
@@ -420,11 +421,11 @@ const FinansalAlacakYonetimi = () => {
 
           {/* Add Form */}
           {showAddForm && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Yeni Alacak Ekle
               </h3>
-              <form onSubmit={handleAlacakEkle} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form onSubmit={handleAlacakEkle} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Alacak Türü *
@@ -506,13 +507,14 @@ const FinansalAlacakYonetimi = () => {
 
           {/* Alacak Listesi */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 Alacak Listesi ({alacaklar.length})
               </h3>
             </div>
             
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
@@ -595,14 +597,95 @@ const FinansalAlacakYonetimi = () => {
                   ))}
                 </tbody>
               </table>
-              
-              {alacaklar.length === 0 && (
-                <div className="text-center py-8">
-                  <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 dark:text-gray-400">Henüz alacak kaydı bulunmuyor.</p>
-                </div>
-              )}
             </div>
+
+            {/* Mobile Card View */}
+            <div className="lg:hidden divide-y divide-gray-200 dark:divide-gray-700">
+              {alacaklar.map((alacak) => (
+                <div key={alacak.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
+                          {getTurLabel(alacak.tur)}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                        {alacak.aciklama}
+                      </h4>
+                    </div>
+                    <button 
+                      onClick={() => navigate(`/daire-borc-detay/${siteId}/${alacak.id}`)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex-shrink-0"
+                      title="Daire Detaylarını Görüntüle"
+                    >
+                      <Eye className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Alacak Tutarı:</span>
+                      <span className="font-semibold text-blue-600 dark:text-blue-400">
+                        {(alacak.alacakTutari || 0).toLocaleString('tr-TR')}₺
+                      </span>
+                    </div>
+                    {alacak.tur === 'OZEL_MASRAF' && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-500 dark:text-gray-400">Toplam Tutar:</span>
+                        <span className="text-gray-600 dark:text-gray-300">
+                          {alacak.tutar.toLocaleString('tr-TR')}₺
+                        </span>
+                      </div>
+                    )}
+                    
+                    <div className="pt-2 border-t border-gray-200 dark:border-gray-600">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-1">
+                          <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                            {alacak.odemeYapanDaireSay || 0}
+                          </span>
+                          <span className="text-sm text-gray-500 dark:text-gray-400">/ {alacak.toplamDaireSayisi}</span>
+                        </div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Ödeme Durumu</span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">
+                          <span className="text-green-600 dark:text-green-400">Gelen: {(alacak.gelenGelir || 0).toLocaleString('tr-TR')}₺</span>
+                        </div>
+                        <div className="bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
+                          <span className="text-red-600 dark:text-red-400">Bekleyen: {(alacak.bekleyenGelir || 0).toLocaleString('tr-TR')}₺</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-600">
+                      <div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Toplam Potansiyel</span>
+                        <div className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                          {(alacak.toplamGelir || 0).toLocaleString('tr-TR')}₺
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Son Tarih</span>
+                        <div className="text-sm text-gray-900 dark:text-white">
+                          {new Date(alacak.sonTarih).toLocaleDateString('tr-TR')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {alacaklar.length === 0 && (
+              <div className="text-center py-8">
+                <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400">Henüz alacak kaydı bulunmuyor.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

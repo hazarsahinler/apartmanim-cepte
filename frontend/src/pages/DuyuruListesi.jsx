@@ -16,6 +16,7 @@ const DuyuruListesi = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [siteData, setSiteData] = useState(null);
   const [duyurular, setDuyurular] = useState([]);
   const [filteredDuyurular, setFilteredDuyurular] = useState([]);
@@ -128,31 +129,31 @@ const DuyuruListesi = () => {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
-      <MainNavbar />
-      <Sidebar />
+      <MainNavbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <div className="pt-20 pl-64">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="pt-16 lg:ml-64">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-center space-x-3 sm:space-x-4">
               <button
                 onClick={() => navigate(`/duyuru-yonetimi/${siteId}`)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 title="Geri Dön"
               >
-                <ArrowLeft className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 dark:text-gray-300" />
               </button>
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-blue-500 rounded-lg flex items-center justify-center">
-                  <Bell className="h-6 w-6 text-white" />
+              <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-green-600 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <div className="min-w-0">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
                     Tüm Duyurular
                   </h1>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 truncate">
                     {siteData?.siteIsmi || siteData?.adi || `Site ${siteId}`} - Toplam {filteredDuyurular.length} duyuru
                   </p>
                 </div>
@@ -161,8 +162,8 @@ const DuyuruListesi = () => {
           </div>
 
           {/* Filtre ve Arama */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               
               {/* Arama */}
               <div className="relative">
@@ -212,7 +213,7 @@ const DuyuruListesi = () => {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {filteredDuyurular.map((duyuru) => {
                 const IconComponent = getOnemIcon(duyuru.onemSeviyesi);
                 const isExpanded = expandedDuyuruId === duyuru.duyuruId;
@@ -223,23 +224,23 @@ const DuyuruListesi = () => {
                     key={duyuru.duyuruId}
                     className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                   >
-                    <div className="p-6">
+                    <div className="p-4 sm:p-6">
                       {/* Üst Kısım - Başlık ve Önem */}
                       <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-start space-x-3 flex-1">
+                        <div className="flex items-start space-x-2 sm:space-x-3 flex-1">
                           <div 
-                            className="w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0"
+                            className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0"
                             style={{ backgroundColor: duyuruService.getOnemSeviyesiColor(duyuru.onemSeviyesi) }}
                           >
-                            <IconComponent className="h-5 w-5" />
+                            <IconComponent className="h-4 w-4 sm:h-5 sm:w-5" />
                           </div>
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             {duyuru.duyuruBaslik && (
-                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-1">
                                 {duyuru.duyuruBaslik}
                               </h3>
                             )}
-                            <div className="flex items-center space-x-3 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                               <span 
                                 className="px-2 py-1 rounded-md text-white font-medium"
                                 style={{ backgroundColor: duyuruService.getOnemSeviyesiColor(duyuru.onemSeviyesi) }}

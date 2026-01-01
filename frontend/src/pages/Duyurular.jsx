@@ -21,6 +21,7 @@ const Duyurular = () => {
   const [siteData, setSiteData] = useState(null);
   const [filterOnem, setFilterOnem] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   const fetchDuyurular = useCallback(async () => {
     try {
@@ -100,10 +101,10 @@ const Duyurular = () => {
   if (loading) {
     return (
       <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
-        <Navbar />
-        <Sidebar />
+        <Navbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} isUserSidebarOpen={sidebarOpen} />
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
-        <div className="pt-20 pl-64">
+        <div className="pt-16 lg:ml-64 transition-all duration-300">
           <div className="flex justify-center items-center h-96">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
           </div>
@@ -115,34 +116,34 @@ const Duyurular = () => {
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
       {/* Top Navigation */}
-      <Navbar />
+      <Navbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} isUserSidebarOpen={sidebarOpen} />
       
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       {/* Main Content */}
-      <div className="pt-20 pl-64">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="pt-16 lg:ml-64 transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
           
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
               <button
                 onClick={() => navigate(`/site-panel/${siteId}`)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
                 title="Site Paneline Dön"
               >
-                <ArrowLeft className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 dark:text-gray-300" />
               </button>
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                  <Bell className="h-6 w-6 text-white" />
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
                     Duyurular
                   </h1>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     {siteData?.siteIsmi || siteData?.adi || siteData?.name || 'Site'} Duyuruları
                   </p>
                 </div>
@@ -150,16 +151,16 @@ const Duyurular = () => {
             </div>
             <button
               onClick={() => navigate(`/duyuru-olustur/${siteId}`)}
-              className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+              className="flex items-center justify-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors w-full sm:w-auto"
             >
-              <Plus className="h-5 w-5" />
-              <span>Yeni Duyuru</span>
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="text-sm sm:text-base">Yeni Duyuru</span>
             </button>
           </div>
 
           {/* Filters */}
-          <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="mb-4 sm:mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 sm:p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
@@ -187,39 +188,39 @@ const Duyurular = () => {
           </div>
 
           {/* Duyuru List */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {filteredDuyurular.length > 0 ? (
               filteredDuyurular.map((duyuru) => (
-                <div key={duyuru.duyuruId} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-3">
+                <div key={duyuru.duyuruId} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+                    <div className="flex items-start space-x-3">
                       <div 
-                        className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+                        className="w-10 h-10 rounded-lg flex items-center justify-center text-white flex-shrink-0"
                         style={{ backgroundColor: duyuruService.getOnemSeviyesiColor(duyuru.onemSeviyesi) }}
                       >
                         {getOnemIcon(duyuru.onemSeviyesi)}
                       </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
                           <span 
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white"
+                            className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium text-white"
                             style={{ backgroundColor: duyuruService.getOnemSeviyesiColor(duyuru.onemSeviyesi) }}
                           >
                             {duyuruService.getOnemSeviyesiLabel(duyuru.onemSeviyesi)}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                           {duyuru.yoneticiAdi} {duyuru.yoneticiSoyadi}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                      <Calendar className="h-4 w-4" />
+                    <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span>{duyuruService.formatDate(duyuru.olusturulmaTarihi)}</span>
                     </div>
                   </div>
                   
-                  <div className="text-gray-900 dark:text-white">
+                  <div className="text-sm sm:text-base text-gray-900 dark:text-white">
                     <p className="whitespace-pre-wrap">{duyuru.duyuruMesaji}</p>
                   </div>
                 </div>

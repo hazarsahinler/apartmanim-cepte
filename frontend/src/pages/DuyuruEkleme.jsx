@@ -15,6 +15,7 @@ const DuyuruEkleme = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
   const [loading, setLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [siteData, setSiteData] = useState(null);
   
   // Form state
@@ -140,31 +141,31 @@ const DuyuruEkleme = () => {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
-      <MainNavbar />
-      <Sidebar />
+      <MainNavbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <div className="pt-20 pl-64">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="pt-16 lg:ml-64">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-center space-x-3 sm:space-x-4">
               <button
                 onClick={() => navigate(`/duyuru-yonetimi/${siteId}`)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 title="Geri Dön"
               >
-                <ArrowLeft className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 dark:text-gray-300" />
               </button>
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-blue-500 rounded-lg flex items-center justify-center">
-                  <Bell className="h-6 w-6 text-white" />
+              <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-green-600 to-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <div className="min-w-0">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
                     Yeni Duyuru Oluştur
                   </h1>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 truncate">
                     Site sakinleri için duyuru oluşturun
                   </p>
                 </div>
@@ -173,8 +174,8 @@ const DuyuruEkleme = () => {
           </div>
 
           {/* Form Card */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 lg:p-8">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               
               {/* Site Bilgisi */}
               {siteData && (
@@ -209,11 +210,11 @@ const DuyuruEkleme = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   Önem Seviyesi *
                 </label>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   {onemSeviyeleri.map((seviye) => (
                     <label
                       key={seviye.value}
-                      className={`relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                      className={`relative flex items-center justify-center p-3 sm:p-4 border-2 rounded-lg cursor-pointer transition-all ${
                         duyuruForm.onemSeviyesi === seviye.value
                           ? 'border-current shadow-lg transform scale-105'
                           : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
@@ -233,12 +234,12 @@ const DuyuruEkleme = () => {
                       />
                       <div className="flex flex-col items-center space-y-2">
                         <div 
-                          className="w-10 h-10 rounded-lg flex items-center justify-center text-white"
+                          className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-white"
                           style={{ backgroundColor: seviye.color }}
                         >
                           {getOnemIcon(seviye.value)}
                         </div>
-                        <span className="font-medium text-gray-900 dark:text-white">
+                        <span className="font-medium text-sm sm:text-base text-gray-900 dark:text-white">
                           {seviye.label}
                         </span>
                       </div>
@@ -274,11 +275,11 @@ const DuyuruEkleme = () => {
               </div>
 
               {/* Submit Buttons */}
-              <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-600">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 sm:space-x-4 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-600">
                 <button
                   type="button"
                   onClick={() => navigate(`/duyuru-yonetimi/${siteId}`)}
-                  className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="w-full sm:w-auto px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
                   disabled={loading}
                 >
                   İptal
@@ -286,7 +287,7 @@ const DuyuruEkleme = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-green-600 to-blue-500 hover:from-green-700 hover:to-blue-600 text-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-2 bg-gradient-to-r from-green-600 to-blue-500 hover:from-green-700 hover:to-blue-600 text-white rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <>

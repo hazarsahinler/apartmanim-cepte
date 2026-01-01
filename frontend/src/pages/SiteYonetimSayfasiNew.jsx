@@ -289,29 +289,13 @@ const SiteYonetimSayfasi = () => {
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
       {/* Navbar */}
-      <MainNavbar />
+      <MainNavbar toggleUserSidebar={() => setSidebarOpen(!sidebarOpen)} isUserSidebarOpen={sidebarOpen} />
       
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} />
-      
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-20 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-lg"
-      >
-        <Menu className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-      </button>
-      
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
-      )}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       {/* Main Content */}
-      <div className="pt-16 ml-0 lg:ml-64 transition-all duration-300">
+      <div className="pt-16 lg:ml-64 transition-all duration-300">
         <div className="container mx-auto px-4 py-8">
           {/* Başlık ve Özetler */}
           <div className="mb-8">
