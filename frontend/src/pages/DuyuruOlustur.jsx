@@ -9,6 +9,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { 
   ArrowLeft, Plus, Bell, AlertCircle, Info, CheckCircle
 } from 'lucide-react';
+import { API_BASE_URL } from '../config/apiConfig';
 
 const DuyuruOlustur = () => {
   const { siteId } = useParams();
@@ -44,7 +45,7 @@ const DuyuruOlustur = () => {
         
         // Site bilgilerini API'den çek
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:8080/api/structure/site/${userData.id}`, {
+        const response = await fetch(`${API_BASE_URL}/structure/site/${userData.id}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,

@@ -1,6 +1,7 @@
 import api from './api';
 import axios from 'axios';
 import { ENDPOINTS } from '../constants/endpoints';
+import { API_BASE_URL } from '../config/apiConfig';
 
 export const daireService = {
   // Blok ID'sine göre daireleri getir - Backend: GET /structure/daireler/{blokId} -> List<DaireResponseDTO>
@@ -193,7 +194,7 @@ export const daireService = {
       
       try {
         // Doğrudan axios ile istek - chunked encoding ve yetkilendirme hatalarını önlemek için
-        const response = await axios.get(`http://localhost:8080/api/structure/blok/${parsedBlokId}`, {
+        const response = await axios.get(`${API_BASE_URL}/structure/blok/${parsedBlokId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -233,7 +234,7 @@ export const daireService = {
       console.log('Telefon ile kullanıcı kontrolü:', telefon);
       
       // Doğrudan axios ile istek - chunked encoding hatasını önlemek için
-      const response = await axios.get(`http://localhost:8080/api/identity/kullanici/telefon/${telefon}`, {
+      const response = await axios.get(`${API_BASE_URL}/identity/kullanici/telefon/${telefon}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -316,7 +317,7 @@ export const daireService = {
       // Hata alındığında farklı bir yaklaşım deneyelim - mockData kullanarak başarılı olmuş gibi yapalım
       try {
         // İlk yaklaşım: Doğrudan axios ile istek - chunked encoding ve yetkilendirme hatalarını önlemek için
-        const response = await axios.post('http://localhost:8080/api/structure/daire/ekle', requestData, {
+        const response = await axios.post(`${API_BASE_URL}/structure/daire/ekle`, requestData, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

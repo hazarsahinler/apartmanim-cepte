@@ -6,6 +6,7 @@ import axios from 'axios'; // Doğrudan axios import ediyoruz
 import { ENDPOINTS } from '../constants/endpoints';
 import { toast } from 'react-toastify';
 import { bypassSiteAddErrors } from './bypass';
+import { API_BASE_URL } from '../config/apiConfig';
 
 /**
  * Site ekleme işlemini gerçekleştirir ve hataları yönetir
@@ -21,7 +22,7 @@ export const handleSiteAdd = async (requestData, userId, onSuccess, setError, se
     console.log('Site ekleme isteği gönderiliyor:', requestData);
     
     // Doğrudan URL kullanarak istek at
-    const response = await axios.post(`http://localhost:8080/api/structure/site/ekle`, requestData);
+    const response = await axios.post(`${API_BASE_URL}/structure/site/ekle`, requestData);
     console.log('Site ekleme yanıtı:', response.data);
     
     // Başarılı yanıt
@@ -36,7 +37,7 @@ export const handleSiteAdd = async (requestData, userId, onSuccess, setError, se
       
       try {
         // Backend'den güncel site listesini al
-        const sitesResponse = await axios.get(`http://localhost:8080/api/structure/site/${userId}`);
+        const sitesResponse = await axios.get(`${API_BASE_URL}/structure/site/${userId}`);
         
         if (sitesResponse.data && sitesResponse.data.length > 0) {
           // En son eklenen site'yi bul (aynı isimle)

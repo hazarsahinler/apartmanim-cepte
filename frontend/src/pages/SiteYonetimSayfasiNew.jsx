@@ -16,6 +16,7 @@ import Sidebar from '../components/Sidebar';
 import { useTheme } from '../contexts/ThemeContext';
 import api from '../services/api';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/apiConfig';
 
 const SiteYonetimSayfasi = () => {
   const navigate = useNavigate();
@@ -123,7 +124,7 @@ const SiteYonetimSayfasi = () => {
             console.log('Token apartmanRol:', decodedToken.apartmanRol);
             
             console.log('Site verileri için kullanılan token:', token.substring(0, 20) + '...');
-            console.log('API çağrısı yapılıyor:', `http://localhost:8080/api/structure/site/${userData.id}`);
+            console.log('API çağrısı yapılıyor:', `${API_BASE_URL}/structure/site/${userData.id}`);
             
             // siteService kullanarak API çağrısı yap
             const siteData = await siteService.getUserSites(userData.id);
@@ -692,7 +693,7 @@ const SiteEkleModal = ({ onClose, userId, onSuccess }) => {
       console.log('Site ekleme isteği gönderiliyor:', requestData);
       
       // Doğrudan URL kullanarak - chunked encoding hatasını aşmak için
-      const response = await axios.post('http://localhost:8080/api/structure/site/ekle', requestData, {
+      const response = await axios.post(`${API_BASE_URL}/structure/site/ekle`, requestData, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json'
@@ -708,7 +709,7 @@ const SiteEkleModal = ({ onClose, userId, onSuccess }) => {
         
         try {
           // Backend'den site listesini yeniden çek - SiteResponseDTO listesi
-          const sitesResponse = await axios.get(`http://localhost:8080/api/structure/site/${userId}`, {
+          const sitesResponse = await axios.get(`${API_BASE_URL}/structure/site/${userId}`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
               'Content-Type': 'application/json'

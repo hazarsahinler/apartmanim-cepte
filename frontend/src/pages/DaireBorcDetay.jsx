@@ -9,6 +9,7 @@ import { authService } from '../services/authService';
 import { useTheme } from '../contexts/ThemeContext';
 import { ENDPOINTS } from '../constants/endpoints';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/apiConfig';
 
 const DaireBorcDetay = () => {
   const { siteId, borcId } = useParams();
@@ -34,7 +35,7 @@ const DaireBorcDetay = () => {
       }
 
       const response = await axios.get(
-        `http://localhost:8080/api${ENDPOINTS.FINANCE.DAIRELER_BORC_BY_ID}/${borcId}`,
+        `${API_BASE_URL}${ENDPOINTS.FINANCE.DAIRELER_BORC_BY_ID}/${borcId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,

@@ -9,6 +9,7 @@ import { authService } from '../services/authService';
 import { useTheme } from '../contexts/ThemeContext';
 import { ENDPOINTS } from '../constants/endpoints';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/apiConfig';
 
 const AlacakYonetimi = () => {
   const { siteId } = useParams();
@@ -50,7 +51,7 @@ const AlacakYonetimi = () => {
 
       // TanimlanmisBorcFiltreDTO parametreleri ile API çağrısı
       const response = await axios.get(
-        `http://localhost:8080/api${ENDPOINTS.FINANCE.EKLENEN_BORCLAR}`,
+        `${API_BASE_URL}${ENDPOINTS.FINANCE.EKLENEN_BORCLAR}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,

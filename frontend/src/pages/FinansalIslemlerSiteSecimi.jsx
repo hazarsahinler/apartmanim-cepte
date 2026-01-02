@@ -8,6 +8,7 @@ import Sidebar from '../components/Sidebar';
 import MainNavbar from '../components/MainNavbar';
 import { authService } from '../services/authService';
 import { useTheme } from '../contexts/ThemeContext';
+import { API_BASE_URL } from '../config/apiConfig';
 
 const FinansalIslemlerSiteSecimi = () => {
   const navigate = useNavigate();
@@ -64,10 +65,10 @@ const FinansalIslemlerSiteSecimi = () => {
               throw new Error('Oturumunuz sonlanmış. Lütfen tekrar giriş yapın.');
             }
 
-            console.log('API çağrısı yapılıyor:', `http://localhost:8080/api/structure/site/${userData.id}`);
+            console.log('API çağrısı yapılıyor:', `${API_BASE_URL}/structure/site/${userData.id}`);
             
             // siteService import etmek gerekiyor
-            const response = await fetch(`http://localhost:8080/api/structure/site/${userData.id}`, {
+            const response = await fetch(`${API_BASE_URL}/structure/site/${userData.id}`, {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer ${token}`,

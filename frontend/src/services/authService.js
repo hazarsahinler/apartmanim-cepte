@@ -2,8 +2,9 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; // jwt-decode kütüphanesini import edin
 import { ENDPOINTS } from '../constants/endpoints';
 import { handleUserDataError } from '../utils/errorHandler';
+import { API_BASE_URL } from '../config/apiConfig';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = API_BASE_URL;
 
 // Axios instance oluştur
 const api = axios.create({
@@ -130,7 +131,7 @@ export const authService = {
       
       try {
         // Doğrudan URL kullanarak - chunked encoding hatasını aşmak için
-        const response = await axios.get(`http://localhost:8080/api/identity/kullanici/bilgi/${kullaniciId}`, {
+        const response = await axios.get(`${API_BASE_URL}/identity/kullanici/bilgi/${kullaniciId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

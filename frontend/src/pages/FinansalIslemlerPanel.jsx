@@ -11,6 +11,7 @@ import { authService } from '../services/authService';
 import { financeService } from '../services/financeService';
 import { blokService } from '../services/blokService';
 import { useTheme } from '../contexts/ThemeContext';
+import { API_BASE_URL } from '../config/apiConfig';
 
 const FinansalIslemlerPanel = () => {
   const { siteId } = useParams();
@@ -44,7 +45,7 @@ const FinansalIslemlerPanel = () => {
         // Site bilgilerini API'den çek
         try {
           const token = localStorage.getItem('token');
-          const response = await fetch(`http://localhost:8080/api/structure/site/${userInfo.id}`, {
+          const response = await fetch(`${API_BASE_URL}/structure/site/${userInfo.id}`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -100,7 +101,7 @@ const FinansalIslemlerPanel = () => {
       const token = localStorage.getItem('token');
       
       // Alacaklar API'sinden özet verileri çek
-      const alacakResponse = await fetch(`http://localhost:8080/api/finance/eklenen/borclar?siteId=${currentSiteId}`, {
+      const alacakResponse = await fetch(`${API_BASE_URL}/finance/eklenen/borclar?siteId=${currentSiteId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

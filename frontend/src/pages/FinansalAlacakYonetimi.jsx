@@ -11,6 +11,7 @@ import { authService } from '../services/authService';
 import { useTheme } from '../contexts/ThemeContext';
 import { ENDPOINTS } from '../constants/endpoints';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/apiConfig';
 
 const FinansalAlacakYonetimi = () => {
   const { siteId } = useParams();
@@ -45,7 +46,7 @@ const FinansalAlacakYonetimi = () => {
       }
 
       const response = await axios.get(
-        `http://localhost:8080/api${ENDPOINTS.FINANCE.EKLENEN_BORCLAR}`,
+        `${API_BASE_URL}${ENDPOINTS.FINANCE.EKLENEN_BORCLAR}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -63,7 +64,7 @@ const FinansalAlacakYonetimi = () => {
       let toplamDaireSayisi = 0;
       try {
         const siteResponse = await axios.get(
-          `http://localhost:8080/api/structure/site/${authService.getCurrentUser()?.id}`,
+          `${API_BASE_URL}/structure/site/${authService.getCurrentUser()?.id}`,
           {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -245,7 +246,7 @@ const FinansalAlacakYonetimi = () => {
       }
 
       const response = await axios.post(
-        'http://localhost:8080/api/finance/borc/ekle',
+        `${API_BASE_URL}/finance/borc/ekle`,
         yeniAlacakData,
         {
           headers: {

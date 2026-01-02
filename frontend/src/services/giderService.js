@@ -1,4 +1,5 @@
 import api from './api';
+import { API_BASE_URL } from '../config/apiConfig';
 
 export const giderService = {
   // Gider türlerini enum'dan al
@@ -164,8 +165,7 @@ export const giderService = {
 
   // Belge URL'sini oluştur
   getBelgeUrl: (belgeId) => {
-    const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
-    return `${BASE_URL}/finance/gider/belge/goster/${belgeId}`;
+    return `${API_BASE_URL}/finance/gider/belge/goster/${belgeId}`;
   },
 
   // Belgeyi görüntüle (token ile)
