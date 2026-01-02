@@ -37,6 +37,43 @@ const KullaniciKayit = () => {
     }
   };
 
+  // Telefon numarası için özel handler - sadece 5 ile başlayan 10 haneli numara
+  const handlePhoneChange = (e) => {
+    let value = e.target.value;
+    
+    // Sadece rakamları al
+    value = value.replace(/\D/g, '');
+    
+    // +90 veya 0 ile başlıyorsa kaldır
+    if (value.startsWith('90')) {
+      value = value.substring(2);
+    }
+    if (value.startsWith('0')) {
+      value = value.substring(1);
+    }
+    
+    // İlk karakter 5 değilse ve boş değilse, 5 yap
+    if (value.length > 0 && value[0] !== '5') {
+      value = '5' + value.substring(1);
+    }
+    
+    // Maksimum 10 karakter
+    value = value.substring(0, 10);
+    
+    setFormData(prev => ({
+      ...prev,
+      kullaniciTelefon: value
+    }));
+    
+    // Validation error'ı temizle
+    if (validationErrors.kullaniciTelefon) {
+      setValidationErrors(prev => ({
+        ...prev,
+        kullaniciTelefon: ''
+      }));
+    }
+  };
+
   // Konut kullanım tipi değişikliği
   const handleKonutKullanimChange = (value) => {
     setFormData(prev => ({
@@ -254,13 +291,14 @@ const KullaniciKayit = () => {
                   type="tel"
                   name="kullaniciTelefon"
                   value={formData.kullaniciTelefon}
-                  onChange={handleInputChange}
+                  onChange={handlePhoneChange}
+                  maxLength={10}
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                     validationErrors.kullaniciTelefon 
                       ? 'border-red-300 bg-red-50' 
                       : 'border-gray-300'
                   }`}
-                  placeholder="5551234567"
+                  placeholder="5XX XXX XX XX"
                 />
               </div>
               {validationErrors.kullaniciTelefon && (
@@ -269,7 +307,7 @@ const KullaniciKayit = () => {
                 </p>
               )}
               <p className="mt-1 text-sm text-gray-500">
-                Format: 5XXXXXXXXX
+                Format: 5XXXXXXXXX (Başında 0 veya +90 olmadan)
               </p>
             </div>
 
