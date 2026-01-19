@@ -57,17 +57,16 @@ export const authService = {
     try {
       // Önce localStorage'ı tamamen temizle (eski verilerin kalmasını önle)
       localStorage.clear();
-      // console.log('Giriş isteği gönderiliyor:', {
-        kullaniciTelefon: credentials.kullaniciTelefon,
-        kullaniciSifre: credentials.kullaniciSifre,
-      });
+      
       // Backend KullaniciGirisBilgiDTO'ya göre field mapping
       const loginData = {
         kullaniciTelefon: credentials.kullaniciTelefon,
         kullaniciSifre: credentials.kullaniciSifre,
       };
+      
       // ENDPOINTS.IDENTITY.LOGIN = /identity/giris
       const response = await api.post(ENDPOINTS.IDENTITY.LOGIN, loginData);
+      
       // ResponseDTO { message, token } formatında gelir
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);

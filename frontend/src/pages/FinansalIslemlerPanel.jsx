@@ -186,13 +186,6 @@ const FinansalIslemlerPanel = () => {
           netKazanc: toplamGelir - toplamGider,
           bekleyenAlacak: bekleyenAlacak
         });
-        
-          toplamGelir,
-          bekleyenAlacak,
-          toplamDaireSayisi,
-          alacakSayisi: alacakData.length,
-          siteData: currentSiteData
-        });
       } else {
         console.error('Finansal veriler alınamadı');
         setFinansalOzet({
