@@ -69,9 +69,6 @@ const ProfilSayfasi = () => {
           role = decodedToken.roles[0];
         }
         
-        console.log('ProfilSayfasi - Belirlenen rol:', role);
-        console.log('ProfilSayfasi - User apartmanRol:', user.apartmanRol);
-        console.log('ProfilSayfasi - Token roles:', decodedToken.roles);
         
         setUserRole(role);
         

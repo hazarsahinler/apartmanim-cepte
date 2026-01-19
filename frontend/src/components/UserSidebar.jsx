@@ -36,7 +36,6 @@ const UserSidebar = ({ isOpen = true, onClose }) => {
       // Varsayılan olarak kullanıcı sayfası
       return '/kullanici-sayfasi';
     } catch (error) {
-      console.error('UserSidebar - Role belirleme hatası:', error);
       return '/kullanici-sayfasi';
     }
   };

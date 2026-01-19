@@ -19,11 +19,8 @@ import { API_BASE_URL } from '../config/apiConfig';
  */
 export const handleSiteAdd = async (requestData, userId, onSuccess, setError, setLoading) => {
   try {
-    console.log('Site ekleme isteği gönderiliyor:', requestData);
-    
     // Doğrudan URL kullanarak istek at
     const response = await axios.post(`${API_BASE_URL}/structure/site/ekle`, requestData);
-    console.log('Site ekleme yanıtı:', response.data);
     
     // Başarılı yanıt
     if (response.data || response.status === 200) {
@@ -52,7 +49,7 @@ export const handleSiteAdd = async (requestData, userId, onSuccess, setError, se
           }
         }
       } catch (idError) {
-        console.warn('Site ID alınamadı, geçici ID kullanılıyor:', idError);
+        // Site ID alınamadı, geçici ID kullanılıyor
       }
       
       // Frontend'e uygun site objesi
@@ -74,8 +71,6 @@ export const handleSiteAdd = async (requestData, userId, onSuccess, setError, se
     throw new Error(response.data?.message || 'Bilinmeyen hata');
     
   } catch (error) {
-    console.error('Site ekleme hatası:', error);
-    
     // Chunked encoding veya network hatası kontrolü
     if (error.message?.includes('ERR_INCOMPLETE_CHUNKED_ENCODING') || 
         error.message?.includes('INCOMPLETE_CHUNKED_ENCODING') ||

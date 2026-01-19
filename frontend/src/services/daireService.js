@@ -7,24 +7,15 @@ export const daireService = {
   // Blok ID'sine göre daireleri getir - Backend: GET /structure/daireler/{blokId} -> List<DaireResponseDTO>
   getDairesByBlokId: async (blokId) => {
     try {
-      console.log('DaireService - Blok daireleri getiriliyor, Blok ID:', blokId);
-      
       // BlokId'yi integer'a çevir
       const parsedBlokId = parseInt(blokId, 10);
       
       if (isNaN(parsedBlokId)) {
-        console.error('DaireService - Geçersiz blokId:', blokId);
         throw new Error('Geçersiz blok ID');
       }
-      
-      console.log('DaireService - Parsed blokId:', parsedBlokId);
-      console.log('DaireService - API URL:', `${ENDPOINTS.DAIRE.BY_BLOK}/${parsedBlokId}`);
-      
+
       // Backend API: GET /structure/daireler/{blokId} -> List<DaireResponseDTO>
       const response = await api.get(`${ENDPOINTS.DAIRE.BY_BLOK}/${parsedBlokId}`);
-      
-      console.log('DaireService - Backend response:', response.data);
-      
       // DaireResponseDTO mapping: { daireId, daireNo, katNo, blokId, kullaniciId }
       const daireler = response.data || [];
       
@@ -32,9 +23,6 @@ export const daireService = {
       const mappedDaireler = daireler.map(daire => {
         // kullaniciId kontrolü - null/0 olabilir
         const hasUser = daire.kullaniciId && daire.kullaniciId !== null && daire.kullaniciId !== 0;
-        
-        console.log(`DaireService - Daire ${daire.daireNo}: kullaniciId=${daire.kullaniciId}, hasUser=${hasUser}`);
-        
         return {
           ...daire,
           // DaireResponseDTO field'ları zaten doğru
@@ -45,16 +33,10 @@ export const daireService = {
           kullaniciSoyadi: '' // Backend'de kullanıcı bilgileri döndürülmüyor
         };
       });
-      
-      console.log('DaireService - Mapped daireler:', mappedDaireler);
-      
       return mappedDaireler;
     } catch (error) {
-      console.error('Daire listesi alma hatası:', error);
-      
       // Backend hatası durumunda boş liste döndür
       if (error.response?.status === 500 || error.code === 'ECONNABORTED') {
-        console.log('Backend hatası - Boş daire listesi döndürülüyor');
         return [];
       }
       
@@ -79,14 +61,11 @@ export const daireService = {
         daireId: parseInt(sakinData.daireId)
       };
       
-      console.log('Sakin kayıt isteği gönderiliyor (ApartmanSakinKayitDTO):', backendData);
+      // console.log('Sakin kayıt isteği gönderiliyor (ApartmanSakinKayitDTO):', backendData);
       
       const response = await api.post(ENDPOINTS.IDENTITY.SAKIN_KAYIT, backendData);
-      
-      console.log('Sakin kayıt yanıtı:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Sakin kayıt hatası:', error);
       throw new Error(
         error.response?.data?.message || 
         error.response?.data ||
@@ -98,15 +77,10 @@ export const daireService = {
   // Kullanıcı silme (daireden çıkarma)
   removeSakin: async (daireId) => {
     try {
-      console.log('Kullanıcı silme isteği gönderiliyor, Daire ID:', daireId);
-      
       // Backend'de kullanıcı silme API'si yoksa PUT ile kullanıcıyı null yapabiliriz
       // Şimdilik mock response döndürelim
-      console.warn('Kullanıcı silme API\'si henüz backend\'de yok - mock response');
-      
       return { message: 'Kullanıcı başarıyla silindi (Mock)' };
     } catch (error) {
-      console.error('Kullanıcı silme hatası:', error);
       throw new Error(
         error.response?.data?.message || 
         'Kullanıcı silinirken bir hata oluştu.'
@@ -117,31 +91,20 @@ export const daireService = {
   // Daire detay bilgilerini getir
   getDaireById: async (daireId) => {
     try {
-      console.log('DaireService - Daire detayı getiriliyor, Daire ID:', daireId);
-      
       const parsedDaireId = parseInt(daireId, 10);
       if (isNaN(parsedDaireId)) {
         throw new Error('Geçersiz daire ID: ' + daireId);
       }
-      
-      console.log('DaireService - API URL:', `${ENDPOINTS.STRUCTURE.DAIRE_BY_ID}/${parsedDaireId}`);
-      
       const response = await api.get(`${ENDPOINTS.STRUCTURE.DAIRE_BY_ID}/${parsedDaireId}`);
-      
-      console.log('DaireService - Backend response status:', response.status);
-      console.log('DaireService - Backend response data:', response.data);
-      
+
       if (!response.data) {
-        console.error('DaireService - Backend null data döndü');
         throw new Error('Backend boş veri döndürdü');
       }
       
       return response.data;
     } catch (error) {
-      console.error('DaireService - getDaireById hatası:', error);
-      console.error('DaireService - Error response:', error.response?.data);
-      console.error('DaireService - Error status:', error.response?.status);
-      
+
+
       if (error.response?.status === 404) {
         throw new Error('Daire bulunamadı');
       } else if (error.response?.status === 500) {
@@ -159,14 +122,9 @@ export const daireService = {
   // Kullanıcı bilgilerini getir
   getKullaniciBilgi: async (kullaniciId) => {
     try {
-      console.log('Kullanıcı bilgileri getiriliyor, Kullanıcı ID:', kullaniciId);
-      
       const response = await api.get(`${ENDPOINTS.IDENTITY.KULLANICI_BILGI}/${kullaniciId}`);
-      
-      console.log('Kullanıcı bilgi yanıtı:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Kullanıcı bilgi hatası:', error);
       throw new Error(
         error.response?.data?.message || 
         'Kullanıcı bilgileri yüklenirken bir hata oluştu.'
@@ -177,8 +135,6 @@ export const daireService = {
   // Blok bilgilerini getir
   getBlokById: async (blokId) => {
     try {
-      console.log('Blok bilgileri getiriliyor, Blok ID:', blokId);
-      
       const parsedBlokId = parseInt(blokId, 10);
       if (isNaN(parsedBlokId)) {
         throw new Error('Geçersiz blok ID: ' + blokId);
@@ -188,7 +144,6 @@ export const daireService = {
       const token = localStorage.getItem('token');
       
       if (!token) {
-        console.error('Token bulunamadı');
         throw new Error('Oturumunuz sonlanmış. Lütfen tekrar giriş yapın.');
       }
       
@@ -201,15 +156,10 @@ export const daireService = {
           },
           timeout: 30000
         });
-        
-        console.log('Blok bilgi yanıtı:', response.data);
         return response.data;
       } catch (apiError) {
-        console.warn('API ile blok bilgisi alınamadı:', apiError);
-        
         // 403 hatası durumunda, varsayılan blok bilgisi döndürelim - geçici çözüm
         if (apiError.response?.status === 403) {
-          console.log('403 hatası için geçici çözüm uygulanıyor...');
           return {
             blokId: parsedBlokId,
             blokAdi: `Blok ${parsedBlokId}`,
@@ -220,7 +170,6 @@ export const daireService = {
         throw apiError; // Diğer hataları yukarıya taşı
       }
     } catch (error) {
-      console.error('Blok bilgi hatası:', error);
       throw new Error(
         error.response?.data?.message || 
         'Blok bilgileri yüklenirken bir hata oluştu.'
@@ -231,8 +180,6 @@ export const daireService = {
   // Telefon numarası ile kullanıcı kontrolü (kayıtlı mı?)
   checkUserByPhone: async (telefon) => {
     try {
-      console.log('Telefon ile kullanıcı kontrolü:', telefon);
-      
       // Doğrudan axios ile istek - chunked encoding hatasını önlemek için
       const response = await axios.get(`${API_BASE_URL}/identity/kullanici/telefon/${telefon}`, {
         headers: {
@@ -241,14 +188,10 @@ export const daireService = {
         },
         timeout: 30000
       });
-      
-      console.log('Kullanıcı kontrol yanıtı:', response.data);
-      
       // Backend boş veri döndürüyorsa ve başarı kodu dönmüşse kullanıcı vardır
       if (response.status === 200) {
         // Eğer data boşsa veya içeriği yoksa varsayılan bilgilerle zenginleştirelim
         if (!response.data || Object.keys(response.data).length === 0) {
-          console.log('Backend boş veri döndürdü, varsayılan kullanıcı bilgisi oluşturuluyor...');
           return {
             kullaniciId: 0,
             kullaniciAdi: telefon,
@@ -271,7 +214,6 @@ export const daireService = {
       // Backend hatası varsa ve başka bir çözüm yoksa, kullanıcının varlığını doğrulayıp varsayılan bir nesne döndürelim
       // Bu bir geçici çözümdür, backend düzeltilmelidir
       if (error.response?.status === 500 && telefon === '5442570818') {
-        console.log('Bilinen kullanıcı için varsayılan bilgiler döndürülüyor...');
         return {
           kullaniciId: 1,
           kullaniciAdi: "Hazar",
@@ -282,8 +224,6 @@ export const daireService = {
           apartmanRol: "Yonetici"
         };
       }
-      
-      console.error('Kullanıcı kontrol hatası:', error);
       throw new Error(
         error.response?.data?.message || 
         'Kullanıcı kontrolü sırasında hata oluştu.'
@@ -294,25 +234,19 @@ export const daireService = {
   // Mevcut kullanıcıyı daireye ekleme - DaireyeSakinEkleDTO
   addExistingUserToDaire: async (telefon, daireId) => {
     try {
-      console.log('Mevcut kullanıcı daireye ekleniyor:', { telefon, daireId });
-      
       // Backend DaireyeSakinEkleDTO formatında
       const requestData = {
         kullaniciTelefon: telefon,
         daireId: parseInt(daireId, 10)
       };
-      
-      console.log('DaireyeSakinEkleDTO gönderiliyor:', requestData);
-      
       // Token'ı kontrol edelim
       const token = localStorage.getItem('token');
       
       if (!token) {
-        console.error('Token bulunamadı');
         throw new Error('Oturumunuz sonlanmış. Lütfen tekrar giriş yapın.');
       }
       
-      console.log('Kullanıcı ekleme isteği için token:', token.substring(0, 20) + '...');
+      // console.log('Kullanıcı ekleme isteği için token:', token.substring(0, 20) + '...');
       
       // Hata alındığında farklı bir yaklaşım deneyelim - mockData kullanarak başarılı olmuş gibi yapalım
       try {
@@ -327,11 +261,8 @@ export const daireService = {
         
         return response.data;
       } catch (apiError) {
-        console.warn('API ile kullanıcı eklenemedi:', apiError);
-        
         // 403 hatası durumunda, başarılı yanıt simüle edelim - geçici çözüm
         if (apiError.response?.status === 403) {
-          console.log('403 hatası için geçici çözüm uygulanıyor...');
           return {
             message: `${telefon} numaralı kullanıcı ${daireId} ID'li daireye başarıyla eklendi.`,
             success: true
@@ -341,7 +272,6 @@ export const daireService = {
         throw apiError; // Diğer hataları yukarıya taşı
       }
     } catch (error) {
-      console.error('Kullanıcı ekleme hatası:', error);
       throw new Error(
         error.response?.data?.message || 
         'Kullanıcı daireye eklenirken hata oluştu.'

@@ -27,11 +27,9 @@ const DaireDetay = () => {
     try {
       setLoading(true);
       
-      console.log('DaireDetay - Daire ID:', daireId);
       
       // Daire detaylarını getir
       const daireData = await daireService.getDaireById(daireId);
-      console.log('DaireDetay - Daire detayları:', daireData);
       
       if (!daireData) {
         console.error('DaireDetay - Backend null response döndü');
@@ -43,10 +41,8 @@ const DaireDetay = () => {
       
       // Blok bilgilerini getir
       if (daireData.blokId) {
-        console.log('DaireDetay - Blok bilgileri getiriliyor, ID:', daireData.blokId);
         try {
           const blokData = await daireService.getBlokById(daireData.blokId);
-          console.log('DaireDetay - Blok bilgileri:', blokData);
           setBlok(blokData);
         } catch (blokError) {
           console.error('DaireDetay - Blok bilgileri yüklenemedi:', blokError);
@@ -57,10 +53,8 @@ const DaireDetay = () => {
       
       // @ManyToMany: Dairede kullanıcılar varsa, hepsinin bilgilerini getir
       if (daireData.kullaniciResponseDTOS && daireData.kullaniciResponseDTOS.length > 0) {
-        console.log('DaireDetay - Kullanıcı bilgileri getiriliyor, Kullanıcı sayısı:', daireData.kullaniciResponseDTOS.length);
         setSakinler(Array.from(daireData.kullaniciResponseDTOS)); // Set'i Array'e çevir
       } else {
-        console.log('DaireDetay - Daire boş, kullanıcı bilgisi yok');
         setSakinler([]);
       }
     } catch (error) {
@@ -340,7 +334,6 @@ const DaireDetay = () => {
             daire={daire}
             onClose={() => setSakinEkleModalAcik(false)}
             onSuccess={() => {
-              console.log('Sakin ekleme başarılı, daire verileri yenileniyor...');
               // Biraz bekleyip sonra veriyi yenile (backend'in güncellenmesi için)
               setTimeout(() => {
                 fetchDaireDetay();
@@ -378,20 +371,17 @@ const SakinEkleModal = ({ daire, onClose, onSuccess }) => {
 
     try {
       setLoading(true);
-      console.log('Telefon kontrol ediliyor:', telefon);
       
       // Telefon numarası ile kullanıcı kontrolü - yeni siteService kullan
       const result = await siteService.searchUserByPhone(telefon);
       
       if (result.success && result.user) {
         // Kullanıcı kayıtlı - seçim aşamasına geç
-        console.log('Kullanıcı bulundu:', result.user);
         setBulunanKullanici(result.user);
         setStep(2); // Kullanıcı seçim aşamasına geç
         toast.success(`Kullanıcı bulundu: ${result.user.kullaniciAdi} ${result.user.kullaniciSoyadi}`);
       } else {
         // Kullanıcı kayıtlı değil - kayıt formuna geç
-        console.log('Kullanıcı kayıtlı değil, kayıt formuna geçiliyor');
         setBulunanKullanici(null);
         setStep(3); // Kayıt formu aşamasına geç
         toast.info('Kullanıcı kayıtlı değil. Lütfen kayıt bilgilerini doldurun.');
@@ -412,7 +402,6 @@ const SakinEkleModal = ({ daire, onClose, onSuccess }) => {
 
     try {
       setLoading(true);
-      console.log('Kullanıcı daireye ekleniyor:', bulunanKullanici);
       
       await siteService.addUserToApartment(
         bulunanKullanici.kullaniciId || bulunanKullanici.id, 
@@ -451,7 +440,6 @@ const SakinEkleModal = ({ daire, onClose, onSuccess }) => {
         daireId: daire.daireId
       };
       
-      console.log('Yeni kullanıcı kaydediliyor:', sakinData);
       
       await daireService.registerSakin(sakinData);
       

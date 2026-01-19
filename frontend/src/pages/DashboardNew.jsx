@@ -67,17 +67,14 @@ const Dashboard = () => {
         return;
       }
 
-      console.log('Site ekleme başlatılıyor:', newSite);
 
       // Site ekleme isteği gönder
       const response = await siteService.addSite(newSite);
-      console.log('Site ekleme yanıtı:', response);
       
       if (response.success) {
         // Başarılı ise siteleri yeniden yükle
         try {
           const updatedSites = await siteService.getUserSites();
-          console.log('Güncellenmiş siteler:', updatedSites);
           setSites(updatedSites || []);
           
           // Yeni eklenen siteyi seç

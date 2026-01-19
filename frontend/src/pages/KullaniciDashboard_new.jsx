@@ -37,11 +37,9 @@ const KullaniciDashboard = () => {
         // Kullanıcı bilgilerini al
         const userInfo = await authService.getUserInfo();
         setUser(userInfo);
-        console.log('KullaniciDashboard - userInfo:', userInfo);
 
         // Token'dan rol bilgisini de al
         const decodedToken = authService.decodeToken();
-        console.log('KullaniciDashboard - decodedToken:', decodedToken);
         
         // Kullanıcının sakin olup olmadığını kontrol et
         let userRole = userInfo.apartmanRol;
@@ -51,10 +49,8 @@ const KullaniciDashboard = () => {
           userRole = decodedToken.apartmanRol;
         }
         
-        console.log('KullaniciDashboard - Final userRole:', userRole);
         
         if (userRole !== 'ROLE_APARTMANSAKIN' && userRole !== 'ApartmanSakin' && userRole !== 'Sakin') {
-          console.log('Bu sayfa sadece apartman sakinleri için, kullanıcı rolü:', userRole);
           toast.error('Bu sayfa sadece apartman sakinleri içindir.');
           navigate('/site-yonetimi');
           return;

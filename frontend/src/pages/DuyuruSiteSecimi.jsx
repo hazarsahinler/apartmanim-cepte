@@ -46,14 +46,12 @@ const DuyuruSiteSecimi = () => {
   }, [navigate]);
 
   const handleSiteClick = (site) => {
-    console.log('Site seçildi:', site);
     if (!site) {
       console.error('Site objesi undefined!');
       toast.error('Site bilgisi bulunamadı');
       return;
     }
     const siteIdToUse = site.id || site.siteId;
-    console.log('Kullanılacak siteId:', siteIdToUse);
     if (!siteIdToUse) {
       console.error('Site ID bulunamadı!', site);
       toast.error('Site ID bulunamadı');

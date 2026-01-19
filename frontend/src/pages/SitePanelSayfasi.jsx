@@ -32,16 +32,13 @@ const SitePanelSayfasi = () => {
         setLoading(true);
         
         // SiteId debug
-        console.log('SitePanelSayfasi - URL\'den gelen siteId:', siteId);
         
         // Timestamp kontrolü - eğer çok büyük bir sayıysa (timestamp) düzelt
         let validSiteId = siteId;
         if (siteId && siteId.toString().length > 10) {
-          console.warn('SitePanelSayfasi - Timestamp detected, fallback to 1:', siteId);
           validSiteId = '1'; // Default site ID
         }
         
-        console.log('SitePanelSayfasi - Kullanılacak siteId:', validSiteId);
         
         // Önce localStorage'dan kullanıcının sitelerini al
         const userSitesJson = localStorage.getItem('userSites');
@@ -92,19 +89,15 @@ const SitePanelSayfasi = () => {
         setBlokYukleniyor(true);
         
         // SiteId debug - timestamp sorunu
-        console.log('SitePanelSayfasi - Raw siteId:', siteId);
-        console.log('SitePanelSayfasi - siteId type:', typeof siteId);
         
         // Timestamp kontrolü - eğer çok büyük bir sayıysa (timestamp) düzelt
         let validSiteId = siteId;
         if (siteId && siteId.toString().length > 10) {
-          console.warn('SitePanelSayfasi fetchBloklar - Timestamp detected, fallback to 1:', siteId);
           validSiteId = '1'; // Default site ID
         }
         
         // SiteId'yi düzgün parse et
         const parsedSiteId = parseInt(validSiteId, 10);
-        console.log('SitePanelSayfasi - Parsed siteId:', parsedSiteId);
         
         if (isNaN(parsedSiteId)) {
           console.error('SitePanelSayfasi - Geçersiz siteId:', validSiteId);
@@ -115,7 +108,6 @@ const SitePanelSayfasi = () => {
         // Gerçek API çağrısı - parse edilmiş siteId kullan
         const blokData = await blokService.getBloksBySiteId(parsedSiteId);
         
-        console.log('Backend\'den gelen blok listesi:', blokData);
         
         // Backend BlokResponseDTO field mapping: { siteId, blokId, blokIsmi, daireSay }
         const bloklarWithDaireSayisi = (blokData || []).map(blok => ({
@@ -125,7 +117,6 @@ const SitePanelSayfasi = () => {
           // Diğer field'lar zaten doğru: blokId, blokIsmi, siteId
         }));
         
-        console.log('BlokResponseDTO mapped blok listesi:', bloklarWithDaireSayisi);
         setBloklar(bloklarWithDaireSayisi);
       } catch (err) {
         console.error("Blok verisi yüklenirken hata:", err);
@@ -146,7 +137,6 @@ const SitePanelSayfasi = () => {
         console.error("Duyurular yüklenirken hata:", err);
         // 403 hatası için özel mesaj
         if (err.message && err.message.includes('403')) {
-          console.warn('Duyuru erişimi için yetki gerekiyor. Backend SecurityConfig kontrol edilmeli.');
         }
         setDuyurular([]);
         // Hata mesajı göstermiyoruz, sessizce boş liste gösteriyoruz
@@ -167,7 +157,6 @@ const SitePanelSayfasi = () => {
         return toplam + (blok.daireSayisi || 0);
       }, 0);
       
-      console.log('Toplam daire sayısı hesaplandı:', toplamDaireSayisi);
       setSiteData(prev => ({
         ...prev,
         daireSayisi: toplamDaireSayisi,
@@ -553,32 +542,27 @@ const BlokEkleModal = ({ onClose, siteId, onSuccess }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    console.log('HandleChange çağrıldı:', { name, value, type: typeof value });
     
     if (name === 'katSayisi' || name === 'herKattakiDaireSayisi') {
       // Sayı alanları için
       const numValue = parseInt(value, 10);
       const finalValue = isNaN(numValue) ? 1 : Math.max(1, numValue);
       
-      console.log(`${name} - Original:`, value, 'Parsed:', numValue, 'Final:', finalValue);
       
       setFormData(prev => {
         const newData = {
           ...prev,
           [name]: finalValue
         };
-        console.log('Updated formData:', newData);
         return newData;
       });
     } else {
       // String alanları için
-      console.log(`${name} - String value:`, value);
       setFormData(prev => {
         const newData = {
           ...prev,
           [name]: value
         };
-        console.log('Updated formData:', newData);
         return newData;
       });
     }
@@ -609,9 +593,6 @@ const BlokEkleModal = ({ onClose, siteId, onSuccess }) => {
       errors.herKattakiDaireSayisi = 'Her kattaki daire sayısı en az 1 olmalıdır';
     }
     
-    console.log('Validation - formData:', formData);
-    console.log('Validation - katSayisi:', katSayisi, 'daireSayisi:', daireSayisi);
-    console.log('Validation errors:', errors);
     
     return errors;
   };
@@ -632,8 +613,6 @@ const BlokEkleModal = ({ onClose, siteId, onSuccess }) => {
     setLoading(true);
     
     try {
-      console.log('Form submit - Original formData:', formData);
-      console.log('Form submit - siteId:', siteId, 'type:', typeof siteId);
       
       const blokData = {
         blokIsmi: formData.blokIsmi.trim(),
@@ -642,12 +621,6 @@ const BlokEkleModal = ({ onClose, siteId, onSuccess }) => {
         siteId: parseInt(siteId, 10)
       };
       
-      console.log('Final blokData before API call:', blokData);
-      console.log('Type checks:');
-      console.log('- blokIsmi:', typeof blokData.blokIsmi, blokData.blokIsmi);
-      console.log('- katSayisi:', typeof blokData.katSayisi, blokData.katSayisi);
-      console.log('- herKattakiDaireSayisi:', typeof blokData.herKattakiDaireSayisi, blokData.herKattakiDaireSayisi);
-      console.log('- siteId:', typeof blokData.siteId, blokData.siteId);
       
       const response = await blokService.addBlok(blokData);
       

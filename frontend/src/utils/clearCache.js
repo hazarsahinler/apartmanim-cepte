@@ -8,10 +8,8 @@ export const clearAllCache = () => {
     // Session storage'ı da temizle
     sessionStorage.clear();
     
-    console.log('Tüm cache temizlendi');
     return true;
   } catch (error) {
-    console.error('Cache temizlenirken hata:', error);
     return false;
   }
 };
@@ -32,20 +30,19 @@ export const clearAppSpecificCache = () => {
       localStorage.removeItem(key);
     });
     
-    console.log('Uygulama cache\'i temizlendi');
     return true;
   } catch (error) {
-    console.error('Uygulama cache temizlenirken hata:', error);
     return false;
   }
 };
 
+// Debug fonksiyonu (production'da kullanılmamalı)
 export const debugLocalStorage = () => {
-  console.log('=== localStorage Debug ===');
+  // Production'da debug devre dışı
+  if (process.env.NODE_ENV === 'production') return;
+  
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    const value = localStorage.getItem(key);
-    console.log(`${key}:`, value);
+    localStorage.getItem(key);
   }
-  console.log('=== localStorage Debug End ===');
 };

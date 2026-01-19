@@ -50,12 +50,10 @@ const SiteYonetimSayfasi = () => {
           localStorage.removeItem('userSites');
           localStorage.removeItem('test_sites');
           localStorage.setItem('hasCleanedTestData', 'true');
-          console.log('Test verileri localStorage\'dan temizlendi');
         }
         
         // Önce token kontrolü yap
         if (!authService.isAuthenticated()) {
-          console.log('Kullanıcı giriş yapmamış, giriş sayfasına yönlendiriliyor...');
           toast.error('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.', {
             position: "top-center",
             autoClose: 5000
@@ -95,7 +93,6 @@ const SiteYonetimSayfasi = () => {
           
           // Önbellek verileri varsa, geçici olarak göster (API'dan veri gelene kadar)
           if (cachedSites && cachedSites.length > 0) {
-            console.log('Önbellekte site verileri bulundu, geçici olarak gösteriliyor:', cachedSites);
             setSiteler(cachedSites);
             
             // Önbellek güncel değilse (24 saatten eski), arka planda güncelleme yapalım
@@ -109,7 +106,6 @@ const SiteYonetimSayfasi = () => {
           
           try {
             // Doğrudan URL kullanarak - chunked encoding hatasını aşmak için
-            console.log('Site verileri API\'den çekiliyor...');
             const token = localStorage.getItem('token');
             
             if (!token) {
@@ -119,12 +115,7 @@ const SiteYonetimSayfasi = () => {
             
             // Token'ı decode et ve rol bilgilerini kontrol et
             const decodedToken = authService.decodeToken();
-            console.log('Decoded Token:', decodedToken);
-            console.log('Token roles:', decodedToken.roles);
-            console.log('Token apartmanRol:', decodedToken.apartmanRol);
             
-            console.log('Site verileri için kullanılan token:', token.substring(0, 20) + '...');
-            console.log('API çağrısı yapılıyor:', `${API_BASE_URL}/structure/site/${userData.id}`);
             
             // siteService kullanarak API çağrısı yap
             const siteData = await siteService.getUserSites(userData.id);
@@ -134,7 +125,6 @@ const SiteYonetimSayfasi = () => {
               setSiteler(siteData);
               siteStorageService.saveSites(siteData, userData.id);
               
-              console.log('Kullanıcının siteleri başarıyla yüklendi:', siteData);
               
               // Eski önbellek varsa, güncellendiğini bildir
               if (cachedSites && cachedSites.length > 0 && 
@@ -145,7 +135,6 @@ const SiteYonetimSayfasi = () => {
                 });
               }
             } else {
-              console.log('Kullanıcıya ait site bulunamadı, boş liste döndü');
               
               // Kullanıcının sitesi yoksa state'i ve önbelleği temizle
               setSiteler([]);
@@ -194,14 +183,12 @@ const SiteYonetimSayfasi = () => {
             } else {
               // API'den site alınamadı, hata handling
               if (siteErr.response?.status === 404) {
-                console.log('Kullanıcının sitesi bulunamadı, site ekleme modalını aç');
                 setSiteEkleModalAcik(true);
                 toast.info('Henüz site eklememişsiniz. İlk sitenizi ekleyin!', {
                   position: "top-center", 
                   autoClose: 4000
                 });
               } else if (siteErr.code === 'ERR_NETWORK' || siteErr.message.includes('Network Error')) {
-                console.log('Backend bağlantı hatası');
                 setError('Sunucuya bağlanılamıyor. Lütfen daha sonra tekrar deneyin.');
                 toast.error(
                   <div className="flex items-center gap-2">
@@ -241,7 +228,6 @@ const SiteYonetimSayfasi = () => {
         }
         
         // API hatası durumunda boş liste göster
-        console.log('API hatası ve önbellek verisi yok, boş liste gösteriliyor');
         setSiteler([]);
       } finally {
         setLoading(false);
@@ -253,7 +239,6 @@ const SiteYonetimSayfasi = () => {
 
   // Site'ye tıklandığında site paneline yönlendir
   const handleSiteClick = (siteId) => {
-    console.log('Site tıklandı, ID:', siteId);
     navigate(`/site-panel/${siteId}`);
   };
 
@@ -690,7 +675,6 @@ const SiteEkleModal = ({ onClose, userId, onSuccess }) => {
         yoneticiId: parseInt(userId, 10) || 0 // userId'yi sayı olarak gönderelim
       };
       
-      console.log('Site ekleme isteği gönderiliyor:', requestData);
       
       // Doğrudan URL kullanarak - chunked encoding hatasını aşmak için
       const response = await axios.post(`${API_BASE_URL}/structure/site/ekle`, requestData, {
@@ -701,7 +685,6 @@ const SiteEkleModal = ({ onClose, userId, onSuccess }) => {
         timeout: 30000
       });
       
-      console.log('Site ekleme yanıtı:', response.data);
       
       if (response.data && response.data.message) {
         // Backend'den başarılı response - ResponseDTO: { message, token }
@@ -716,18 +699,15 @@ const SiteEkleModal = ({ onClose, userId, onSuccess }) => {
             },
             timeout: 30000
           });
-          console.log('Yeni eklenen site için backend response:', sitesResponse.data);
           
           if (sitesResponse.data && sitesResponse.data.length > 0) {
             // En son eklenen site (siteIsmi ile eşleştir) - SiteResponseDTO
             const addedSite = sitesResponse.data.find(site => site.siteIsmi === requestData.siteIsmi);
             if (addedSite && addedSite.siteId) {
               realSiteId = addedSite.siteId; // SiteResponseDTO.siteId
-              console.log('Backend SiteResponseDTO\'dan gerçek site ID alındı:', realSiteId);
             }
           }
         } catch (siteIdError) {
-          console.warn('Site ID alınırken hata, fallback kullanılıyor:', siteIdError);
         }
         
         // SiteResponseDTO field'larına uygun site objesi
@@ -770,7 +750,6 @@ const SiteEkleModal = ({ onClose, userId, onSuccess }) => {
         errorMessage = err.message;
       }
       
-      console.log('Hata detayları:', err.response?.data);
       
       if (err.response?.status === 401 || err.response?.status === 403) {
         errorMessage = 'Yetkilendirme hatası. Lütfen tekrar giriş yapın.';

@@ -51,20 +51,16 @@ const YoneticiDashboard = () => {
         
         if (userInfo) {
           // LocalStorage'da bilgi varsa kullan
-          console.log('Kullanıcı bilgileri localStorage\'dan alındı:', userInfo);
           setUser(userInfo);
         } else {
           try {
             // LocalStorage'da bilgi yoksa API'den çek
-            console.log('Kullanıcı bilgileri API\'den alınıyor...');
             const userData = await authService.getUserInfo();
-            console.log('Kullanıcı bilgileri API\'den alındı:', userData);
             setUser(userData);
           } catch (apiError) {
             console.error('API\'den kullanıcı bilgileri alınamadı:', apiError);
             
             // API'den alınamazsa test kullanıcısı oluştur
-            console.log('Test kullanıcısı oluşturuluyor...');
             const testUser = authService.createTestUser();
             setUser(testUser);
             
@@ -194,8 +190,6 @@ const YoneticiDashboard = () => {
   }
 
   // Konsola dashboard sayfasının render edildiğini yazdıralım
-  console.log('YoneticiDashboard bileşeni render ediliyor...');
-  console.log('Kullanıcı bilgisi:', user);
   
   return (
     <div className="min-h-screen bg-gray-50">

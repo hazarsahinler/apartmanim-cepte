@@ -107,7 +107,6 @@ const DuyuruEkleme = () => {
         onemSeviyesi: duyuruForm.onemSeviyesi
       };
 
-      console.log('Gönderilen duyuru verisi:', duyuruData);
 
       await duyuruService.createDuyuru(duyuruData);
       

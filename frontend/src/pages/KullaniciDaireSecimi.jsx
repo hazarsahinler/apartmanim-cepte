@@ -50,11 +50,8 @@ const KullaniciDaireSecimi = () => {
         // Daire bilgilerini al
         try {
           const telefonNo = userInfo.kullaniciTelefon || userInfo.telefonNumarasi || userInfo.telefon;
-          console.log('KullaniciDaireSecimi - Kullanılan telefon:', telefonNo);
-          console.log('KullaniciDaireSecimi - Kullanıcı bilgileri:', userInfo);
           
           const daireBilgileri = await userDaireService.getKullaniciDaireBilgileri(telefonNo);
-          console.log('KullaniciDaireSecimi - Gelen daire bilgileri:', daireBilgileri);
           
           if (daireBilgileri && daireBilgileri.length > 0) {
             // Eğer tek daire varsa direk kullanıcı sayfasına yönlendir
@@ -92,7 +89,6 @@ const KullaniciDaireSecimi = () => {
 
   // Daire seçimi
   const handleDaireSecimi = (daire) => {
-    console.log('Daire seçildi:', daire);
     
     try {
       // Daire bilgisini formatla

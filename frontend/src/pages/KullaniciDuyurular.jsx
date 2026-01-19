@@ -65,15 +65,12 @@ const KullaniciDuyurular = () => {
         }
 
         setDaireInfo(selectedDaire);
-        console.log('KullaniciDuyurular - Seçilen daire:', selectedDaire);
 
         // Site ID'ye göre duyuruları çek
         const siteId = selectedDaire.siteId;
-        console.log('KullaniciDuyurular - Site ID:', siteId);
 
         try {
           const duyuruData = await duyuruService.getDuyurularBySite(siteId);
-          console.log('KullaniciDuyurular - API\'den gelen duyurular:', duyuruData);
           
           // Backend DuyuruResponseDTO field mapping
           const mappedDuyurular = (Array.isArray(duyuruData) ? duyuruData : []).map(duyuru => ({
@@ -86,7 +83,6 @@ const KullaniciDuyurular = () => {
             siteIsmi: duyuru.siteIsmi
           }));
           
-          console.log('KullaniciDuyurular - Mapped duyurular:', mappedDuyurular);
           
           // Tarihe göre sırala (en yeni önce)
           const sortedDuyurular = mappedDuyurular.sort((a, b) => {
@@ -131,7 +127,6 @@ const KullaniciDuyurular = () => {
 
   // Duyuru detayına git
   const handleDuyuruClick = (duyuru) => {
-    console.log('Duyuru detayı:', duyuru);
     // İsterseniz detay sayfasına yönlendirebilirsiniz
     // navigate(`/kullanici-duyuru-detay/${duyuru.id}`);
   };

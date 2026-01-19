@@ -40,7 +40,6 @@ const FinansalIslemlerPanel = () => {
         }
 
         const userInfo = await authService.getUserInfo();
-        console.log('Kullanıcı bilgileri:', userInfo);
         
         // Site bilgilerini API'den çek
         try {
@@ -55,17 +54,13 @@ const FinansalIslemlerPanel = () => {
 
           if (response.ok) {
             const siteData = await response.json();
-            console.log('API\'den gelen site verisi:', siteData);
-            console.log('Aranan siteId:', siteId, 'Tipi:', typeof siteId);
             
             const foundSite = siteData.find(site => {
-              console.log('Site kontrolü - site.id:', site.id, 'site.siteId:', site.siteId, 'parseInt(siteId):', parseInt(siteId));
               return site.id === parseInt(siteId) || site.siteId === parseInt(siteId);
             });
             
             if (foundSite) {
               setSiteData(foundSite);
-              console.log('Site verisi bulundu:', foundSite);
               
               // Finansal özet verilerini çek
               await fetchFinancialSummary(foundSite.id || foundSite.siteId, foundSite);
@@ -121,12 +116,9 @@ const FinansalIslemlerPanel = () => {
                                currentSiteData?.apartmentCount ||
                                0;
                                
-        console.log('Site bilgileri:', currentSiteData);
-        console.log('Toplam daire sayısı bulunan:', toplamDaireSayisi);
         
         // Eğer hala 0 ise, varsayılan bir değer ata
         if (toplamDaireSayisi === 0) {
-          console.warn('Daire sayısı bulunamadı, varsayılan değer (20) kullanılıyor');
           toplamDaireSayisi = 20;
         }
         
@@ -183,7 +175,6 @@ const FinansalIslemlerPanel = () => {
         try {
           const giderData = await financeService.getTotalSiteGider(currentSiteId);
           toplamGider = parseFloat(giderData.tutar) || 0;
-          console.log('Toplam gider API\'den alındı:', toplamGider);
         } catch (error) {
           console.error('Toplam gider alınırken hata:', error);
           toplamGider = 0;
@@ -196,7 +187,6 @@ const FinansalIslemlerPanel = () => {
           bekleyenAlacak: bekleyenAlacak
         });
         
-        console.log('Finansal özet güncellendi:', {
           toplamGelir,
           bekleyenAlacak,
           toplamDaireSayisi,
@@ -237,7 +227,6 @@ const FinansalIslemlerPanel = () => {
         }
         
         const blokData = await blokService.getBloksBySiteId(parsedSiteId);
-        console.log('FinansalIslemlerPanel - Bloklar yüklendi:', blokData);
         
         const bloklarWithDaireSayisi = (blokData || []).map(blok => ({
           ...blok,
@@ -263,8 +252,6 @@ const FinansalIslemlerPanel = () => {
         return toplam + (blok.daireSayisi || 0);
       }, 0);
       
-      console.log('FinansalIslemlerPanel - Toplam daire sayısı:', toplamDaireSayisi);
-      console.log('FinansalIslemlerPanel - Toplam blok sayısı:', bloklar.length);
       
       setSiteData(prev => ({
         ...prev,

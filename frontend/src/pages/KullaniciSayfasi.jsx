@@ -60,14 +60,11 @@ const KullaniciSayfasi = () => {
         // Daire bilgilerini al
         try {
           const telefonNo = userInfo.kullaniciTelefon || userInfo.telefonNumarasi || userInfo.telefon;
-          console.log('KullaniciSayfasi - Kullanılan telefon:', telefonNo);
-          console.log('KullaniciSayfasi - Kullanıcı bilgileri:', userInfo);
           
           // Önce seçilen daire var mı kontrol et
           const selectedDaire = userDaireService.getSelectedDaire();
           
           if (selectedDaire) {
-            console.log('KullaniciSayfasi - Seçilen daire kullanılıyor:', selectedDaire);
             setDaireInfo(selectedDaire);
             
             // Finansal verilerini yükle
@@ -75,11 +72,9 @@ const KullaniciSayfasi = () => {
           } else {
             // Seçilen daire yoksa API'den çek
             const daireBilgileri = await userDaireService.getKullaniciDaireBilgileri(telefonNo);
-            console.log('KullaniciSayfasi - API\'den gelen daire bilgileri:', daireBilgileri);
             
             if (daireBilgileri && daireBilgileri.length > 0) {
               // Her durumda seçim sayfasına yönlendir (tek daire bile olsa)
-              console.log('KullaniciSayfasi - Daire bulundu, seçim sayfasına yönlendiriliyor...');
               setLoading(false);
               navigate('/kullanici-daire-secimi');
               return;
@@ -89,7 +84,6 @@ const KullaniciSayfasi = () => {
           }
 
         } catch (dairErr) {
-          console.warn('Daire bilgisi alınamadı:', dairErr.message);
           toast.warn(dairErr.message);
           setDaireInfo(null);
         }
@@ -123,9 +117,7 @@ const KullaniciSayfasi = () => {
         try {
           const gelirData = await userDaireService.getTotalApartmanGelir(daireData.siteId);
           setTotalApartmanGeliri(gelirData);
-          console.log('KullaniciSayfasi - Total apartman geliri yüklendi:', gelirData);
         } catch (gelirErr) {
-          console.warn('Total apartman geliri alınamadı:', gelirErr.message);
           setTotalApartmanGeliri({ tutar: 0 });
         }
         
@@ -133,9 +125,7 @@ const KullaniciSayfasi = () => {
         try {
           const giderData = await giderService.getTotalSiteGider(daireData.siteId);
           setTotalApartmanGideri(giderData);
-          console.log('KullaniciSayfasi - Total apartman gideri yüklendi:', giderData);
         } catch (giderErr) {
-          console.warn('Total apartman gideri alınamadı:', giderErr.message);
           setTotalApartmanGideri({ tutar: 0 });
         }
         
@@ -143,14 +133,11 @@ const KullaniciSayfasi = () => {
         try {
           const giderListesi = await giderService.getSiteGiderleri(daireData.siteId);
           setSiteGiderleri(giderListesi.slice(0, 5)); // Sadece son 5'i göster
-          console.log('KullaniciSayfasi - Site giderleri yüklendi:', giderListesi);
         } catch (giderErr) {
-          console.warn('Site giderleri alınamadı:', giderErr.message);
           setSiteGiderleri([]);
         }
         
       } catch (finErr) {
-        console.warn('Finansal özet alınamadı:', finErr.message);
       }
     };
 
@@ -186,9 +173,7 @@ const KullaniciSayfasi = () => {
         try {
           const guncelGelir = await userDaireService.getTotalApartmanGelir(daireInfo.siteId);
           setTotalApartmanGeliri(guncelGelir);
-          console.log('KullaniciSayfasi - Total apartman geliri güncellendi:', guncelGelir);
         } catch (gelirErr) {
-          console.warn('Total apartman geliri güncellenemedi:', gelirErr.message);
         }
         
         // Total apartman giderini de güncelle
@@ -196,7 +181,6 @@ const KullaniciSayfasi = () => {
           const guncelGider = await giderService.getTotalSiteGider(daireInfo.siteId);
           setTotalApartmanGideri(guncelGider);
         } catch (giderErr) {
-          console.warn('Total apartman gideri güncellenemedi:', giderErr.message);
         }
       }
       
@@ -219,13 +203,11 @@ const KullaniciSayfasi = () => {
           const durum = await userDaireService.odemeIstekDurumKontrol(borc.id);
           durumlar[borc.id] = durum.onaylandiMi;
         } catch (error) {
-          console.warn(`Borç ${borc.id} için durum kontrol edilemedi:`, error.message);
           durumlar[borc.id] = null; // Durum bilinmiyor
         }
       }
       
       setOdemeIstekDurumlari(durumlar);
-      console.log('UserDaireService - Ödeme isteği durumları:', durumlar);
       
     } catch (error) {
       console.error('Ödeme isteği durumları yüklenirken hata:', error);

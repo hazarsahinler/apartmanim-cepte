@@ -120,7 +120,6 @@ const OdemeIstekleriSayfasi = () => {
       
       if (daireId) {
         try {
-          console.log('OdemeIstekleriSayfasi - DaireId ile borç detayları çekiliyor:', daireId);
           borcData = await odemeIstekService.getDaireBorcByDaireId(daireId);
           
           // daireBorcId ile eşleşen borcu bul
@@ -129,13 +128,11 @@ const OdemeIstekleriSayfasi = () => {
             borcData = matchingBorc || (borcData.length > 0 ? borcData[0] : null);
           }
         } catch (daireIdError) {
-          console.warn('DaireId ile borç detayları alınamadı, borcId ile denenecek:', daireIdError.message);
         }
       }
       
       // Eğer daireId ile çekilemezse eski yöntemi kullan
       if (!borcData) {
-        console.log('OdemeIstekleriSayfasi - BorcId ile borç detayları çekiliyor:', daireBorcId);
         const fallbackData = await odemeIstekService.getDaireBorcByBorcId(daireBorcId);
         borcData = fallbackData && fallbackData.length > 0 ? fallbackData[0] : null;
       }

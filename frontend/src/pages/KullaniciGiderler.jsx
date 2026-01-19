@@ -106,8 +106,6 @@ const KullaniciGiderler = () => {
         setTotalGider(totalGiderData);
         setFilteredGiderler(giderListesi);
 
-        console.log('KullaniciGiderler - Giderler yüklendi:', giderListesi);
-        console.log('KullaniciGiderler - Total gider:', totalGiderData);
 
       } catch (error) {
         console.error('Giderler yüklenirken hata:', error);

@@ -63,12 +63,9 @@ const AlacakYonetimi = () => {
         }
       );
 
-      console.log('Alacaklar API yanıtı:', response.data);
       
       // Backend'den gelen BorcTanimiResponseDTO formatını frontend formatına dönüştür
       const transformedAlacaklar = response.data.map((borc, index) => {
-        console.log(`Alacak ${index + 1}:`, borc);
-        console.log(`odemeYapanDaireSay değeri:`, borc.odemeYapanDaireSay);
         
         return {
           id: borc.id,
@@ -83,7 +80,6 @@ const AlacakYonetimi = () => {
         };
       });
 
-      console.log('Dönüştürülmüş alacaklar:', transformedAlacaklar);
       return transformedAlacaklar;
     } catch (error) {
       console.error('Alacaklar yüklenirken hata:', error);

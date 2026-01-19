@@ -5,8 +5,6 @@ export const financeService = {
   // Yeni borç tanımı ekle
   addBorcTanimi: async (borcData) => {
     try {
-      console.log('FinanceService - Borç tanımı ekleme isteği:', borcData);
-      
       // Backend BorcTanimiCreateRequestDTO'ya göre field mapping
       const requestData = {
         tutar: parseFloat(borcData.tutar),
@@ -15,16 +13,9 @@ export const financeService = {
         sonOdemeTarihi: borcData.sonOdemeTarihi, // LocalDate format: YYYY-MM-DD
         siteId: parseInt(borcData.siteId)
       };
-      
-      console.log('FinanceService - Backend\'e gönderilecek veri:', requestData);
-      
       const response = await api.post('/finance/borc/ekle', requestData);
-      
-      console.log('FinanceService - Borç tanımı ekleme yanıtı:', response.data);
       return response.data; // ResponseDTO
     } catch (error) {
-      console.error('FinanceService - Borç tanımı ekleme hatası:', error);
-      
       if (error.response?.status === 400) {
         // Validation hatası
         throw new Error(error.response.data?.message || 'Girilen bilgileri kontrol ediniz.');
@@ -41,8 +32,6 @@ export const financeService = {
   // Tanımlanmış borçları getir (filtreleyerek)
   getTanimlananBorclar: async (filterData = {}) => {
     try {
-      console.log('FinanceService - Tanımlanmış borçlar getiriliyor, Filtre:', filterData);
-      
       // TanimlanmisBorcFiltreDTO'ya göre query parametreleri oluştur
       const queryParams = new URLSearchParams();
       
@@ -60,17 +49,10 @@ export const financeService = {
       }
       
       const url = `/finance/eklenen/borclar${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      console.log('FinanceService - API URL:', url);
-      
       const response = await api.get(url);
-      
-      console.log('FinanceService - Tanımlanmış borçlar yanıtı:', response.data);
-      
       // BorcTanimiResponseDTO[] array döner
       return response.data || [];
     } catch (error) {
-      console.error('FinanceService - Tanımlanmış borçlar getirme hatası:', error);
-      
       if (error.response?.status === 403) {
         throw new Error('Bu verilere erişim yetkiniz bulunmamaktadır.');
       } else if (error.response?.status === 404) {
@@ -80,7 +62,6 @@ export const financeService = {
       }
       
       // Hata durumunda boş array döner - kullanıcı deneyimini bozmamak için
-      console.warn('FinanceService - Borçlar getirilemedi, boş liste döndürülüyor');
       return [];
     }
   },
@@ -96,17 +77,10 @@ export const financeService = {
   // Toplam site giderini getir
   getTotalSiteGider: async (siteId) => {
     try {
-      console.log('FinanceService - Toplam gider getiriliyor, siteId:', siteId);
-      
       const response = await api.get(`/finance/total/gider/${siteId}`);
-      
-      console.log('FinanceService - Toplam gider yanıtı:', response.data);
-      
       // TotalApartmanGiderResponseDTO döner: { tutar: BigDecimal }
       return response.data || { tutar: 0 };
     } catch (error) {
-      console.error('FinanceService - Toplam gider getirme hatası:', error);
-      
       if (error.response?.status === 404) {
         return { tutar: 0 }; // Gider bulunamadıysa 0 döner
       } else if (error.response?.status === 403) {
@@ -114,8 +88,6 @@ export const financeService = {
       } else if (error.response?.status === 500) {
         throw new Error('Sunucu hatası. Lütfen daha sonra tekrar deneyiniz.');
       }
-      
-      console.warn('FinanceService - Toplam gider getirilemedi, 0 döndürülüyor');
       return { tutar: 0 };
     }
   },
@@ -144,7 +116,6 @@ export const financeService = {
         day: 'numeric'
       });
     } catch (error) {
-      console.error('FinanceService - Tarih formatlama hatası:', error);
       return dateString;
     }
   },
@@ -157,7 +128,6 @@ export const financeService = {
       const date = new Date(dateInput);
       return date.toISOString().split('T')[0]; // YYYY-MM-DD formatı
     } catch (error) {
-      console.error('FinanceService - LocalDate formatı hatası:', error);
       return null;
     }
   },
@@ -165,17 +135,10 @@ export const financeService = {
   // Total apartman geliri getir
   getTotalApartmanGelir: async (siteId) => {
     try {
-      console.log('FinanceService - Total apartman geliri getiriliyor, SiteId:', siteId);
-      
       const response = await api.get(`/finance/total/gelir/${siteId}`);
-      
-      console.log('FinanceService - Total apartman geliri yanıtı:', response.data);
-      
       // TotalApartmanGelirResponseDTO döner: { tutar: BigDecimal }
       return response.data;
     } catch (error) {
-      console.error('FinanceService - Total apartman geliri getirme hatası:', error);
-      
       if (error.response?.status === 403) {
         throw new Error('Bu bilgilere erişim yetkiniz bulunmamaktadır.');
       } else if (error.response?.status === 404) {
@@ -186,7 +149,6 @@ export const financeService = {
       }
       
       // Hata durumunda sıfır döner
-      console.warn('FinanceService - Total gelir getirilemedi, sıfır döndürülüyor');
       return { tutar: 0 };
     }
   },

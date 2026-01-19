@@ -24,8 +24,6 @@ export const handleChunkedEncodingError = (error, options = {}) => {
       error?.message?.includes('INCOMPLETE_CHUNKED_ENCODING') ||
       (error?.response?.status === 200 && error.code !== 'ECONNABORTED')) {
     
-    console.log(`Chunked encoding hatası bypass ediliyor: ${entityType} verileri`);
-    
     if (showToast) {
       toast.info(`${entityType} verileri alınırken bağlantı sorunu oluştu. Demo veriler gösteriliyor.`, {
         position: "top-right",
@@ -62,7 +60,7 @@ export const handleSiteDataError = (error, setSiteler, userId) => {
       try {
         localStorage.setItem(`sites_${userId}`, JSON.stringify(mockSites));
       } catch (e) {
-        console.error('Site verileri önbelleğe kaydedilemedi:', e);
+        // Hata sessizce yoksayılıyor
       }
     }
   });

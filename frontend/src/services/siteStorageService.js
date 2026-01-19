@@ -27,7 +27,6 @@ const saveSites = (sites, userId = null) => {
         try {
           mapping = JSON.parse(mappingJson);
         } catch (e) {
-          console.error('Kullanıcı-site eşleştirme verisi hatalı, sıfırlanıyor');
           mapping = {};
         }
       }
@@ -39,7 +38,6 @@ const saveSites = (sites, userId = null) => {
     
     return true;
   } catch (e) {
-    console.error('Site verileri önbelleğe kaydedilemedi:', e);
     return false;
   }
 };
@@ -75,7 +73,6 @@ const getSites = (userId = null) => {
       lastFetch: lastFetch ? new Date(lastFetch) : null 
     };
   } catch (e) {
-    console.error('Site verileri önbellekten okunamadı:', e);
     return { sites: [], lastFetch: null };
   }
 };
@@ -95,7 +92,6 @@ const addSite = (site, userId = null) => {
     
     return saveSites(sites, userId);
   } catch (e) {
-    console.error('Site eklenirken önbellekleme hatası:', e);
     return false;
   }
 };
@@ -112,7 +108,6 @@ const saveSiteDetail = (siteId, siteDetail) => {
     );
     return true;
   } catch (e) {
-    console.error(`Site ${siteId} detayları önbelleğe kaydedilemedi:`, e);
     return false;
   }
 };
@@ -129,7 +124,6 @@ const getSiteDetail = (siteId) => {
       lastUpdated: detail.lastUpdated ? new Date(detail.lastUpdated) : null
     };
   } catch (e) {
-    console.error(`Site ${siteId} detayları önbellekten okunamadı:`, e);
     return null;
   }
 };
@@ -160,22 +154,20 @@ const clearUserSiteData = (userId) => {
       }
     }
   } catch (e) {
-    console.error('Kullanıcı site verisi temizlenirken hata:', e);
+    // Hata sessizce yoksayılıyor
   }
 };
 
 // Tüm cache'i temizle
 const clearAllCache = () => {
   try {
-    console.log('Tüm site cache verileri temizleniyor...');
     localStorage.removeItem(STORAGE_KEYS.CACHED_SITES);
     localStorage.removeItem(STORAGE_KEYS.USER_SITES_MAPPING);
     localStorage.removeItem(STORAGE_KEYS.LAST_FETCH);
     localStorage.removeItem('selectedSite');
     localStorage.removeItem('kullaniciDaireBilgileri');
-    console.log('Site cache verileri başarıyla temizlendi.');
   } catch (e) {
-    console.error('Cache temizlenirken hata:', e);
+    // Hata sessizce yoksayılıyor
   }
 };
 
@@ -185,7 +177,6 @@ const getLastFetchTime = (userId = null) => {
     const lastFetch = localStorage.getItem(STORAGE_KEYS.LAST_FETCH);
     return lastFetch ? new Date(lastFetch) : null;
   } catch (e) {
-    console.error('Son fetch zamanı okunamadı:', e);
     return null;
   }
 };

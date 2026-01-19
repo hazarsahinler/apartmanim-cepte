@@ -23,7 +23,6 @@ const BlokDetay = () => {
     try {
       setLoading(true);
       const daireData = await daireService.getDairesByBlokId(blokId);
-      console.log('Daire verileri alındı:', daireData);
       
       // Daireleri numaraya göre sırala (sabit sıralama)
       const siraliDaireler = (daireData || []).sort((a, b) => a.daireNo - b.daireNo);

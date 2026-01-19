@@ -44,7 +44,6 @@ const DaireBorcDetay = () => {
         }
       );
 
-      console.log('Daire borçları API yanıtı:', response.data);
       return response.data;
     } catch (error) {
       console.error('Daire borçları yüklenirken hata:', error);
@@ -76,7 +75,6 @@ const DaireBorcDetay = () => {
           
           // Site bulundu ama şu an kullanmıyoruz
           if (foundSite) {
-            console.log('Site bilgisi:', foundSite);
           }
         }
         

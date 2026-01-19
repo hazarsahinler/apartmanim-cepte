@@ -6,16 +6,11 @@ export const yoneticiOdemeService = {
   // Yönetici için site ödeme isteklerini getir
   getSiteOdemeIstekleri: async (siteId) => {
     try {
-      console.log('YoneticiOdemeService - Site ödeme istekleri getiriliyor:', siteId);
-      
       const response = await api.get(`${ENDPOINTS.FINANCE.ODEME_ISTEKLER}/${siteId}`);
-      
-      console.log('YoneticiOdemeService - Ödeme istekleri yanıtı:', response.data);
       
       // BorcOdemeIstekResponseDTO array response
       return response.data;
     } catch (error) {
-      console.error('YoneticiOdemeService - Ödeme istekleri getirme hatası:', error);
       
       if (error.response?.status === 404) {
         return []; // Ödeme isteği bulunamadı
@@ -32,15 +27,10 @@ export const yoneticiOdemeService = {
   // Ödeme isteğini kabul et
   odemeIstegiKabulEt: async (daireBorcId) => {
     try {
-      console.log('YoneticiOdemeService - Ödeme isteği kabul ediliyor:', daireBorcId);
-      
       const response = await api.post(`${ENDPOINTS.FINANCE.ODEME_ISTEK_KABUL}/${daireBorcId}`);
-      
-      console.log('YoneticiOdemeService - Ödeme isteği kabul yanıtı:', response.data);
       
       return response.data;
     } catch (error) {
-      console.error('YoneticiOdemeService - Ödeme isteği kabul hatası:', error);
       
       if (error.response?.status === 400) {
         throw new Error(error.response.data?.message || 'Ödeme isteği kabul edilemedi. Bilgileri kontrol ediniz.');
@@ -82,7 +72,7 @@ export const yoneticiOdemeService = {
       const key = `odemeIstekleri_${siteId}`;
       localStorage.setItem(key, JSON.stringify(istekler));
     } catch (error) {
-      console.error('YoneticiOdemeService - Ödeme istekleri saklama hatası:', error);
+      // Hata sessizce yoksayılıyor
     }
   },
 
@@ -93,7 +83,6 @@ export const yoneticiOdemeService = {
       const saved = localStorage.getItem(key);
       return saved ? JSON.parse(saved) : [];
     } catch (error) {
-      console.error('YoneticiOdemeService - Ödeme istekleri alma hatası:', error);
       return [];
     }
   },
@@ -104,7 +93,7 @@ export const yoneticiOdemeService = {
       const key = `odemeIstekleri_${siteId}`;
       localStorage.removeItem(key);
     } catch (error) {
-      console.error('YoneticiOdemeService - Ödeme istekleri temizleme hatası:', error);
+      // Hata sessizce yoksayılıyor
     }
   }
 };

@@ -5,25 +5,14 @@ export const userDaireService = {
   // Kullanıcının telefon numarası ile daire bilgilerini getir (tüm daireler)
   getKullaniciDaireBilgileri: async (telefonNo) => {
     try {
-      console.log('UserDaireService - Kullanıcı daire bilgileri getiriliyor:', telefonNo);
-      
-      // Token kontrolü yap
-      const token = localStorage.getItem('token');
-      console.log('UserDaireService - Token var mı:', !!token);
-      console.log('UserDaireService - Token değeri (ilk 20 karakter):', token?.substring(0, 20));
-      
       const response = await api.get(`${ENDPOINTS.STRUCTURE.KULLANICI_DAIRE}/${telefonNo}`);
-      
-      console.log('UserDaireService - Daire bilgileri yanıtı:', response.data);
       
       // Backend array döndürüyor, tümünü return et
       const daireData = Array.isArray(response.data) ? response.data : [response.data];
-      console.log('UserDaireService - İşlenmiş daire dizisi:', daireData);
       
       // DaireResponseByKullaniciDTO[] response
       return daireData;
     } catch (error) {
-      console.error('UserDaireService - Daire bilgileri getirme hatası:', error);
       
       if (error.response?.status === 404) {
         // Kullanıcının dairesi bulunamadı
@@ -41,8 +30,6 @@ export const userDaireService = {
   // Kullanıcının finansal verilerini getir
   getKullaniciFinansalOzet: async (daireId) => {
     try {
-      console.log('UserDaireService - Kullanıcı finansal özeti getiriliyor:', daireId);
-      
       // Daire borçlarını alıp finansal özet hesapla
       const borclar = await userDaireService.getKullaniciDaireBorclari(daireId);
       
@@ -91,7 +78,6 @@ export const userDaireService = {
         odenmemisBorcSayisi: borclar.filter(b => !b.odendiMi).length
       };
     } catch (error) {
-      console.error('UserDaireService - Finansal özet hatası:', error);
       return {
         toplamOdenen: 0,
         bekleyenOdemeler: 0,
@@ -106,16 +92,11 @@ export const userDaireService = {
   // Kullanıcının daire borçlarını getir
   getKullaniciDaireBorclari: async (daireId) => {
     try {
-      console.log('UserDaireService - Kullanıcı daire borçları getiriliyor:', daireId);
-      
       const response = await api.get(`${ENDPOINTS.FINANCE.DAIRE_BORC}/${daireId}`);
-      
-      console.log('UserDaireService - Daire borçları yanıtı:', response.data);
       
       // DaireBorcResponseDTO array response
       return response.data;
     } catch (error) {
-      console.error('UserDaireService - Daire borçları hatası:', error);
       
       if (error.response?.status === 404) {
         return []; // Borç bulunamadığında boş array döndür
@@ -132,8 +113,6 @@ export const userDaireService = {
   // Kullanıcının ödeme isteklerini getir
   getKullaniciOdemeIstekleri: async (daireId) => {
     try {
-      console.log('UserDaireService - Kullanıcı ödeme istekleri getiriliyor:', daireId);
-      
       // Gelecekte kullanılacak API endpoint'i
       // const response = await api.get(`/finance/kullanici/odeme-istekleri/${daireId}`);
       
@@ -149,7 +128,6 @@ export const userDaireService = {
         }
       ];
     } catch (error) {
-      console.error('UserDaireService - Ödeme istekleri hatası:', error);
       return [];
     }
   },
@@ -157,14 +135,10 @@ export const userDaireService = {
   // Ödeme isteği gönder
   odemeIstegiGonder: async (daireBorcId) => {
     try {
-      console.log('UserDaireService - Ödeme isteği gönderiliyor:', daireBorcId);
-      
       const response = await api.post(`${ENDPOINTS.FINANCE.ODEME_ISTEK_GONDER}/${daireBorcId}`);
       
-      console.log('UserDaireService - Ödeme isteği yanıtı:', response.data);
       return response.data;
     } catch (error) {
-      console.error('UserDaireService - Ödeme isteği hatası:', error);
       
       if (error.response?.status === 400) {
         throw new Error(error.response.data?.message || 'Ödeme isteği gönderilemedi. Bilgileri kontrol ediniz.');
@@ -185,16 +159,11 @@ export const userDaireService = {
   // Ödeme isteği durumu kontrol et
   odemeIstekDurumKontrol: async (daireBorcId) => {
     try {
-      console.log('UserDaireService - Ödeme isteği durumu kontrol ediliyor:', daireBorcId);
-      
       const response = await api.get(`${ENDPOINTS.FINANCE.ODEME_ISTEK_DURUM}/${daireBorcId}`);
-      
-      console.log('UserDaireService - Ödeme isteği durum yanıtı:', response.data);
       
       // BorcOdemeIstekDurumResponseDTO response
       return response.data;
     } catch (error) {
-      console.error('UserDaireService - Ödeme isteği durum kontrol hatası:', error);
       
       if (error.response?.status === 404) {
         // Ödeme isteği bulunamadı - henüz istek gönderilmemiş
@@ -212,10 +181,7 @@ export const userDaireService = {
 
   // Daire bilgilerini formatla
   formatDaireBilgileri: (daire) => {
-    console.log('UserDaireService - formatDaireBilgileri input:', daire);
-    
     if (!daire) {
-      console.warn('UserDaireService - formatDaireBilgileri: daire null/undefined');
       return null;
     }
     
@@ -226,7 +192,6 @@ export const userDaireService = {
       tamAdres: `${daire.siteIsmi || 'Site'}, ${daire.siteAdresi || 'Adres belirtilmemiş'}`
     };
     
-    console.log('UserDaireService - formatDaireBilgileri output:', formatted);
     return formatted;
   },
 
@@ -235,7 +200,7 @@ export const userDaireService = {
     try {
       localStorage.setItem('userDaire', JSON.stringify(daire));
     } catch (error) {
-      console.error('UserDaireService - Daire bilgileri saklama hatası:', error);
+      // Hata sessizce yoksayılıyor
     }
   },
 
@@ -245,7 +210,6 @@ export const userDaireService = {
       const saved = localStorage.getItem('userDaire');
       return saved ? JSON.parse(saved) : null;
     } catch (error) {
-      console.error('UserDaireService - Daire bilgileri alma hatası:', error);
       return null;
     }
   },
@@ -253,17 +217,11 @@ export const userDaireService = {
   // Total apartman gelirini getir
   getTotalApartmanGelir: async (siteId) => {
     try {
-      console.log('UserDaireService - Total apartman geliri getiriliyor, SiteId:', siteId);
-      
       const response = await api.get(`/finance/total/gelir/${siteId}`);
-      
-      console.log('UserDaireService - Total apartman geliri yanıtı:', response.data);
       
       // TotalApartmanGelirResponseDTO döner: { tutar: BigDecimal }
       return response.data;
     } catch (error) {
-      console.error('UserDaireService - Total apartman geliri getirme hatası:', error);
-      
       if (error.response?.status === 403) {
         throw new Error('Bu bilgilere erişim yetkiniz bulunmamaktadır.');
       } else if (error.response?.status === 404) {
@@ -274,7 +232,6 @@ export const userDaireService = {
       }
       
       // Hata durumunda sıfır döner
-      console.warn('UserDaireService - Total gelir getirilemedi, sıfır döndürülüyor');
       return { tutar: 0 };
     }
   },
@@ -283,9 +240,8 @@ export const userDaireService = {
   setSelectedDaire: (daireInfo) => {
     try {
       localStorage.setItem('selectedDaire', JSON.stringify(daireInfo));
-      console.log('UserDaireService - Seçilen daire kaydedildi:', daireInfo);
     } catch (error) {
-      console.error('UserDaireService - Seçilen daire kaydetme hatası:', error);
+      // Hata sessizce yoksayılıyor
     }
   },
 
@@ -295,7 +251,6 @@ export const userDaireService = {
       const savedDaire = localStorage.getItem('selectedDaire');
       return savedDaire ? JSON.parse(savedDaire) : null;
     } catch (error) {
-      console.error('UserDaireService - Seçilen daire getirme hatası:', error);
       return null;
     }
   },
@@ -305,7 +260,7 @@ export const userDaireService = {
     try {
       localStorage.removeItem('selectedDaire');
     } catch (error) {
-      console.error('UserDaireService - Seçilen daire temizleme hatası:', error);
+      // Hata sessizce yoksayılıyor
     }
   },
 
@@ -314,7 +269,7 @@ export const userDaireService = {
     try {
       localStorage.removeItem('userDaire');
     } catch (error) {
-      console.error('UserDaireService - Daire bilgileri temizleme hatası:', error);
+      // Hata sessizce yoksayılıyor
     }
   }
 };

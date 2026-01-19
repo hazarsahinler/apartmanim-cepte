@@ -19,7 +19,6 @@ const Navbar = () => {
             const userData = await authService.getUserInfo();
             setUser(userData);
           } catch (error) {
-            console.error('Kullanıcı bilgileri alınırken hata:', error);
             // Token geçersizse localStorage'ı temizle
             if (error.message?.includes('Oturum süreniz dolmuş') || 
                 error.response?.status === 401 || 
@@ -30,7 +29,6 @@ const Navbar = () => {
           }
         }
       } catch (error) {
-        console.error('Auth kontrol hatası:', error);
       } finally {
         setLoading(false);
       }
@@ -61,9 +59,6 @@ const Navbar = () => {
 
             {/* Ana Navigasyon Linkleri */}
             <div className="hidden md:flex ml-10 space-x-8">
-              <Link to="/site-yonetimi" className="text-gray-600 hover:text-green-600 px-3 py-2 text-sm font-medium">
-                Duyuru Yönetimi
-              </Link>
               {user && (
                 <Link to="/site-yonetimi" className="text-gray-600 hover:text-green-600 px-3 py-2 text-sm font-medium">
                   Site Yönetimi

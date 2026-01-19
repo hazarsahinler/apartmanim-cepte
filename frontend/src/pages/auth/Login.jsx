@@ -31,9 +31,7 @@ const Login = () => {
 
     try {
       // Normal giriş işlemi
-      console.log('Giriş isteği gönderiliyor:', formData);
       const loginResponse = await authService.login(formData);
-      console.log('Giriş başarılı:', loginResponse);
       
       // Token kontrolü
       const token = localStorage.getItem('token');
@@ -48,13 +46,10 @@ const Login = () => {
       
       // Kullanıcı bilgilerini al - kullanıcı ID'si ile
       try {
-        console.log('Kullanıcı bilgileri alınıyor...');
         const userInfo = await authService.getUserInfo();
-        console.log('Kullanıcı bilgileri alındı:', userInfo);
         
         // Token'dan rol bilgisini de al
         const decodedToken = authService.decodeToken();
-        console.log('Token bilgileri:', decodedToken);
         
         // Kullanıcı rolüne göre yönlendir
         // Önce API'dan gelen rol bilgisini kontrol et, yoksa token'dan al
@@ -65,24 +60,14 @@ const Login = () => {
           role = decodedToken.apartmanRol;
         }
         
-        console.log('API\'dan gelen userInfo:', userInfo);
-        console.log('API\'dan gelen rol (userInfo.apartmanRol):', userInfo.apartmanRol);
-        console.log('Token\'dan gelen rol (decodedToken.apartmanRol):', decodedToken.apartmanRol);
-        console.log('Belirlenen final rol:', role);
-        
         if (role === 'ROLE_YONETICI' || role === 'ApartmanYonetici' || role === 'Yonetici') {
-          console.log('Yönetici olarak yönlendiriliyor...');
           navigate('/site-yonetimi');
         } else if (role === 'ROLE_APARTMANSAKIN' || role === 'ApartmanSakin' || role === 'Sakin') {
-          console.log('Kullanıcı olarak yönlendiriliyor...');
           navigate('/kullanici-sayfasi');
         } else {
-          console.warn('Rol belirsiz, varsayılan yönetici dashboardına yönlendiriliyor:', role);
           navigate('/site-yonetimi');
         }
       } catch (userInfoErr) {
-        console.error('Kullanıcı bilgileri alınamadı:', userInfoErr);
-        
         // Kullanıcı bilgileri alınamazsa token'dan rol kontrolü yap
         try {
           const decodedToken = authService.decodeToken();
@@ -96,13 +81,11 @@ const Login = () => {
             navigate('/site-yonetimi');
           }
         } catch (tokenErr) {
-          console.error('Token decode hatası:', tokenErr);
           navigate('/site-yonetimi');
         }
       }
     } catch (err) {
       setError(err.message || 'Giriş yapılırken bir hata oluştu.');
-      console.error('Giriş hatası:', err);
     } finally {
       setLoading(false);
     }

@@ -15,8 +15,6 @@ import { siteStorageService } from '../services/siteStorageService';
  * @returns {Boolean} Bypass edildi mi?
  */
 export const bypassSiteLoadingErrors = (error, setSiteler, userId, cachedSites = null) => {
-  console.log('Site yükleme hatası bypass kontrol:', error);
-  
   // Önbellekteki verileri kontrol et
   if (!cachedSites) {
     const cacheData = siteStorageService.getSites(userId);
@@ -25,7 +23,6 @@ export const bypassSiteLoadingErrors = (error, setSiteler, userId, cachedSites =
   
   // Önbellekteki veriyi kullan
   if (cachedSites && cachedSites.length > 0) {
-    console.log('Önbellekteki site verilerini kullanma');
     setSiteler(cachedSites);
     toast.warning('Sunucu bağlantı sorunu. Önbellekteki veriler gösteriliyor.', { 
       position: "bottom-right",
@@ -35,7 +32,6 @@ export const bypassSiteLoadingErrors = (error, setSiteler, userId, cachedSites =
   }
   
   // Önbellekte veri yoksa mock data kullan
-  console.log('Demo site verilerini kullanma');
   setSiteler(MOCK_DATA.sites);
   
   // Demo verileri önbelleğe kaydet
@@ -59,8 +55,6 @@ export const bypassSiteLoadingErrors = (error, setSiteler, userId, cachedSites =
  * @returns {Boolean} Bypass edildi mi?
  */
 export const bypassSiteAddErrors = (error, siteData, userId, onSuccess) => {
-  console.log('Site ekleme hatası bypass kontrol:', error);
-  
   // Demo site objesi
   const demoSite = {
     id: new Date().getTime(),
@@ -123,8 +117,6 @@ export const isChunkedEncodingError = (error) => {
  * @returns {Object|Array} İşlenen veri
  */
 export const handleBypassAndCache = (operationType, data, userId) => {
-  console.log(`Bypass işlemi: ${operationType}`, data);
-  
   switch (operationType) {
     case 'addSite': {
       // Yeni site ekleme işlemi
@@ -153,7 +145,6 @@ export const handleBypassAndCache = (operationType, data, userId) => {
     }
     
     default:
-      console.warn('Bilinmeyen bypass operasyon tipi:', operationType);
       return data;
   }
 };

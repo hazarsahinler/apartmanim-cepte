@@ -25,7 +25,6 @@ const FinansalIslemlerSiteSecimi = () => {
 
         // Auth kontrolü
         if (!authService.isAuthenticated()) {
-          console.log('Kullanıcı giriş yapmamış, giriş sayfasına yönlendiriliyor...');
           toast.error('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.', {
             position: "top-center",
             autoClose: 5000
@@ -57,7 +56,6 @@ const FinansalIslemlerSiteSecimi = () => {
 
         if (userData && userData.id) {
           try {
-            console.log('Site verileri API\'den çekiliyor...');
             const token = localStorage.getItem('token');
             
             if (!token) {
@@ -65,7 +63,6 @@ const FinansalIslemlerSiteSecimi = () => {
               throw new Error('Oturumunuz sonlanmış. Lütfen tekrar giriş yapın.');
             }
 
-            console.log('API çağrısı yapılıyor:', `${API_BASE_URL}/structure/site/${userData.id}`);
             
             // siteService import etmek gerekiyor
             const response = await fetch(`${API_BASE_URL}/structure/site/${userData.id}`, {
@@ -84,10 +81,7 @@ const FinansalIslemlerSiteSecimi = () => {
             
             if (siteData && siteData.length > 0) {
               setSiteler(siteData);
-              console.log('Kullanıcının siteleri başarıyla yüklendi:', siteData);
-              console.log('İlk site örneği:', siteData[0]);
             } else {
-              console.log('Kullanıcıya ait site bulunamadı');
               setSiteler([]);
             }
           } catch (error) {
@@ -110,14 +104,12 @@ const FinansalIslemlerSiteSecimi = () => {
 
   // Site seçimi
   const handleSiteSecimi = (site) => {
-    console.log('Site seçildi:', site);
     if (!site) {
       console.error('Site objesi undefined!');
       toast.error('Site bilgisi bulunamadı');
       return;
     }
     const siteIdToUse = site.id || site.siteId;
-    console.log('Kullanılacak siteId:', siteIdToUse);
     if (!siteIdToUse) {
       console.error('Site ID bulunamadı!', site);
       toast.error('Site ID bulunamadı');

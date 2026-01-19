@@ -35,7 +35,6 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
           const refreshedUser = authService.getCurrentUser();
           setUser(refreshedUser);
         } catch (error) {
-          console.error('Kullanıcı bilgileri yüklenemedi:', error);
         }
       }
     };
@@ -60,7 +59,6 @@ const MainNavbar = ({ toggleUserSidebar, isUserSidebarOpen }) => {
         );
         setBekleyenOdemeVarMi(bekleyenVar);
       } catch (error) {
-        console.error('Ödeme istekleri kontrol hatası:', error);
         setBekleyenOdemeVarMi(false);
       }
     };

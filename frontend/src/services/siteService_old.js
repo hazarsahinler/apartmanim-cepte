@@ -13,21 +13,13 @@ const siteService = {
 
       // Token'ı decode et ve kullanıcı ID'sini çıkar
       const decodedToken = jwtDecode(token);
-      console.log('Site service - Decoded token:', decodedToken);
       
       // JWT token içinde kullanıcı ID'si 'userId' veya 'sub' veya 'id' claim'inde saklanıyor olabilir
       const kullaniciId = decodedToken.userId || decodedToken.sub || decodedToken.id;
 
       if (!kullaniciId) {
-        console.error('Site service - Token içeriği:', decodedToken);
         throw new Error('Token içerisinden kullanıcı ID\'si alınamadı.');
       }
-      
-      console.log('Site service - Kullanıcı ID:', kullaniciId);
-      
-      // API çağrısı yap
-      console.log(`Siteler için API çağrısı: /structure/site/${kullaniciId}`);
-      console.log('API URL:', api.defaults.baseURL + `/structure/site/${kullaniciId}`);
       
       try {
         // endpoints.js'den endpoint kullanarak API çağrısı yap
@@ -40,22 +32,16 @@ const siteService = {
         
         return response.data;
       } catch (apiError) {
-        console.error('Site API hatası:', apiError.response || apiError);
-        
         // Hata durumunda localStorage'dan kayıtlı siteleri kontrol et
         const sitesJson = localStorage.getItem('test_sites');
         if (sitesJson) {
-          console.log('API çağrısı başarısız, localStorage\'dan siteler alınıyor');
           return JSON.parse(sitesJson);
         }
         
         // Hiç site yoksa boş array dön
-        console.log('Kayıtlı site bulunamadı, boş array dönülüyor');
         return [];
       }
     } catch (error) {
-      console.error('getUserSites genel hata:', error);
-      
       // Genel hata durumunda da localStorage'a bakalım
       const sitesJson = localStorage.getItem('test_sites');
       if (sitesJson) {
@@ -93,11 +79,6 @@ const siteService = {
         yoneticiId: parseInt(kullaniciId, 10)
       };
 
-      console.log('Site ekleniyor (SiteKayitDTO):', sitePayload);
-      
-      // Log the full URL being used
-      console.log('API URL:', api.defaults.baseURL + ENDPOINTS.SITE.EKLE);
-      
       try {
         const response = await api.post(ENDPOINTS.SITE.EKLE, sitePayload);
         
@@ -115,13 +96,12 @@ const siteService = {
             });
             localStorage.setItem('test_sites', JSON.stringify(sites));
           } catch (e) {
-            console.warn('localStorage güncellenirken hata:', e);
+            // localStorage güncellenemedi
           }
         }
         
         return response.data;
       } catch (apiError) {
-        console.error('Site API hatası:', apiError.response || apiError);
         
         // Fallback için localStorage'a ekleme
         const newSite = {
@@ -138,7 +118,6 @@ const siteService = {
         sites.push(newSite);
         localStorage.setItem('test_sites', JSON.stringify(sites));
         
-        console.log('API hatası sonrası site localStorage\'a eklendi');
         return {
           success: true,
           message: 'Site geçici olarak kaydedildi. (Sunucu hatası: ' + (apiError.message || 'Bilinmeyen hata') + ')',
@@ -147,7 +126,6 @@ const siteService = {
       }
 
     } catch (error) {
-      console.error('Site eklenirken hata:', error);
       
       // API hatası durumunda, yine de localStorage'a ekle
       try {
@@ -164,14 +142,12 @@ const siteService = {
         sites.push(newSite);
         localStorage.setItem('test_sites', JSON.stringify(sites));
         
-        console.log('API hatası sonrası site localStorage\'a eklendi:', newSite);
         return {
           success: true,
           message: 'Site geçici olarak kaydedildi (yerel olarak)',
           data: newSite
         };
       } catch (e) {
-        console.warn('localStorage güncellenirken hata:', e);
         // localStorage hatası durumunda orijinal hatayı fırlat
         throw new Error(
           error.response?.data?.message || 

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, Bell, User, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -28,12 +28,11 @@ const KullaniciDashboard = () => {
           const daireBilgileri = await userDaireService.getKullaniciDaireBilgileri(userInfo.telefonNumarasi);
           setDaireInfo(daireBilgileri);
         } catch (dairErr) {
-          console.warn('Daire bilgisi alınamadı:', dairErr.message);
         }
 
       } catch (err) {
         console.error('Hata:', err);
-        toast.error(err.message || 'Bir hata oluştu');
+        toast.error(err.message || 'Bir hata olu�tu');
       } finally {
         setLoading(false);
       }
@@ -55,13 +54,13 @@ const KullaniciDashboard = () => {
       <nav className="bg-white shadow-md p-4">
         <div className="flex items-center">
           <Home className="h-6 w-6 text-green-500 mr-2" />
-          <span className="text-xl font-bold">Apartmanım Cepte</span>
+          <span className="text-xl font-bold">Apartman�m Cepte</span>
         </div>
       </nav>
       
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-4">
-          Hoş Geldiniz, {user?.ad}
+          Ho� Geldiniz, {user?.ad}
         </h1>
         
         {daireInfo && (

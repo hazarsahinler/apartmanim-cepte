@@ -58,7 +58,6 @@ const FinansalAlacakYonetimi = () => {
         }
       );
 
-      console.log('Finansal alacaklar API yanıtı:', response.data);
       
       // Site bilgisini al (daire sayısı için gerekli)
       let toplamDaireSayisi = 0;
@@ -77,14 +76,6 @@ const FinansalAlacakYonetimi = () => {
           site.id === parseInt(siteId) || site.siteId === parseInt(siteId)
         );
         
-        console.log('Site bilgileri TAMAMI:', JSON.stringify(currentSite, null, 2));
-        console.log('currentSite?.daireCount:', currentSite?.daireCount);
-        console.log('currentSite?.daireAdedi:', currentSite?.daireAdedi);
-        console.log('currentSite?.toplamDaireSayisi:', currentSite?.toplamDaireSayisi);
-        console.log('currentSite?.daireSayisi:', currentSite?.daireSayisi);
-        console.log('currentSite?.totalApartments:', currentSite?.totalApartments);
-        console.log('currentSite?.apartmentCount:', currentSite?.apartmentCount);
-        console.log('Tüm keys:', Object.keys(currentSite || {}));
         
         // Tüm muhtemel field isimlerini dene
         toplamDaireSayisi = currentSite?.daireCount || 
@@ -95,12 +86,9 @@ const FinansalAlacakYonetimi = () => {
                            currentSite?.apartmentCount ||
                            0;
                            
-        console.log('Site bilgileri:', currentSite);
-        console.log('Toplam daire sayısı bulunan:', toplamDaireSayisi);
         
         // Eğer hala 0 ise, varsayılan bir değer ata
         if (toplamDaireSayisi === 0) {
-          console.warn('Daire sayısı bulunamadı, varsayılan değer (20) kullanılıyor');
           toplamDaireSayisi = 20;
         }
       } catch (siteError) {
@@ -117,7 +105,6 @@ const FinansalAlacakYonetimi = () => {
         // Toplam daire sayısını backend'den gelen verilerden hesapla
         const toplamDaireSayisiBorc = odeyenDaireSay + odenmeyen;
         
-        console.log(`Borç: ${borc.aciklama}, Tutar: ${tutar}, Ödeyen: ${odeyenDaireSay}, Ödemeyen: ${odenmeyen}, Toplam Daire: ${toplamDaireSayisiBorc}, Tür: ${borc.borcTuru}`);
         
         let alacakTutari, gelenGelir, bekleyenGelir;
         
@@ -182,7 +169,6 @@ const FinansalAlacakYonetimi = () => {
         }
 
         const userInfo = await authService.getUserInfo();
-        console.log('Kullanıcı bilgileri:', userInfo); // Auth kontrolü için
         
         // Site bilgilerini yükle
         const userSitesJson = localStorage.getItem('userSites');
@@ -237,7 +223,6 @@ const FinansalAlacakYonetimi = () => {
         siteId: parseInt(siteId) // Long
       };
 
-      console.log('API\'ye gönderilecek veri:', yeniAlacakData);
       
       // Gerçek API çağrısı
       const token = authService.getToken();
@@ -256,7 +241,6 @@ const FinansalAlacakYonetimi = () => {
         }
       );
 
-      console.log('API yanıtı:', response.data);
       
       // Başarılı ise alacakları yeniden yükle
       if (response.status === 200 || response.status === 201) {

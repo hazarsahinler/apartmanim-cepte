@@ -81,7 +81,6 @@ const duyuruService = {
       const message = error.response.data?.message || 'Bir hata oluştu';
       
       if (status === 403) {
-        console.error('403 Forbidden: Duyuru endpoint\'ine erişim yetkisi yok. Backend SecurityConfig kontrol edilmeli.');
         return new Error('Erişim yetkisi yok (403)');
       } else if (status === 401) {
         return new Error('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.');

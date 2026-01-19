@@ -5,16 +5,11 @@ export const odemeIstekService = {
   // Site ID ile ödeme isteklerini getir (YÖNETICI)
   getSiteOdemeIstekleri: async (siteId) => {
     try {
-      console.log('OdemeIstekService - Site ödeme istekleri getiriliyor:', siteId);
-      
       const response = await api.get(`${ENDPOINTS.FINANCE.ODEME_ISTEKLER}/${siteId}`);
-      
-      console.log('OdemeIstekService - Ödeme istekleri yanıtı:', response.data);
       
       // BorcOdemeIstekResponseDTO array response
       return response.data;
     } catch (error) {
-      console.error('OdemeIstekService - Ödeme istekleri getirme hatası:', error);
       
       if (error.response?.status === 404) {
         return []; // Ödeme isteği bulunamadı
@@ -31,14 +26,10 @@ export const odemeIstekService = {
   // Ödeme isteğini kabul et (YÖNETICI)
   odemeIstegiKabulEt: async (daireBorcId) => {
     try {
-      console.log('OdemeIstekService - Ödeme isteği kabul ediliyor:', daireBorcId);
-      
       const response = await api.post(`${ENDPOINTS.FINANCE.ODEME_ISTEK_KABUL}/${daireBorcId}`);
       
-      console.log('OdemeIstekService - Ödeme isteği kabul yanıtı:', response.data);
       return response.data;
     } catch (error) {
-      console.error('OdemeIstekService - Ödeme isteği kabul hatası:', error);
       
       if (error.response?.status === 400) {
         throw new Error(error.response.data?.message || 'Ödeme isteği kabul edilemedi. Bilgileri kontrol ediniz.');
@@ -82,7 +73,7 @@ export const odemeIstekService = {
         timestamp: new Date().getTime()
       }));
     } catch (error) {
-      console.error('OdemeIstekService - Ödeme istekleri saklama hatası:', error);
+      // Hata sessizce yoksayılıyor
     }
   },
 
@@ -104,7 +95,6 @@ export const odemeIstekService = {
       
       return parsed.data;
     } catch (error) {
-      console.error('OdemeIstekService - Ödeme istekleri alma hatası:', error);
       return null;
     }
   },
@@ -112,14 +102,10 @@ export const odemeIstekService = {
   // DaireId'ye göre daire borçlarını getir (yeni API)
   getDaireBorcByDaireId: async (daireId) => {
     try {
-      console.log('OdemeIstekService - Daire borçları alınıyor, daireId:', daireId);
-      
       const response = await api.get(`${ENDPOINTS.FINANCE.DAIRE_BORC}/${daireId}`);
-      console.log('OdemeIstekService - Daire borçları response:', response.data);
       
       return response.data;
     } catch (error) {
-      console.error('OdemeIstekService - Daire borçları alma hatası:', error);
       
       if (error.response?.status === 404) {
         throw new Error('Daire borç bilgisi bulunamadı.');
@@ -136,14 +122,10 @@ export const odemeIstekService = {
   // Borç ID'sine göre daire borçlarını getir (eski API)
   getDaireBorcByBorcId: async (borcId) => {
     try {
-      console.log('OdemeIstekService - Borç detayları alınıyor:', borcId);
-      
       const response = await api.get(`${ENDPOINTS.FINANCE.DAIRELER_BORC_BY_ID}/${borcId}`);
-      console.log('OdemeIstekService - Borç detayları response:', response.data);
       
       return response.data;
     } catch (error) {
-      console.error('OdemeIstekService - Borç detayları alma hatası:', error);
       
       if (error.response?.status === 404) {
         throw new Error('Borç bilgisi bulunamadı.');
@@ -190,7 +172,7 @@ export const odemeIstekService = {
         });
       }
     } catch (error) {
-      console.error('OdemeIstekService - Cache temizleme hatası:', error);
+      // Hata sessizce yoksayılıyor
     }
   }
 };

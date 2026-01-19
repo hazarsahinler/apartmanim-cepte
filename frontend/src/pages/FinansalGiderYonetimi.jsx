@@ -62,11 +62,6 @@ const FinansalGiderYonetimi = () => {
         }
 
         const userInfo = await authService.getUserInfo();
-        console.log('=== AUTH DEBUG ===');
-        console.log('Kullanıcı bilgileri:', userInfo);
-        console.log('Token:', localStorage.getItem('token')?.substring(0, 30) + '...');
-        console.log('User Role:', userInfo?.role);
-        console.log('==================');
         
         // Site bilgilerini yükle
         const userSitesJson = localStorage.getItem('userSites');
@@ -85,7 +80,6 @@ const FinansalGiderYonetimi = () => {
         try {
           const giderData = await giderService.getSiteGiderleri(siteId);
           setGiderler(giderData || []);
-          console.log('Giderler yüklendi:', giderData);
         } catch (error) {
           console.error('Giderler yüklenirken hata:', error);
           toast.warning('Gider verileri yüklenemedi.');
@@ -96,7 +90,6 @@ const FinansalGiderYonetimi = () => {
         try {
           const totalData = await giderService.getTotalSiteGider(siteId);
           setToplamGiderTutar(totalData.tutar || 0);
-          console.log('Toplam gider:', totalData);
         } catch (error) {
           console.error('Toplam gider yüklenirken hata:', error);
           setToplamGiderTutar(0);
@@ -140,12 +133,8 @@ const FinansalGiderYonetimi = () => {
         siteId: parseInt(siteId)
       };
 
-      console.log('Gider ekleniyor:', giderData);
-      console.log('Dosyalar:', selectedFiles);
-      console.log('Toplam dosya boyutu:', (totalSize / 1024 / 1024).toFixed(2), 'MB');
 
       const response = await giderService.giderEkle(giderData, selectedFiles);
-      console.log('Gider eklendi:', response);
       
       toast.success('Gider başarıyla eklendi!');
       

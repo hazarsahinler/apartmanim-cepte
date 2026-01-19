@@ -70,7 +70,6 @@ const Sidebar = ({ isOpen, onClose }) => { // mobil için isOpen ve onClose ekle
             setSiteler(storedSites);
           }
         } catch (error) {
-          console.error('Site bilgileri yüklenemedi:', error);
         }
       }
     }
