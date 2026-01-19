@@ -111,7 +111,7 @@ const Navbar = () => {
                           >
                             <div className="flex items-center">
                               <Bell className="h-4 w-4 mr-2" />
-                              <span>Duyuru Yönetimi</span>
+                              <span>Site Yönetimi</span>
                             </div>
                           </Link>
                         )}

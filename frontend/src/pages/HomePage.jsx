@@ -1,6 +1,7 @@
 import React from 'react';
 import { Building2, Users, CreditCard, Clock, Shield, Smartphone } from 'lucide-react';
 
+// Build Version: 2026.01.19-v2
 const HomePage = () => {
   const features = [
     {
