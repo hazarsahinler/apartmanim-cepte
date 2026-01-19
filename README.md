@@ -390,32 +390,8 @@ announcement/
 ## 🔄 İş Akışları
 
 ### 1. Site Kurulum Akışı
-
-```
-┌────────────────────────────────────────────────────────────────┐
-│                    SİTE KURULUM SÜRECİ                         │
-├────────────────────────────────────────────────────────────────┤
-│                                                                │
-│  1. Yönetici Kaydı                                             │
-│     └─► POST /api/auth/yonetici-kayit                          │
-│                                                                │
-│  2. Site Oluşturma                                             │
-│     └─► POST /api/sites                                        │
-│         Body: { ad, il, ilce, mahalle, sokak }                 │
-│                                                                │
-│  3. Blok Ekleme                                                │
-│     └─► POST /api/bloklar                                      │
-│         Body: { blokIsim, siteId }                             │
-│                                                                │
-│  4. Daire Ekleme                                               │
-│     └─► POST /api/daireler                                     │
-│         Body: { daireNo, katNo, blokId }                       │
-│                                                                │
-│  5. Sakin Davet/Atama                                          │
-│     └─► POST /api/daireler/{id}/sakin-ata                      │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
-```
+Yönetici ilk kayıt sonrası giriş yapar.Giriş sonrasında site eklemek zorunludur.
+<img width="1919" height="946" alt="1-YöneticiİlkGiriş" src="https://github.com/user-attachments/assets/dc2d0ed7-09d4-402c-a3e8-cbb1997bfc79" />
 
 ### 2. Aidat Yönetim Akışı
 
