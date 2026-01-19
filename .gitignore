@@ -1,0 +1,21 @@
+# Proje Dokümantasyonu (Hassas bilgiler içerir)
+PROJE_REHBERI.md
+DEPLOYMENT_GUIDE.md
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
