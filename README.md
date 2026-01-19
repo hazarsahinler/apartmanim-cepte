@@ -391,115 +391,62 @@ announcement/
 
 ### 1. Site Kurulum Akışı
 Yönetici ilk kayıt sonrası giriş yapar.Giriş sonrasında site eklemek zorunludur.
+
 <img width="1919" height="946" alt="1-YöneticiİlkGiriş" src="https://github.com/user-attachments/assets/dc2d0ed7-09d4-402c-a3e8-cbb1997bfc79" />
+<img width="1919" height="945" alt="2-Yönetici Siteyi oluşturdu" src="https://github.com/user-attachments/assets/4a9fb0d6-3291-4225-a1e4-8a2cc23384f2" />
 
-### 2. Aidat Yönetim Akışı
+Siteye Blok ve daireleri ekler.
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│                    AİDAT YÖNETİM SÜRECİ                        │
-├────────────────────────────────────────────────────────────────┤
-│                                                                │
-│  ┌──────────────┐                                              │
-│  │   YÖNETİCİ   │                                              │
-│  └──────┬───────┘                                              │
-│         │                                                      │
-│         ▼                                                      │
-│  [1] Borç Tanımı Oluştur                                       │
-│      POST /api/borc-tanimi                                     │
-│      {                                                         │
-│        "aciklama": "Ocak 2026 Aidatı",                         │
-│        "borcTuru": "AIDAT",                                    │
-│        "tutar": 500.00,                                        │
-│        "sonOdemeTarihi": "2026-01-31",                         │
-│        "siteId": 1                                             │
-│      }                                                         │
-│         │                                                      │
-│         ▼                                                      │
-│  [2] Sistem otomatik olarak sitedeki                           │
-│      her daireye DaireBorc kaydı oluşturur                     │
-│         │                                                      │
-│         ▼                                                      │
-│  ┌──────────────┐                                              │
-│  │    SAKİN     │                                              │
-│  └──────┬───────┘                                              │
-│         │                                                      │
-│         ▼                                                      │
-│  [3] Borçlarını Görüntüler                                     │
-│      GET /api/daire-borc/daire/{daireId}                       │
-│         │                                                      │
-│         ▼                                                      │
-│  [4] Ödeme İsteği Oluşturur                                    │
-│      POST /api/odeme-istek                                     │
-│      { "daireBorcId": 15 }                                     │
-│         │                                                      │
-│         ▼                                                      │
-│  ┌──────────────┐                                              │
-│  │   YÖNETİCİ   │                                              │
-│  └──────┬───────┘                                              │
-│         │                                                      │
-│         ▼                                                      │
-│  [5] Ödeme İsteklerini Görüntüler                              │
-│      GET /api/odeme-istek/site/{siteId}                        │
-│         │                                                      │
-│         ▼                                                      │
-│  [6] Ödemeyi Onaylar                                           │
-│      PUT /api/odeme-istek/{id}/onayla                          │
-│         │                                                      │
-│         ▼                                                      │
-│  [7] DaireBorc.odendiMi = true olur ✓                          │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
-```
+<img width="1919" height="941" alt="3-Siteye Blok ekleme işlemi" src="https://github.com/user-attachments/assets/c25008cb-9e89-4961-9d5a-0d8593fe4df6" />
+<img width="1917" height="948" alt="4-Blok ekleme ekranı" src="https://github.com/user-attachments/assets/3b16a97c-a51b-4fbe-ac14-44ba71a9154a" />
+<img width="1917" height="944" alt="5-ekleme sonrası" src="https://github.com/user-attachments/assets/bd253e24-9270-4dc3-ac2a-85662ae3afd3" />
+<img width="1919" height="946" alt="6-blok detay" src="https://github.com/user-attachments/assets/d2cca4d2-0d87-4613-9dbe-c8b8e6a4e3d1" />
+<img width="1916" height="946" alt="7-dairedetay" src="https://github.com/user-attachments/assets/b2ed6376-e140-42ae-ae26-ad8937fdb7e4" />
 
-### 3. Kimlik Doğrulama Akışı
+Daireye Kullanıcı Ekler.
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│                    JWT AUTH AKIŞI                              │
-├────────────────────────────────────────────────────────────────┤
-│                                                                │
-│  [Client]                              [Server]                │
-│     │                                      │                   │
-│     │  POST /api/auth/login                │                   │
-│     │  { email, password }                 │                   │
-│     │─────────────────────────────────────►│                   │
-│     │                                      │                   │
-│     │                         [AuthController]                 │
-│     │                               │                          │
-│     │                               ▼                          │
-│     │                         [AuthService]                    │
-│     │                               │                          │
-│     │                               ▼                          │
-│     │                      Password Check (BCrypt)             │
-│     │                               │                          │
-│     │                               ▼                          │
-│     │                        JWT Token Üret                    │
-│     │                               │                          │
-│     │◄──────────────────────────────┘                          │
-│     │  { token, kullaniciId, rol }                             │
-│     │                                                          │
-│     │  GET /api/protected-endpoint                             │
-│     │  Header: Authorization: Bearer {token}                   │
-│     │─────────────────────────────────────►│                   │
-│     │                                      │                   │
-│     │                         [JwtAuthFilter]                  │
-│     │                               │                          │
-│     │                               ▼                          │
-│     │                        Token Doğrula                     │
-│     │                               │                          │
-│     │                               ▼                          │
-│     │                    SecurityContext'e User Set            │
-│     │                               │                          │
-│     │                               ▼                          │
-│     │                         [Controller]                     │
-│     │◄──────────────────────────────┘                          │
-│     │  Response                                                │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
-```
+<img width="1919" height="947" alt="8-daireye kullanıcı eklemek" src="https://github.com/user-attachments/assets/0e984d3a-fab1-4358-9ac8-52666800ebb5" />
+<img width="1918" height="948" alt="9-kullanıcıyı bulması" src="https://github.com/user-attachments/assets/b7753ff4-7e03-4c64-805d-1e065ffc3672" />
+<img width="1916" height="940" alt="10-kullanıcı eklendkten sonra blok detay" src="https://github.com/user-attachments/assets/1e7a5083-ef2f-4bbb-b9c9-ecaf28ef0544" />
 
----
+
+### 2. Finansal Yönetim Akışı
+
+Yönetici alacak veya gider eklemesi yapar. Kullanıcılar alacakları yöneticiye ödemesini yapar ve sistem üzerinden yaptığına dair istek yollar. 
+Yönetici isteği kontrol edip onaylar.
+
+<img width="1917" height="944" alt="11-finansal detaylar" src="https://github.com/user-attachments/assets/e6219102-605a-4800-8f4f-b3b47eec4cc1" />
+<img width="1919" height="944" alt="12-alacak yönetimi" src="https://github.com/user-attachments/assets/0a41ed33-418d-421a-ae6e-0853a6fc4a31" />
+<img width="1918" height="940" alt="13-alacak ekleme sonrası" src="https://github.com/user-attachments/assets/2f9d9c08-533c-4b45-ad46-7e82e4809d3c" />
+<img width="1918" height="944" alt="14-gider ekleme" src="https://github.com/user-attachments/assets/c3b9b68d-fd10-4d12-aa37-cec277740117" />
+<img width="1917" height="949" alt="15-son görüntü finansal işlemler" src="https://github.com/user-attachments/assets/b560c43d-34f0-4569-adf1-d15569a634cb" />
+<img width="1917" height="942" alt="16-detaylıAlacakTakibi" src="https://github.com/user-attachments/assets/acbba572-3d73-4e29-bd8c-1240cc86d897" />
+<img width="1919" height="940" alt="17-ödemeistekOnay" src="https://github.com/user-attachments/assets/264bf692-bf85-4b73-9796-ecf728d7b449" />
+<img width="1919" height="949" alt="18-ödeme sonrası" src="https://github.com/user-attachments/assets/865b8f8b-49c9-4316-a448-18df286c7728" />
+
+
+
+
+### 3. Duyuru yönetim Akışı
+
+Yönetici gerekli duyuruları site panelinden ekler ve site sakinleri duyuruları görebilirler.
+
+<img width="1919" height="939" alt="19-duyuru" src="https://github.com/user-attachments/assets/ab750308-3d0e-4bbd-9cd4-5017092756fd" />
+<img width="1918" height="943" alt="20-duyuruEkranı" src="https://github.com/user-attachments/assets/deb80dda-4a32-459c-bf31-fb22f63f7b10" />
+<img width="1919" height="944" alt="21-duyuruKüçükEkran" src="https://github.com/user-attachments/assets/924fa264-5a56-4f47-971a-741dcdc6664a" />
+
+### 4. Apartman Sakini Paneli
+Apartman sakini telefon numarası ve şifresiyle giriş yapar. Yönetici bir daireye ulaşamazsa, yöneticiyle iletişime geçmesi söylenir.
+Giriş yaparken 2 ve daha fazla dairesi varsa, daire seçim ekranı çıkar.Dairesini seçip bilgilere ulaşabilir.
+Gider belgelerini görebilir, apartman kasasını takip edebilir.Şeffaflık ön plandadır.
+
+<img width="1919" height="944" alt="28-DaireSeçim ekranı" src="https://github.com/user-attachments/assets/41ea33c1-6c51-4bfd-9024-0226d47879ce" />
+<img width="1919" height="947" alt="24-ApartmanSakin ekranı" src="https://github.com/user-attachments/assets/b86607ac-7aef-4c6e-8b72-b9137c18392d" />
+<img width="1918" height="944" alt="25-OdemeIstekYollama" src="https://github.com/user-attachments/assets/2b478757-3483-46f4-9c33-0dbb6321d99d" />
+<img width="1917" height="945" alt="26-Gider görüntüleme Apartman sakin" src="https://github.com/user-attachments/assets/d2a53235-11e8-4ec6-a638-46cdb9e7db55" />
+<img width="1919" height="948" alt="27-GiderBelge Görüntüleme" src="https://github.com/user-attachments/assets/8fb59da2-49f0-4f92-a920-6f7f71a77e0b" />
+<img width="1919" height="944" alt="29-ApartmanSakinDuyuru" src="https://github.com/user-attachments/assets/ddba901f-1769-4d8d-befd-96878ac7be1f" />
+
 
 ## 🚀 Kurulum
 
@@ -543,7 +490,13 @@ npm start
 
 ### Swagger API Docs
 
-Backend çalışırken: `http://localhost:8080/swagger-ui.html`
+Backend çalışırken: `http://localhost:8080/swagger-ui/index.html`
+
+<img width="1462" height="501" alt="30- apiler" src="https://github.com/user-attachments/assets/7303d40c-d7c1-45f2-9444-84ad4b72c999" />
+<img width="1504" height="332" alt="31-apiler" src="https://github.com/user-attachments/assets/5370a49a-4e07-4c7a-b630-e61eeabf4be1" />
+<img width="1482" height="780" alt="32-apiler" src="https://github.com/user-attachments/assets/77facb16-86a8-47eb-81f3-4ff73a9d4c6c" />
+<img width="1470" height="174" alt="33-apiler" src="https://github.com/user-attachments/assets/7ccd4425-f0e4-4f92-9ae1-306d46906ffa" />
+
 
 ---
 
