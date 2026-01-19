@@ -1,133 +1,275 @@
 # 🏢 Apartmanım Cepte
 
-Modern apartman ve site yönetimi için geliştirilmiş full-stack web uygulaması. **Modüler Monolith** mimari yaklaşımıyla tasarlanmış, ölçeklenebilir backend altyapısı.
+Apartman ve site yönetimi için geliştirilmiş **Modüler Monolith** mimaride full-stack web uygulaması.
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://apartmanimcepte.me)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6db33f?logo=springboot)](https://spring.io/projects/spring-boot)
-[![Hibernate](https://img.shields.io/badge/Hibernate-ORM-59666c?logo=hibernate)](https://hibernate.org/)
+[![Live Demo](https://img.shields.io/badge/🌐_Demo-apartmanimcepte.me-brightgreen)](https://apartmanimcepte.me)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.5-6db33f?logo=springboot)](https://spring.io/projects/spring-boot)
+[![Hibernate](https://img.shields.io/badge/Hibernate-6.4.2-59666c?logo=hibernate)](https://hibernate.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Containerized-2496ed?logo=docker)](https://www.docker.com/)
-[![React](https://img.shields.io/badge/React-18.x-61dafb?logo=react)](https://reactjs.org/)
 
 ---
 
 ## 📋 İçindekiler
 
-- [Mimari Yaklaşım](#-mimari-yaklaşım)
-- [Özellikler](#-özellikler)
-- [Teknoloji Stack](#-teknoloji-stack)
-- [Backend Mimarisi](#-backend-mimarisi)
-- [Kurulum](#-kurulum)
-- [Proje Yapısı](#-proje-yapısı)
+1. [Proje Hakkında](#-proje-hakkında)
+2. [Mimari Tasarım](#-mimari-tasarım)
+3. [Modüller](#-modüller)
+4. [Teknoloji Stack](#-teknoloji-stack)
+5. [Veritabanı Tasarımı](#-veritabanı-tasarımı)
+6. [İş Akışları](#-iş-akışları)
+7. [Kurulum](#-kurulum)
+8. [Proje Yapısı](#-proje-yapısı)
 
 ---
 
-## 🏛 Mimari Yaklaşım
+## 🎯 Proje Hakkında
 
-### Modüler Monolith Nedir?
+**Apartmanım Cepte**, apartman ve site yöneticilerinin günlük işlerini dijitalleştiren bir platformdur. Yöneticiler site, blok ve daire yapılarını oluşturabilir; sakinlere aidat tanımlayabilir, giderleri kaydedebilir ve duyurular yayınlayabilir. Sakinler ise borç durumlarını takip edebilir ve site duyurularını görüntüleyebilir.
 
-Bu proje, **Modüler Monolith** mimari deseni kullanılarak geliştirilmiştir. Microservice'lerin karmaşıklığından kaçınırken, monolitik yapının getirdiği sıkı bağımlılık problemlerini çözen bir orta yol yaklaşımıdır.
+### Temel Özellikler
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     APARTMANIM CEPTE API                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │   AUTH      │  │    SITE     │  │  DUYURU     │             │
-│  │   MODULE    │  │   MODULE    │  │  MODULE     │             │
-│  ├─────────────┤  ├─────────────┤  ├─────────────┤             │
-│  │ Controller  │  │ Controller  │  │ Controller  │             │
-│  │ Service     │  │ Service     │  │ Service     │             │
-│  │ Repository  │  │ Repository  │  │ Repository  │             │
-│  │ Entity      │  │ Entity      │  │ Entity      │             │
-│  │ DTO         │  │ DTO         │  │ DTO         │             │
-│  └─────────────┘  └─────────────┘  └─────────────┘             │
-│                                                                 │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │   BLOK      │  │   DAIRE     │  │  FINANS     │             │
-│  │   MODULE    │  │   MODULE    │  │  MODULE     │             │
-│  ├─────────────┤  ├─────────────┤  ├─────────────┤             │
-│  │ Controller  │  │ Controller  │  │ Controller  │             │
-│  │ Service     │  │ Service     │  │ Service     │             │
-│  │ Repository  │  │ Repository  │  │ Repository  │             │
-│  │ Entity      │  │ Entity      │  │ Entity      │             │
-│  │ DTO         │  │ DTO         │  │ DTO         │             │
-│  └─────────────┘  └─────────────┘  └─────────────┘             │
-│                                                                 │
-├─────────────────────────────────────────────────────────────────┤
-│                    SHARED / COMMON LAYER                        │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │
-│  │ Security │  │Exception │  │  Config  │  │  Utils   │        │
-│  │  (JWT)   │  │ Handler  │  │          │  │          │        │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘        │
-├─────────────────────────────────────────────────────────────────┤
-│                      PERSISTENCE LAYER                          │
-│                    Hibernate ORM + PostgreSQL                   │
-└─────────────────────────────────────────────────────────────────┘
-```
+| Rol | Özellikler |
+|-----|------------|
+| **Yönetici** | Site/Blok/Daire CRUD, Aidat tanımlama, Gider kaydı, Duyuru yönetimi, Ödeme onaylama |
+| **Sakin** | Borç görüntüleme, Ödeme talebi, Duyuru okuma, Profil yönetimi |
+
+---
+
+## 🏛 Mimari Tasarım
 
 ### Neden Modüler Monolith?
 
-| Avantaj | Açıklama |
+Proje, **Modüler Monolith** mimari deseni ile geliştirilmiştir. Her modül kendi iş mantığını, veri erişim katmanını ve API'lerini içerir. Microservice karmaşıklığı olmadan, gevşek bağlı (loosely coupled) bir yapı sunar.
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                        APARTMANIM CEPTE BACKEND                          │
+│                          Spring Boot 3.5.5                               │
+├──────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐     │
+│   │    IDENTITY     │    │   STRUCTURE     │    │  ANNOUNCEMENT   │     │
+│   │     Modülü      │    │     Modülü      │    │     Modülü      │     │
+│   ├─────────────────┤    ├─────────────────┤    ├─────────────────┤     │
+│   │ • Kullanıcı     │    │ • Site          │    │ • Duyuru        │     │
+│   │ • JWT Auth      │    │ • Blok          │    │                 │     │
+│   │ • Rol Yönetimi  │    │ • Daire         │    │                 │     │
+│   │ • Security      │    │ • Daire-Sakin   │    │                 │     │
+│   └────────┬────────┘    └────────┬────────┘    └────────┬────────┘     │
+│            │                      │                      │              │
+│            └──────────────────────┼──────────────────────┘              │
+│                                   │                                      │
+│                    ┌──────────────┴──────────────┐                       │
+│                    │         FINANCE             │                       │
+│                    │          Modülü             │                       │
+│                    ├─────────────────────────────┤                       │
+│                    │ • Borç Tanımı (Aidat)       │                       │
+│                    │ • Daire Borç                │                       │
+│                    │ • Borç Ödeme İsteği         │                       │
+│                    │ • Gider                     │                       │
+│                    │ • Gider Belgesi             │                       │
+│                    └─────────────────────────────┘                       │
+│                                                                          │
+├──────────────────────────────────────────────────────────────────────────┤
+│                         PERSISTENCE LAYER                                │
+│                    Hibernate 6.4.2 + PostgreSQL 15                       │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### Mimari Avantajları
+
+| Özellik | Açıklama |
 |---------|----------|
-| **Düşük Karmaşıklık** | Microservice'lerin getirdiği network latency, distributed transaction gibi problemler yok |
-| **Kolay Deployment** | Tek bir artifact deploy edilir |
-| **Modül Bağımsızlığı** | Her modül kendi sorumluluğuna sahip, değişiklikler izole |
-| **Refactoring Kolaylığı** | İleride microservice'e geçiş yapılabilir |
-| **Shared Database** | Transaction yönetimi basit, ACID garantisi |
-| **IDE Desteği** | Tek projede tüm kod, kolay navigasyon ve refactoring |
+| **Modül Bağımsızlığı** | Her modül kendi entity, DTO, DAO ve controller'ına sahip |
+| **Kolay Bakım** | Bir modüldeki değişiklik diğerlerini etkilemez |
+| **Transaction Yönetimi** | Tek veritabanı ile ACID garantisi |
+| **Basit Deployment** | Tek JAR dosyası, tek container |
+| **Microservice'e Geçiş** | Modüller bağımsız olduğu için kolayca ayrılabilir |
 
 ---
 
-## ✨ Özellikler
+## 📦 Modüller
 
-### 👤 Kullanıcı (Sakin) Özellikleri
-- 🔐 Güvenli JWT tabanlı kimlik doğrulama
-- 🏠 Daire bilgilerini görüntüleme
-- 💰 Aidat ve borç takibi
-- 📢 Site duyurularını görüntüleme
-- 📊 Kişisel dashboard
+### 1️⃣ Identity Modülü (Kimlik & Güvenlik)
 
-### 👨‍💼 Yönetici Özellikleri
-- 🏗️ Site ve blok yönetimi (CRUD)
-- 🏠 Daire yönetimi (CRUD)
-- 👥 Sakin atama ve yönetimi
-- 📢 Duyuru oluşturma ve yönetimi
-- 💰 Aidat tanımlama ve takibi
-- 💸 Gider kayıt ve yönetimi
-- 💳 Ödeme istekleri oluşturma
-- 📊 Yönetici dashboard
+Kullanıcı yönetimi ve JWT tabanlı kimlik doğrulama işlemlerinden sorumlu ana modül.
 
-### 🛠️ Teknik Özellikler
-- 🏛️ Modüler Monolith mimari
-- 🔒 Spring Security + JWT authentication
-- 📦 Hibernate ORM ile veritabanı yönetimi
-- 🐳 Docker containerization
-- ⚡ GitHub Actions CI/CD
-- 📱 Responsive frontend
-- 🌙 Dark/Light tema desteği
+```
+identity/
+├── bus/                    # İş mantığı servisleri
+├── config/                 # Security & JWT konfigürasyonu
+├── controller/             # Auth & User REST endpoints
+├── dao/                    # Kullanıcı repository
+├── dto/                    # Login/Register request-response
+├── entity/
+│   └── Kullanici.java      # Kullanıcı entity
+├── Enum/                   # KullaniciRol (YONETICI, KULLANICI)
+└── filter/                 # JWT Authentication Filter
+```
+
+**Temel İşlevler:**
+- Kullanıcı kayıt (Yönetici/Sakin)
+- JWT token üretimi ve doğrulama
+- Rol tabanlı yetkilendirme
+- Şifre hashleme (BCrypt)
+
+**Akış:**
+```
+[Login Request] → [AuthController] → [AuthService] → [JWT Token Üretimi]
+                                           ↓
+                                    [KullaniciDAO] → [PostgreSQL]
+```
+
+---
+
+### 2️⃣ Structure Modülü (Yapı Yönetimi)
+
+Site, blok ve daire hiyerarşisini yöneten modül. Yöneticilerin fiziksel yapıyı sisteme tanımlamasını sağlar.
+
+```
+structure/
+├── bus/                    # Site, Blok, Daire servisleri
+├── controller/             # REST endpoints
+├── dao/                    # Repository sınıfları
+├── dto/                    # Request-Response DTO'ları
+└── entity/
+    ├── Site.java           # Ana site entity
+    ├── Blok.java           # Blok entity (Site'e bağlı)
+    └── Daire.java          # Daire entity (Blok'a bağlı)
+```
+
+**Hiyerarşi:**
+```
+Site (1) ──────┬────────> Blok (N) ──────┬────────> Daire (N)
+               │                         │
+               │                         └────────> DaireSakin (N:M)
+               │
+               └────────> Yönetici (1) [identity modülünden]
+```
+
+**Temel İşlevler:**
+- Site oluşturma ve yönetici atama
+- Site altına blok ekleme
+- Blok altına daire ekleme
+- Daireye sakin atama (DaireSakin ilişki tablosu)
+
+---
+
+### 3️⃣ Finance Modülü (Finansal İşlemler)
+
+Aidat, borç ve gider yönetimini sağlayan ana iş modülü. Sistemin en kapsamlı modülüdür.
+
+```
+finance/
+├── bus/                    # Finansal iş mantığı servisleri
+├── controller/             
+│   ├── BorcTanimiController
+│   ├── DaireBorcController
+│   ├── BorcOdemeIstekController
+│   ├── GiderController
+│   └── GiderBelgeController
+├── dao/                    # Repository sınıfları
+├── dto/                    # Request-Response DTO'ları
+├── entity/
+│   ├── BorcTanimi.java     # Aidat tanımı (site bazlı)
+│   ├── DaireBorc.java      # Daire-borç ilişkisi
+│   ├── BorcOdemeIstek.java # Ödeme talepleri
+│   ├── Gider.java          # Site giderleri
+│   └── GiderBelge.java     # Gider belgeleri (fatura vs)
+└── Enum/
+    ├── BorcTuru            # AIDAT, EK_AIDAT, OZEL
+    └── GiderTuru           # ELEKTRIK, SU, DOGALGAZ, BAKIM...
+```
+
+**Borç Akışı:**
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           BORÇ YAŞAM DÖNGÜSÜ                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  1. YÖNETİCİ                2. SİSTEM                3. SAKİN           │
+│  ───────────                ─────────                ────────           │
+│                                                                         │
+│  [BorcTanimi Oluştur]                                                   │
+│        │                                                                │
+│        ▼                                                                │
+│  Site için aidat          ───────────►  [DaireBorc Kayıtları]           │
+│  tanımı yapılır                         Her daireye borç atanır         │
+│  (tutar, vade, açıklama)                                                │
+│                                                   │                     │
+│                                                   ▼                     │
+│                                         Sakin borçlarını görür          │
+│                                                   │                     │
+│                                                   ▼                     │
+│                                         [BorcOdemeIstek]                │
+│                                         Ödeme talebi oluşturur          │
+│        │                                         │                      │
+│        ◄─────────────────────────────────────────┘                      │
+│        │                                                                │
+│        ▼                                                                │
+│  [Ödeme Onaylama]                                                       │
+│  Yönetici onaylar         ───────────►  DaireBorc.odendi = true         │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Gider Akışı:**
+```
+[Yönetici] → [Gider Kaydı] → [GiderBelge Yükleme (Opsiyonel)]
+                 │
+                 ▼
+           Site giderleri
+           raporlanabilir
+```
+
+---
+
+### 4️⃣ Announcement Modülü (Duyuru Yönetimi)
+
+Site duyurularının oluşturulması ve yayınlanmasından sorumlu modül.
+
+```
+announcement/
+├── bus/                    # Duyuru servisleri
+├── controller/             # Duyuru REST endpoints
+├── dao/                    # Duyuru repository
+├── dto/                    # Duyuru DTO'ları
+├── entity/
+│   └── Duyuru.java         # Duyuru entity
+└── Enum/
+    └── DuyuruTipi          # GENEL, ACIL, BAKIM, TOPLANTI
+```
+
+**İşleyiş:**
+```
+[Yönetici] → [Duyuru Oluştur] → [Site'ye bağlı duyuru kaydı]
+                                          │
+                                          ▼
+                              [Sakinler duyuruları görüntüler]
+```
 
 ---
 
 ## 🛠 Teknoloji Stack
 
-### Backend (Core)
+### Backend Core
 
 | Teknoloji | Versiyon | Kullanım Amacı |
 |-----------|----------|----------------|
 | **Java** | 17 LTS | Ana programlama dili |
-| **Spring Boot** | 3.x | Application framework |
-| **Spring Security** | 6.x | Authentication & Authorization |
-| **Spring Data JPA** | 3.x | Repository abstraction |
-| **Hibernate ORM** | 6.x | Object-Relational Mapping |
+| **Spring Boot** | 3.5.5 | Application framework |
+| **Spring Security** | 3.3.3 | Authentication & Authorization |
+| **Spring Web** | 3.5.5 | REST API |
+| **Spring Validation** | 3.5.5 | DTO validasyonu |
+| **Hibernate ORM** | 6.4.2 | Object-Relational Mapping |
+| **Spring ORM** | 6.x | Hibernate entegrasyonu |
 | **PostgreSQL** | 15 | İlişkisel veritabanı |
-| **JWT (jjwt)** | 0.11.x | Token-based authentication |
-| **Maven** | 3.9+ | Dependency management & build |
-| **Lombok** | 1.18.x | Boilerplate code reduction |
-| **MapStruct** | 1.5.x | DTO-Entity mapping |
+| **jjwt** | 0.12.6 | JWT token işlemleri |
+| **Lombok** | 1.18.x | Boilerplate kod azaltma |
+| **SpringDoc OpenAPI** | 2.2.0 | Swagger API dokümantasyonu |
 
-### DevOps & Infrastructure
+### DevOps
 
 | Teknoloji | Kullanım Amacı |
 |-----------|----------------|
@@ -143,127 +285,242 @@ Bu proje, **Modüler Monolith** mimari deseni kullanılarak geliştirilmiştir. 
 | Teknoloji | Kullanım Amacı |
 |-----------|----------------|
 | React 18 | UI library |
-| Tailwind CSS | Styling |
+| Tailwind CSS | Utility-first CSS |
 | Axios | HTTP client |
-| React Router | Routing |
+| React Router | Client-side routing |
 
 ---
 
-## 🏗 Backend Mimarisi
+## 🗄 Veritabanı Tasarımı
 
-### Katmanlı Yapı (Layered Architecture)
-
-Her modül aşağıdaki katmanlardan oluşur:
+### ER Diagram
 
 ```
-Module/
-├── controller/          # REST API endpoints
-│   └── XxxController.java
-├── service/
-│   ├── XxxService.java          # Interface
-│   └── impl/
-│       └── XxxServiceImpl.java  # Implementation
-├── repository/          # Data access layer
-│   └── XxxRepository.java
-├── entity/              # JPA entities
-│   └── Xxx.java
-└── dto/                 # Data transfer objects
-    ├── XxxRequest.java
-    └── XxxResponse.java
+┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
+│    kullanici    │       │     siteler     │       │     bloklar     │
+├─────────────────┤       ├─────────────────┤       ├─────────────────┤
+│ kullanici_id PK │◄──┐   │ site_id PK      │◄──────│ blok_id PK      │
+│ kullanici_ad    │   │   │ site_isim       │       │ blok_isim       │
+│ kullanici_soyad │   │   │ site_il         │       │ site_id FK      │
+│ kullanici_eposta│   │   │ site_ilce       │       └────────┬────────┘
+│ kullanici_sifre │   │   │ site_mahalle    │                │
+│ kullanici_tel   │   │   │ site_sokak      │                │
+│ apartmanno      │   │   │ yonetici_id FK──┼────────┐       │
+│ konutkullanim   │   │   └─────────────────┘        │       │
+└─────────────────┘   │                              │       │
+        ▲             │                              │       │
+        │             │   ┌──────────────────────────┘       │
+        │             │   │                                  │
+┌───────┴─────────┐   │   │   ┌─────────────────┐            │
+│  daire_sakinler │   │   │   │    daireler     │◄───────────┘
+├─────────────────┤   │   │   ├─────────────────┤
+│ daire_id FK     │   │   │   │ daire_id PK     │
+│ kullanici_id FK─┼───┘   │   │ daire_no        │
+└─────────────────┘       │   │ kat_no          │
+                          │   │ blok_id FK      │
+                          │   └────────┬────────┘
+                          │            │
+┌─────────────────┐       │            │        ┌─────────────────┐
+│   borctanimi    │       │            │        │    daireborc    │
+├─────────────────┤       │            │        ├─────────────────┤
+│ borc_tanim_id PK│◄──────┼────────────┼────────│ daire_borc_id PK│
+│ aciklama        │       │            │        │ borc_tanim_id FK│
+│ borc_turu       │       │            └───────►│ daire_id FK     │
+│ olusturma_tarih │       │                     │ tutar           │
+│ son_odeme_tarih │       │                     │ odeme_tarihi    │
+│ tutar           │       │                     │ odendi_mi       │
+│ site_id FK──────┼───────┘                     └────────┬────────┘
+└─────────────────┘                                      │
+                                                         │
+┌─────────────────┐       ┌─────────────────┐            │
+│      gider      │       │ borcodemeistek  │◄───────────┘
+├─────────────────┤       ├─────────────────┤
+│ gider_id PK     │       │ id PK           │
+│ gider_aciklama  │       │ istek_tarih     │
+│ gider_olusturma │       │ onay_tarih      │
+│ gider_turu      │       │ onaylandi_mi    │
+│ gider_tutar     │       │ daire_borc_id FK│
+│ site_id FK      │       └─────────────────┘
+│ aktif           │
+└────────┬────────┘
+         │
+         │        ┌─────────────────┐
+         │        │   giderbelge    │
+         └───────►├─────────────────┤
+                  │ gider_belge_id  │
+                  │ dosya_ad        │
+                  │ dosya_boyutu    │
+                  │ dosya_turu      │
+                  │ dosya_yolu      │
+                  │ yukleme_tarih   │
+                  │ gider_id FK     │
+                  │ aktif           │
+                  └─────────────────┘
+
+┌─────────────────┐
+│    duyurular    │
+├─────────────────┤
+│ duyuru_id PK    │
+│ baslik          │
+│ icerik          │
+│ olusturma_tarih │
+│ duyuru_tipi     │
+│ site_id FK      │
+└─────────────────┘
 ```
 
-### Entity İlişkileri
+### Tablo Açıklamaları
+
+| Tablo | Modül | Açıklama |
+|-------|-------|----------|
+| `kullanici` | identity | Tüm kullanıcılar (yönetici & sakin) |
+| `siteler` | structure | Ana site kayıtları |
+| `bloklar` | structure | Site'ye bağlı bloklar |
+| `daireler` | structure | Blok'a bağlı daireler |
+| `daire_sakinler` | structure | Daire-Kullanıcı many-to-many ilişkisi |
+| `borctanimi` | finance | Aidat tanımları (site bazlı) |
+| `daireborc` | finance | Daireye atanmış borçlar |
+| `borcodemeistekleri` | finance | Sakinlerin ödeme talepleri |
+| `gider` | finance | Site giderleri |
+| `giderbelge` | finance | Gidere ait belgeler |
+| `duyurular` | announcement | Site duyuruları |
+
+---
+
+## 🔄 İş Akışları
+
+### 1. Site Kurulum Akışı
 
 ```
-┌─────────────┐       ┌─────────────┐       ┌─────────────┐
-│    Site     │ 1───N │    Blok     │ 1───N │   Daire     │
-├─────────────┤       ├─────────────┤       ├─────────────┤
-│ id          │       │ id          │       │ id          │
-│ ad          │       │ ad          │       │ daireNo     │
-│ adres       │       │ katSayisi   │       │ kat         │
-│ il          │       │ site_id(FK) │       │ sakinAdi    │
-│ ilce        │       └─────────────┘       │ blok_id(FK) │
-│ yoneticiId  │                             │ borcDurumu  │
-└─────────────┘                             └─────────────┘
-       │                                           │
-       │ 1                                         │ 1
-       │                                           │
-       N                                           N
-┌─────────────┐                             ┌─────────────┐
-│   Duyuru    │                             │   Alacak    │
-├─────────────┤                             ├─────────────┤
-│ id          │                             │ id          │
-│ baslik      │                             │ tutar       │
-│ icerik      │                             │ aciklama    │
-│ tarih       │                             │ vadeTarihi  │
-│ site_id(FK) │                             │ daire_id(FK)│
-└─────────────┘                             │ odendi      │
-                                            └─────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│                    SİTE KURULUM SÜRECİ                         │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  1. Yönetici Kaydı                                             │
+│     └─► POST /api/auth/yonetici-kayit                          │
+│                                                                │
+│  2. Site Oluşturma                                             │
+│     └─► POST /api/sites                                        │
+│         Body: { ad, il, ilce, mahalle, sokak }                 │
+│                                                                │
+│  3. Blok Ekleme                                                │
+│     └─► POST /api/bloklar                                      │
+│         Body: { blokIsim, siteId }                             │
+│                                                                │
+│  4. Daire Ekleme                                               │
+│     └─► POST /api/daireler                                     │
+│         Body: { daireNo, katNo, blokId }                       │
+│                                                                │
+│  5. Sakin Davet/Atama                                          │
+│     └─► POST /api/daireler/{id}/sakin-ata                      │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
 ```
 
-### Security Mimarisi
+### 2. Aidat Yönetim Akışı
 
 ```
-                    ┌─────────────────┐
-                    │   HTTP Request  │
-                    └────────┬────────┘
-                             │
-                    ┌────────▼────────┐
-                    │  CORS Filter    │
-                    └────────┬────────┘
-                             │
-                    ┌────────▼────────┐
-                    │ JWT Auth Filter │──── Token Validation
-                    └────────┬────────┘
-                             │
-                    ┌────────▼────────┐
-                    │ Security Context│──── User Principal
-                    └────────┬────────┘
-                             │
-              ┌──────────────┼──────────────┐
-              │              │              │
-    ┌─────────▼─────┐ ┌─────▼─────┐ ┌─────▼─────┐
-    │  /api/auth/** │ │/api/admin │ │ /api/user │
-    │   permitAll   │ │ROLE_ADMIN │ │ ROLE_USER │
-    └───────────────┘ └───────────┘ └───────────┘
+┌────────────────────────────────────────────────────────────────┐
+│                    AİDAT YÖNETİM SÜRECİ                        │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  ┌──────────────┐                                              │
+│  │   YÖNETİCİ   │                                              │
+│  └──────┬───────┘                                              │
+│         │                                                      │
+│         ▼                                                      │
+│  [1] Borç Tanımı Oluştur                                       │
+│      POST /api/borc-tanimi                                     │
+│      {                                                         │
+│        "aciklama": "Ocak 2026 Aidatı",                         │
+│        "borcTuru": "AIDAT",                                    │
+│        "tutar": 500.00,                                        │
+│        "sonOdemeTarihi": "2026-01-31",                         │
+│        "siteId": 1                                             │
+│      }                                                         │
+│         │                                                      │
+│         ▼                                                      │
+│  [2] Sistem otomatik olarak sitedeki                           │
+│      her daireye DaireBorc kaydı oluşturur                     │
+│         │                                                      │
+│         ▼                                                      │
+│  ┌──────────────┐                                              │
+│  │    SAKİN     │                                              │
+│  └──────┬───────┘                                              │
+│         │                                                      │
+│         ▼                                                      │
+│  [3] Borçlarını Görüntüler                                     │
+│      GET /api/daire-borc/daire/{daireId}                       │
+│         │                                                      │
+│         ▼                                                      │
+│  [4] Ödeme İsteği Oluşturur                                    │
+│      POST /api/odeme-istek                                     │
+│      { "daireBorcId": 15 }                                     │
+│         │                                                      │
+│         ▼                                                      │
+│  ┌──────────────┐                                              │
+│  │   YÖNETİCİ   │                                              │
+│  └──────┬───────┘                                              │
+│         │                                                      │
+│         ▼                                                      │
+│  [5] Ödeme İsteklerini Görüntüler                              │
+│      GET /api/odeme-istek/site/{siteId}                        │
+│         │                                                      │
+│         ▼                                                      │
+│  [6] Ödemeyi Onaylar                                           │
+│      PUT /api/odeme-istek/{id}/onayla                          │
+│         │                                                      │
+│         ▼                                                      │
+│  [7] DaireBorc.odendiMi = true olur ✓                          │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
 ```
 
-### Hibernate ORM Kullanımı
+### 3. Kimlik Doğrulama Akışı
 
-```java
-// Entity örneği
-@Entity
-@Table(name = "daireler")
-@Getter @Setter
-@NoArgsConstructor
-public class Daire {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    @Column(nullable = false)
-    private String daireNo;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "blok_id", nullable = false)
-    private Blok blok;
-    
-    @OneToMany(mappedBy = "daire", cascade = CascadeType.ALL)
-    private List<Alacak> alacaklar = new ArrayList<>();
-}
-
-// Repository örneği
-@Repository
-public interface DaireRepository extends JpaRepository<Daire, Long> {
-    
-    List<Daire> findByBlokId(Long blokId);
-    
-    @Query("SELECT d FROM Daire d WHERE d.blok.site.id = :siteId")
-    List<Daire> findBySiteId(@Param("siteId") Long siteId);
-    
-    Optional<Daire> findByBlokIdAndDaireNo(Long blokId, String daireNo);
-}
+```
+┌────────────────────────────────────────────────────────────────┐
+│                    JWT AUTH AKIŞI                              │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  [Client]                              [Server]                │
+│     │                                      │                   │
+│     │  POST /api/auth/login                │                   │
+│     │  { email, password }                 │                   │
+│     │─────────────────────────────────────►│                   │
+│     │                                      │                   │
+│     │                         [AuthController]                 │
+│     │                               │                          │
+│     │                               ▼                          │
+│     │                         [AuthService]                    │
+│     │                               │                          │
+│     │                               ▼                          │
+│     │                      Password Check (BCrypt)             │
+│     │                               │                          │
+│     │                               ▼                          │
+│     │                        JWT Token Üret                    │
+│     │                               │                          │
+│     │◄──────────────────────────────┘                          │
+│     │  { token, kullaniciId, rol }                             │
+│     │                                                          │
+│     │  GET /api/protected-endpoint                             │
+│     │  Header: Authorization: Bearer {token}                   │
+│     │─────────────────────────────────────►│                   │
+│     │                                      │                   │
+│     │                         [JwtAuthFilter]                  │
+│     │                               │                          │
+│     │                               ▼                          │
+│     │                        Token Doğrula                     │
+│     │                               │                          │
+│     │                               ▼                          │
+│     │                    SecurityContext'e User Set            │
+│     │                               │                          │
+│     │                               ▼                          │
+│     │                         [Controller]                     │
+│     │◄──────────────────────────────┘                          │
+│     │  Response                                                │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -275,10 +532,9 @@ public interface DaireRepository extends JpaRepository<Daire, Long> {
 - Java 17+
 - Maven 3.9+
 - PostgreSQL 15+
-- Node.js 18+ (frontend için)
 - Docker & Docker Compose (opsiyonel)
 
-### 🐳 Docker ile Kurulum (Önerilen)
+### 🐳 Docker ile Kurulum
 
 ```bash
 # Repo'yu klonla
@@ -289,7 +545,6 @@ cd apartmanim-cepte
 docker-compose up -d
 ```
 
-Container'lar:
 | Container | Port | Açıklama |
 |-----------|------|----------|
 | apartman-frontend | 3000 | React + Nginx |
@@ -298,60 +553,21 @@ Container'lar:
 
 ### 💻 Manuel Kurulum
 
-#### Backend
-
 ```bash
+# Backend
 cd backend
-
-# application.properties veya application.yml düzenle
-# Veritabanı bağlantı bilgilerini ayarla
-
-# Build
 ./mvnw clean package -DskipTests
+java -jar target/backend-0.0.1-SNAPSHOT.jar
 
-# Çalıştır
-./mvnw spring-boot:run
-
-# veya JAR ile
-java -jar target/apartmanim-cepte-*.jar
-```
-
-#### Frontend
-
-```bash
+# Frontend
 cd frontend
 npm install
-npm start          # Development
-npm run build      # Production build
+npm start
 ```
 
-### ⚙️ Konfigürasyon
+### Swagger API Docs
 
-`application.yml` örneği:
-
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/apartmanim
-    username: ${DB_USER}
-    password: ${DB_PASS}
-  
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-
-jwt:
-  secret: ${JWT_SECRET}
-  expiration: 86400000  # 24 saat
-
-server:
-  port: 8080
-```
+Backend çalışırken: `http://localhost:8080/swagger-ui.html`
 
 ---
 
@@ -360,84 +576,68 @@ server:
 ```
 apartmanim-cepte/
 │
-├── backend/                          # 🎯 Spring Boot API (Modüler Monolith)
-│   ├── src/main/java/com/apartmanim/
+├── backend/                              # Spring Boot Backend
+│   ├── src/main/java/com/apartmanimcepte/backend/
 │   │   │
-│   │   ├── auth/                     # 🔐 Authentication Modülü
-│   │   │   ├── controller/
-│   │   │   │   └── AuthController.java
-│   │   │   ├── service/
-│   │   │   │   ├── AuthService.java
-│   │   │   │   └── impl/AuthServiceImpl.java
+│   │   ├── identity/                     # 🔐 KİMLİK MODÜLÜ
+│   │   │   ├── bus/                      # AuthService, KullaniciService
+│   │   │   ├── config/                   # SecurityConfig, JwtConfig
+│   │   │   ├── controller/               # AuthController, KullaniciController
+│   │   │   ├── dao/                      # KullaniciDAO
+│   │   │   ├── dto/                      # LoginRequest, RegisterRequest, TokenResponse
 │   │   │   ├── entity/
-│   │   │   │   └── User.java
-│   │   │   └── dto/
-│   │   │       ├── LoginRequest.java
-│   │   │       └── RegisterRequest.java
+│   │   │   │   └── Kullanici.java
+│   │   │   ├── Enum/
+│   │   │   │   └── KullaniciRol.java     # YONETICI, KULLANICI
+│   │   │   └── filter/
+│   │   │       └── JwtAuthFilter.java
 │   │   │
-│   │   ├── site/                     # 🏢 Site Yönetimi Modülü
-│   │   │   ├── controller/
-│   │   │   ├── service/
-│   │   │   ├── repository/
-│   │   │   ├── entity/
-│   │   │   └── dto/
+│   │   ├── structure/                    # 🏗️ YAPI MODÜLÜ
+│   │   │   ├── bus/                      # SiteService, BlokService, DaireService
+│   │   │   ├── controller/               # SiteController, BlokController, DaireController
+│   │   │   ├── dao/                      # SiteDAO, BlokDAO, DaireDAO
+│   │   │   ├── dto/                      # SiteDTO, BlokDTO, DaireDTO
+│   │   │   └── entity/
+│   │   │       ├── Site.java
+│   │   │       ├── Blok.java
+│   │   │       └── Daire.java
 │   │   │
-│   │   ├── blok/                     # 🏗️ Blok Yönetimi Modülü
+│   │   ├── finance/                      # 💰 FİNANS MODÜLÜ
+│   │   │   ├── bus/                      # BorcService, GiderService, OdemeService
 │   │   │   ├── controller/
-│   │   │   ├── service/
-│   │   │   ├── repository/
-│   │   │   ├── entity/
-│   │   │   └── dto/
-│   │   │
-│   │   ├── daire/                    # 🏠 Daire Yönetimi Modülü
-│   │   │   ├── controller/
-│   │   │   ├── service/
-│   │   │   ├── repository/
-│   │   │   ├── entity/
-│   │   │   └── dto/
-│   │   │
-│   │   ├── duyuru/                   # 📢 Duyuru Modülü
-│   │   │   ├── controller/
-│   │   │   ├── service/
-│   │   │   ├── repository/
-│   │   │   ├── entity/
-│   │   │   └── dto/
-│   │   │
-│   │   ├── finans/                   # 💰 Finansal İşlemler Modülü
-│   │   │   ├── controller/
+│   │   │   │   ├── BorcTanimiController.java
+│   │   │   │   ├── DaireBorcController.java
+│   │   │   │   ├── BorcOdemeIstekController.java
 │   │   │   │   ├── GiderController.java
-│   │   │   │   ├── AlacakController.java
-│   │   │   │   └── OdemeIstekController.java
-│   │   │   ├── service/
-│   │   │   ├── repository/
+│   │   │   │   └── GiderBelgeController.java
+│   │   │   ├── dao/
+│   │   │   ├── dto/
 │   │   │   ├── entity/
-│   │   │   │   ├── Gider.java
-│   │   │   │   ├── Alacak.java
-│   │   │   │   └── OdemeIstek.java
-│   │   │   └── dto/
+│   │   │   │   ├── BorcTanimi.java       # Aidat tanımı
+│   │   │   │   ├── DaireBorc.java        # Daire-borç ilişkisi
+│   │   │   │   ├── BorcOdemeIstek.java   # Ödeme talepleri
+│   │   │   │   ├── Gider.java            # Site giderleri
+│   │   │   │   └── GiderBelge.java       # Gider belgeleri
+│   │   │   └── Enum/
+│   │   │       ├── BorcTuru.java
+│   │   │       └── GiderTuru.java
 │   │   │
-│   │   └── common/                   # 🔧 Shared/Common Layer
-│   │       ├── config/
-│   │       │   ├── SecurityConfig.java
-│   │       │   ├── CorsConfig.java
-│   │       │   └── JwtConfig.java
-│   │       ├── security/
-│   │       │   ├── JwtTokenProvider.java
-│   │       │   ├── JwtAuthFilter.java
-│   │       │   └── UserDetailsServiceImpl.java
-│   │       ├── exception/
-│   │       │   ├── GlobalExceptionHandler.java
-│   │       │   ├── ResourceNotFoundException.java
-│   │       │   └── UnauthorizedException.java
-│   │       └── util/
+│   │   └── announcement/                 # 📢 DUYURU MODÜLÜ
+│   │       ├── bus/                      # DuyuruService
+│   │       ├── controller/               # DuyuruController
+│   │       ├── dao/                      # DuyuruDAO
+│   │       ├── dto/                      # DuyuruDTO
+│   │       ├── entity/
+│   │       │   └── Duyuru.java
+│   │       └── Enum/
+│   │           └── DuyuruTipi.java
 │   │
 │   ├── src/main/resources/
-│   │   ├── application.yml
-│   │   └── application-prod.yml
+│   │   └── application.properties
 │   │
 │   └── pom.xml
 │
-├── frontend/                         # React Uygulaması
+├── frontend/                             # React Frontend
 │   ├── src/
 │   │   ├── components/
 │   │   ├── pages/
@@ -445,82 +645,10 @@ apartmanim-cepte/
 │   │   └── contexts/
 │   └── package.json
 │
-├── .github/workflows/                # CI/CD
-│   └── deploy-frontend.yml
+├── .github/workflows/
+│   └── deploy-frontend.yml               # CI/CD
 │
-├── docker-compose.yml
-├── Dockerfile
-└── README.md
-```
-
----
-
-## 📊 Veritabanı Şeması
-
-```sql
--- Ana tablolar
-CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    ad VARCHAR(100),
-    soyad VARCHAR(100),
-    telefon VARCHAR(20),
-    rol VARCHAR(20) NOT NULL,  -- ROLE_ADMIN, ROLE_USER
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE siteler (
-    id BIGSERIAL PRIMARY KEY,
-    ad VARCHAR(255) NOT NULL,
-    adres TEXT,
-    il VARCHAR(100),
-    ilce VARCHAR(100),
-    yonetici_id BIGINT REFERENCES users(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE bloklar (
-    id BIGSERIAL PRIMARY KEY,
-    ad VARCHAR(50) NOT NULL,
-    kat_sayisi INT,
-    site_id BIGINT REFERENCES siteler(id) ON DELETE CASCADE
-);
-
-CREATE TABLE daireler (
-    id BIGSERIAL PRIMARY KEY,
-    daire_no VARCHAR(20) NOT NULL,
-    kat INT,
-    metrekare DECIMAL(10,2),
-    sakin_id BIGINT REFERENCES users(id),
-    blok_id BIGINT REFERENCES bloklar(id) ON DELETE CASCADE
-);
-
-CREATE TABLE duyurular (
-    id BIGSERIAL PRIMARY KEY,
-    baslik VARCHAR(255) NOT NULL,
-    icerik TEXT,
-    tarih TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    site_id BIGINT REFERENCES siteler(id) ON DELETE CASCADE
-);
-
-CREATE TABLE alacaklar (
-    id BIGSERIAL PRIMARY KEY,
-    tutar DECIMAL(10,2) NOT NULL,
-    aciklama VARCHAR(255),
-    vade_tarihi DATE,
-    odendi BOOLEAN DEFAULT FALSE,
-    daire_id BIGINT REFERENCES daireler(id) ON DELETE CASCADE
-);
-
-CREATE TABLE giderler (
-    id BIGSERIAL PRIMARY KEY,
-    tutar DECIMAL(10,2) NOT NULL,
-    aciklama VARCHAR(255),
-    kategori VARCHAR(100),
-    tarih DATE,
-    site_id BIGINT REFERENCES siteler(id) ON DELETE CASCADE
-);
+└── docker-compose.yml
 ```
 
 ---
@@ -534,5 +662,5 @@ CREATE TABLE giderler (
 ---
 
 <p align="center">
-  ⭐ Bu projeyi beğendiyseniz yıldız vermeyi unutmayın!
+  ⭐ Projeyi beğendiyseniz yıldız vermeyi unutmayın!
 </p>
